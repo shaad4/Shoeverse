@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center bg-dark px-5 pt-24">
+
+    <div class="w-full max-w-[480px] flex flex-col items-center">
+
+        <!-- Title -->
+        <h1 class="text-[28px] font-bold text-white text-center leading-[1.25em] mb-6">
+            Step into your next style.
+        </h1>
+
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="w-full mb-4 px-1">
+                {% for message in messages %}
+                    <div class="p-3 rounded-card text-white 
+                        {% if message.tags == 'error' %} bg-red-500 
+                        {% elif message.tags == 'success' %} bg-green-600 
+                        {% else %} bg-dark-green {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- FORM START -->
+        <form id="loginForm" method="POST" class="w-full px-4">
+            {% csrf_token %}
+
+            <!-- Email -->
+            <div class="w-full mb-4">
+                <input 
+                    type="email" 
+                    name="email"
+                    placeholder="Email Address"
+                    required
+                    class="login-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 rounded-card"
+                >
+            </div>
+
+            <!-- Password -->
+            <div class="w-full mb-2">
+                <input 
+                    type="password" 
+                    name="password"
+                    placeholder="Password"
+                    required
+                    minlength="6"
+                    class="login-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 rounded-card"
+                >
+            </div>
+
+            <!-- Forgot Password -->
+            <div class="w-full text-right mb-4 px-1">
+                <a href="{% url 'forgot_password' %}" class="text-small text-muted hover:text-primary transition-colors">
+                    Forgot password?
+                </a>
+            </div>
+
+            <!-- Login Button -->
+            <button 
+                type="submit"
+                class="w-full h-14 bg-primary text-dark font-bold text-base rounded-card hover:opacity-90 transition-all active:scale-95">
+                Login
+            </button>
+        </form>
+        <!-- FORM END -->
+
+        <!-- Divider -->
+        <div class="w-full flex justify-center items-center my-5">
+            <span class="text-small text-muted text-center">OR</span>
+        </div>
+
+        <!-- Google Login -->
+        <a href="/accounts/google/login/"
+           class="w-full max-w-[480px] h-14 bg-dark-green text-white font-bold text-base rounded-card 
+                  flex items-center justify-center gap-3 hover:opacity-90 transition-all">
+
+            <img src="{% static 'images/google-icon.svg' %}" alt="Google icon" class="w-6 h-6">
+            <span>Continue with Google</span>
+        </a>
+
+        <!-- Sign Up Link -->
+        <div class="w-full flex justify-center mt-6 px-4 pb-4">
+            <p class="text-small text-muted text-center">
+                Don't have an account?
+                <a href="{% url 'signup' %}" class="text-muted hover:text-primary transition-colors">
+                    Sign up
+                </a>
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ✅ jQuery + jQuery Validation -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $("#loginForm").validate({
+        errorClass: "error-text",
+        
+        rules: {
+            email: {
+                required: true,
+                email: true
+            },
+
+            password: {
+                required: true,
+                minlength: 6
+            }
+        },
+
+        messages: {
+            email: {
+                required: "Enter your email.",
+                email: "Enter a valid email address."
+            },
+            password: {
+                required: "Enter your password.",
+                minlength: "Password must be at least 6 characters."
+            }
+        },
+
+        errorPlacement: function(error, element) {
+            error.insertAfter(element);
+        },
+
+        highlight: function(element) {
+            $(element).addClass("input-error");
+        },
+
+        unhighlight: function(element) {
+            $(element).removeClass("input-error");
+        }
+    });
+
+});
+</script>
+
+<style>
+.error-text {
+    color: #ff6b6b;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.input-error {
+    border: 2px solid #ff6b6b !important;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="relative pt-16">
+    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40 py-5">
+        <div class="flex flex-col">
+
+            <!-- Hero Banner -->
+            <div class="relative h-[480px] rounded-card overflow-hidden mb-3">
+                <div class="absolute inset-0 gradient-overlay z-10"></div>
+                <img src="{% static 'images/hero-main.png' %}" alt="Shoeverse Hero"
+                     class="w-full h-full object-cover" loading="eager">
+
+                <div class="absolute inset-0 z-20 flex flex-col items-center justify-center px-5">
+                    <h1 class="text-display font-black text-white text-center mb-4 max-w-[687px]">
+                        Step Into Style with Shoeverse
+                    </h1>
+                    <p class="text-body text-white text-center mb-8 max-w-[687px]">
+                        Discover exclusive collections for Men, Women, and Kids.
+                    </p>
+                    <button
+                        class="bg-primary text-dark font-bold text-body px-5 py-3 h-12 rounded-button-lg hover:opacity-90">
+                        Shop Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div id="searchWrap" class="mb-5">
+                <div id="searchBar" class="flex h-12 rounded-card overflow-hidden">
+                    <div class="bg-dark-green flex items-center justify-center px-4">
+                        <img src="{% static 'images/icon-search.svg' %}" alt="" class="w-6 h-6">
+                    </div>
+
+                    <input 
+                        type="search" 
+                        placeholder="Search for your perfect pair..." 
+                        class="flex-1 bg-dark-green text-white placeholder-muted text-body px-4 py-2 
+                               focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label="Search"
+                    >
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Feature Badges -->
+<section class="py-8 bg-dark">
+    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+
+            <!-- Feature Item -->
+            <div class="flex flex-col items-center text-center p-4">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-small font-medium text-white mb-1">Fast Delivery</h3>
+                <p class="text-small text-muted">Quick shipping</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0"></path>
+                    </svg>
+                </div>
+                <h3 class="text-small font-medium text-white mb-1">High Quality</h3>
+                <p class="text-small text-muted">Premium materials</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-width="2" d="M4 4v5m15.356 2A8 8 0 004.582 9"></path>
+                    </svg>
+                </div>
+                <h3 class="text-small font-medium text-white mb-1">Easy Returns</h3>
+                <p class="text-small text-muted">30-day guarantee</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-width="2" d="M12 15v2m-6 4h12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-small font-medium text-white mb-1">Secure Payment</h3>
+                <p class="text-small text-muted">Safe transactions</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Best Sellers -->
+<section class="py-5">
+    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
+
+        <h2 class="text-heading font-bold text-white mb-3 px-4 pt-5">Best Sellers</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-4 py-4">
+
+            <!-- Product Card -->
+            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
+                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
+                    <img src="{% static 'images/product-velocity-x.png' %}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-body font-medium text-dark mb-1">Velocity X</h3>
+                    <p class="text-small text-muted mb-1">High-performance running shoe</p>
+                    <p class="text-small text-muted">₹ 7,999</p>
+                </div>
+            </div>
+
+            <!-- Copy similar cards below -->
+            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
+                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
+                    <img src="{% static 'images/product-stride-pro.png' %}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-body font-medium text-dark mb-1">Stride Pro</h3>
+                    <p class="text-small text-muted mb-1">Durable and comfortable</p>
+                    <p class="text-small text-muted">₹ 5,999</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
+                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
+                    <img src="{% static 'images/product-airbound-max.png' %}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-body font-medium text-dark mb-1">Airbound Max</h3>
+                    <p class="text-small text-muted mb-1">Lightweight and responsive</p>
+                    <p class="text-small text-muted">₹ 3,699</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
+                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
+                    <img src="{% static 'images/product-court-conqueror.png' %}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-body font-medium text-dark mb-1">Court Conqueror</h3>
+                    <p class="text-small text-muted mb-1">Designed for court sports</p>
+                    <p class="text-small text-muted">₹ 12,900</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Category Section -->
+<section class="py-5">
+    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
+
+        <h2 class="text-heading font-bold text-white mb-3 px-4 pt-5">Shop by Category</h2>
+
+        <div class="flex flex-col md:flex-row gap-6 md:gap-[88px] px-4 py-4">
+
+            <!-- Category Card -->
+            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+                <div class="absolute inset-0 category-gradient z-10"></div>
+                <img src="{% static 'images/category-mens.png' %}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
+                    <h3 class="text-body font-bold text-white mb-2">Men's Shoes</h3>
+                    <p class="text-body font-bold text-white">Mens</p>
+                </div>
+            </a>
+
+            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+                <div class="absolute inset-0 category-gradient z-10"></div>
+                <img src="{% static 'images/category-womens.png' %}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
+                    <h3 class="text-body font-bold text-white mb-2">Women's Shoes</h3>
+                    <p class="text-body font-bold text-white">Womens</p>
+                </div>
+            </a>
+
+            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+                <div class="absolute inset-0 category-gradient z-10"></div>
+                <img src="{% static 'images/category-kids.png' %}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
+                    <h3 class="text-body font-bold text-white mb-2">Kids' Shoes</h3>
+                    <p class="text-body font-bold text-white">Kids</p>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

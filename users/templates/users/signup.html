@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="bg-dark min-h-screen flex items-center justify-center py-5">
+
+    <div class="w-full flex justify-center items-center py-5 px-5 md:px-40">
+        
+        <div class="w-full max-w-[960px] flex flex-col items-center">
+            
+            <!-- Title -->
+            <div class="w-full flex justify-center px-4 pt-5 pb-3">
+                <h1 class="text-[28px] font-bold text-white text-center leading-[1.25em]">
+                    Join the Shoeverse and step into your next style.
+                </h1>
+            </div>
+
+            <!-- Django Messages -->
+            {% if messages %}
+                <div class="w-full max-w-[480px] mb-4 px-4">
+                    {% for message in messages %}
+                        <div class="p-3 rounded-card 
+                            {% if message.tags == 'error' %} bg-red-500 text-white
+                            {% elif message.tags == 'success' %} bg-green-600 text-white
+                            {% else %} bg-dark-green text-white
+                            {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- FORM START -->
+            <form method="POST" id="signupForm" class="w-full max-w-[480px] flex flex-col items-stretch px-4">
+                {% csrf_token %}
+
+                <!-- Full Name -->
+                <div class="w-full mb-3">
+                    <input 
+                        type="text" 
+                        name="fullName"
+                        placeholder="Full Name"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                    >
+                </div>
+
+                <!-- Email -->
+                <div class="w-full mb-3">
+                    <input 
+                        type="email" 
+                        name="email"
+                        placeholder="Email Address"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                    >
+                </div>
+
+                <!-- Password -->
+                <div class="w-full mb-3 relative">
+                    <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Password"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                    >
+                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm">Show</button>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="w-full mb-3 relative">
+                    <input 
+                        type="password" 
+                        name="confirm_password"
+                        placeholder="Confirm Password"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        required
+                    >
+                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm">Show</button>
+                </div>
+
+                <!-- Referral Code -->
+                <div class="w-full mb-3">
+                    <input 
+                        type="text" 
+                        name="referral"
+                        placeholder="Referral Code (Optional)" 
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <div class="w-full mb-3">
+                    <button 
+                        id="signupBtn"
+                        type="submit"
+                        disabled
+                        class="w-full h-14 bg-primary text-dark font-bold text-sm rounded-card opacity-60 cursor-not-allowed transition-all">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+            <!-- FORM END -->
+
+            <!-- Divider -->
+            <div class="w-full flex justify-center items-center my-6 px-4">
+                <span class="text-small text-muted text-center">OR</span>
+            </div>
+
+           <!-- Google Button -->
+            <div class="w-full max-w-[480px] px-4 mb-3">
+                <a href="/accounts/google/login/" 
+                class="w-full h-14 bg-dark-green text-white font-bold text-sm rounded-card 
+                        flex items-center justify-center gap-3 hover:opacity-90 transition-all">
+
+                    <img src="{% static 'images/google-icon.svg' %}" 
+                        alt="Google icon" class="w-[26px] h-[26px]">
+
+                    <span>Continue with Google</span>
+                </a>
+            </div>
+
+
+            <!-- Login Link -->
+            <div class="w-full flex justify-center mt-4 px-4 pb-3">
+                <p class="text-small text-muted text-center">
+                    Already have an account?
+                    <a href="/login/" class="text-muted hover:text-primary">
+                        Log in
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- ✅ VALIDATION SCRIPT -->
+<script>
+$(document).ready(function () {
+
+    function clearErrors() {
+        $(".error-text").remove();
+        $("input").removeClass("border-red-500");
+    }
+
+    function showError(field, msg) {
+        let input = $(`input[name='${field}']`);
+        input.addClass("border-red-500");
+        input.after(`<p class="error-text text-red-500 text-sm mt-1">${msg}</p>`);
+    }
+
+    function validateForm() {
+        clearErrors();
+        let valid = true;
+
+        let name = $("input[name='fullName']").val().trim();
+        let email = $("input[name='email']").val().trim();
+        let pass = $("input[name='password']").val().trim();
+        let cpass = $("input[name='confirm_password']").val().trim();
+
+        if (name.length < 3) {
+            showError("fullName", "Full name must be at least 3 characters.");
+            valid = false;
+        }
+
+        let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showError("email", "Enter a valid email address.");
+            valid = false;
+        }
+
+        if (pass.length < 6) {
+            showError("password", "Password must be at least 6 characters.");
+            valid = false;
+        }
+
+        if (pass !== cpass) {
+            showError("confirm_password", "Passwords do not match.");
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    // ✅ Real-time validation
+    $("input").on("input", function () {
+        if (validateForm()) {
+            $("#signupBtn").prop("disabled", false)
+                           .removeClass("opacity-60 cursor-not-allowed");
+        } else {
+            $("#signupBtn").prop("disabled", true)
+                           .addClass("opacity-60 cursor-not-allowed");
+        }
+    });
+
+    // ✅ Password Show/Hide
+    $(".togglePass").on("click", function () {
+        let input = $(this).prev("input");
+        if (input.attr("type") === "password") {
+            input.attr("type", "text");
+            $(this).text("Hide");
+        } else {
+            input.attr("type", "password");
+            $(this).text("Show");
+        }
+    });
+
+    // ✅ Final form check on submit
+    $("#signupForm").on("submit", function (e) {
+        if (!validateForm()) {
+            e.preventDefault();
+        }
+    });
+
+});
+</script>
+
+{% endblock content %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="w-full min-h-screen flex flex-col items-center pt-28 pb-10 bg-dark">
+
+    <!-- Card Container -->
+    <div class="w-full max-w-[480px] px-5 py-10 bg-dark flex flex-col items-center">
+
+        <!-- Title -->
+        <h1 class="text-[28px] font-bold text-white text-center mb-6">
+            Enter the OTP
+        </h1>
+
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="mb-4 w-full">
+                {% for message in messages %}
+                    <div class="p-3 rounded-card text-white 
+                        {% if message.tags == 'error' %} bg-red-500 
+                        {% elif message.tags == 'success' %} bg-green-600 
+                        {% else %} bg-dark-green 
+                        {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Email Info -->
+        <p class="text-muted mb-4 text-center">
+            OTP sent to {{ email }}.
+        </p>
+
+        <!-- OTP Form -->
+        <form method="POST" class="w-full">
+            {% csrf_token %}
+            <input 
+                type="text"
+                name="otp"
+                placeholder="Enter your OTP"
+                class="w-full h-14 bg-dark-green text-white placeholder-muted px-4 rounded-card input-focus mb-4"
+                required
+            >
+
+            <!-- Submit Button -->
+            <button class="w-full h-10 bg-primary text-dark font-bold rounded-card hover:opacity-90 click-effect">
+                Confirm
+            </button>
+        </form>
+
+        <!-- Resend Timer -->
+        <p id="resend-text" class="text-sm text-muted text-center mt-4">
+            Resend OTP in <span id="timer">120</span> seconds
+        </p>
+
+        <a id="resend-btn"
+           href="{% url 'resend_otp' %}"
+           class="text-primary font-medium hidden mt-4">
+            Resend OTP
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ✅ Timer Script -->
+<script>
+    let timeLeft = 120;
+    const timerSpan = document.getElementById("timer");
+    const resendText = document.getElementById("resend-text");
+    const resendBtn = document.getElementById("resend-btn");
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        timerSpan.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            resendText.classList.add("hidden");
+            resendBtn.classList.remove("hidden");
+        }
+    }, 1000);
+</script>
+
+{% endblock content %}

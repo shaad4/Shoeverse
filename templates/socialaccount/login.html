@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col items-center justify-center bg-dark text-white px-5">
+
+    <h1 class="text-3xl font-bold mb-6">Continue with Google</h1>
+
+    <p class="text-muted mb-6">
+        You are about to sign in using your Google account.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button class="w-64 h-12 bg-primary text-dark font-bold rounded-card hover:opacity-90 transition">
+            Continue
+        </button>
+    </form>
+
+</div>
+{% endblock %}
