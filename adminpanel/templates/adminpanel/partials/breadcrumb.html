@@ -1,0 +1,9 @@
+<nav class="text-muted text-sm mb-4">
+    {% for b in breadcrumbs %}
+        {% if not forloop.last %}
+            <a href="{{ b.url }}" class="hover:text-white">{{ b.label }}</a> /
+        {% else %}
+            <span class="text-white">{{ b.label }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>

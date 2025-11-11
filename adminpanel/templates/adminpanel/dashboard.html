@@ -1,0 +1,189 @@
+{% extends "adminpanel/base_admin.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    <h2 class="text-heading font-bold text-white mb-3">Dashboard</h2>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+<!-- Welcome Section -->
+<div class="mb-6">
+    <h2 class="text-heading font-bold text-white mb-3">Welcome, Admin 👋</h2>
+    <p class="text-small text-muted">Here's what's happening with your store today.</p>
+</div>
+
+<!-- Quick Stats Cards -->
+<div class="mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 px-4">Quick Stats Cards</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4">
+
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <p class="text-body font-medium text-white mb-2">Total Products</p>
+            <p class="text-2xl font-bold text-white">1,250</p>
+        </div>
+
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <p class="text-body font-medium text-white mb-2">Total Orders</p>
+            <p class="text-2xl font-bold text-white">3,450</p>
+        </div>
+
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <p class="text-body font-medium text-white mb-2">Total Revenue</p>
+            <p class="text-2xl font-bold text-white">$125,000</p>
+        </div>
+
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <p class="text-body font-medium text-white mb-2">Active Users</p>
+            <p class="text-2xl font-bold text-white">750</p>
+        </div>
+
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 px-4">Charts Section</h3>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4">
+
+        <!-- Sales Overview Chart -->
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <h4 class="text-body font-medium text-white mb-2">Sales Overview</h4>
+            <p class="text-heading font-bold text-white mb-1">$125,000</p>
+
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-body text-muted">Last 30 Days</span>
+                <span class="text-body font-medium text-positive">+15%</span>
+            </div>
+
+            <div class="h-40 bg-status-bg rounded flex items-end justify-between p-4 gap-2">
+                <div class="flex-1 bg-primary h-20 rounded"></div>
+                <div class="flex-1 bg-primary h-32 rounded"></div>
+                <div class="flex-1 bg-primary h-24 rounded"></div>
+                <div class="flex-1 bg-primary h-28 rounded"></div>
+                <div class="flex-1 bg-primary h-36 rounded"></div>
+                <div class="flex-1 bg-primary h-30 rounded"></div>
+                <div class="flex-1 bg-primary h-26 rounded"></div>
+            </div>
+
+            <div class="flex justify-between mt-2">
+                <span class="text-xs font-bold text-muted">Jan</span>
+                <span class="text-xs font-bold text-muted">Feb</span>
+                <span class="text-xs font-bold text-muted">Mar</span>
+                <span class="text-xs font-bold text-muted">Apr</span>
+                <span class="text-xs font-bold text-muted">May</span>
+                <span class="text-xs font-bold text-muted">Jun</span>
+                <span class="text-xs font-bold text-muted">Jul</span>
+            </div>
+        </div>
+
+        <!-- Revenue by Category -->
+        <div class="bg-dark-green border border-border rounded-card p-6">
+            <h4 class="text-body font-medium text-white mb-2">Revenue by Category</h4>
+            <p class="text-heading font-bold text-white mb-1">$125,000</p>
+
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-body text-muted">Last 30 Days</span>
+                <span class="text-body font-medium text-positive">+15%</span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-32 h-6 bg-status-bg border-t-2 border-gray-500 rounded"></div>
+                    <span class="text-xs font-bold text-muted">Mens</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-24 h-6 bg-status-bg border-t-2 border-gray-500 rounded"></div>
+                    <span class="text-xs font-bold text-muted">Womens</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-6 bg-status-bg border-t-2 border-gray-500 rounded"></div>
+                    <span class="text-xs font-bold text-muted">Kids</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 px-4">Recent Orders</h3>
+
+    <div class="bg-dark-green border border-border rounded-card overflow-hidden px-4">
+
+        <div class="bg-table-header grid grid-cols-5 gap-4 px-4 py-3 border-b border-border-light">
+            <div class="text-small text-white">Order ID</div>
+            <div class="text-small text-white">Customer Name</div>
+            <div class="text-small text-white">Amount</div>
+            <div class="text-small text-white">Status</div>
+            <div class="text-small text-white">Date</div>
+        </div>
+
+        <div class="divide-y divide-border-light">
+
+            <div class="grid grid-cols-5 gap-4 px-4 py-4">
+                <div class="text-body text-white">#12345</div>
+                <div class="text-body text-muted">Liam Carter</div>
+                <div class="text-body text-muted">$120</div>
+                <div><span class="bg-status-bg text-white text-small px-3 py-1 rounded-button">Shipped</span></div>
+                <div class="text-body text-muted">2023-08-15</div>
+            </div>
+
+            <div class="grid grid-cols-5 gap-4 px-4 py-4">
+                <div class="text-body text-white">#12346</div>
+                <div class="text-body text-muted">Olivia Bennett</div>
+                <div class="text-body text-muted">$85</div>
+                <div><span class="bg-status-bg text-white text-small px-3 py-1 rounded-button">Processing</span></div>
+                <div class="text-body text-muted">2023-08-14</div>
+            </div>
+
+            <div class="grid grid-cols-5 gap-4 px-4 py-4">
+                <div class="text-body text-white">#12347</div>
+                <div class="text-body text-muted">Noah Thompson</div>
+                <div class="text-body text-muted">$200</div>
+                <div><span class="bg-status-bg text-white text-small px-3 py-1 rounded-button">Delivered</span></div>
+                <div class="text-body text-muted">2023-08-13</div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Recent Customers -->
+<div class="mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 px-4">Recent Customers</h3>
+
+    <div class="bg-dark-green border border-border rounded-card p-4 px-4">
+
+        <div class="space-y-4">
+
+            <div class="flex items-center gap-4 px-4 py-2">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-purple-500"></div>
+                <div class="flex-1">
+                    <p class="text-body text-white">Jackson Reed</p>
+                    <p class="text-small text-muted">2023-08-14</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 px-4 py-2">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-red-500"></div>
+                <div class="flex-1">
+                    <p class="text-body text-white">Chloe Foster</p>
+                    <p class="text-small text-muted">2023-08-13</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="mt-8 px-4 py-3 text-center">
+    <p class="text-small text-muted">© 2023 Shoeverse. All rights reserved.</p>
+</footer>
+
+{% endblock content %}

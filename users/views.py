@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
 from .utils import generate_otp, send_otp_email, password_reset_email
-
+from django.conf import settings
 from users.models import EmailOTP
 
 from django.contrib.auth.tokens import default_token_generator
@@ -192,7 +192,8 @@ def verify_otp_view(request):
 
         logger.info(f"OTP verified successfully for {user.email}")
 
-        login(request, user)
+        login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
+
 
         # ✅ Remove session
         request.session.pop("pending_user_id", None)

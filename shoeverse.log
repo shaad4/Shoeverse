@@ -70,3 +70,63 @@
 [INFO] 2025-11-10 14:21:22,962 users: reset email sent to pojilag411@wivstore.com
 [INFO] 2025-11-10 14:22:03,353 users: Login attempt for email: pojilag411@wivstore.com
 [INFO] 2025-11-10 14:22:03,988 users: User logged in successfully: pojilag411@wivstore.com
+[INFO] 2025-11-11 04:16:50,433 users: Signup attempt: email=noushidhk@gmail.com, referral=PE1XYUDB3J
+[INFO] 2025-11-11 04:16:50,512 users: User noushidhk@gmail.com was referred by shaad@sample.com
+[INFO] 2025-11-11 04:16:51,150 users: User created (not verified): noushidhk@gmail.com
+[INFO] 2025-11-11 04:16:51,156 users: OTP generated for noushidhk@gmail.com: 424074
+[INFO] 2025-11-11 04:16:55,327 users: OTP email sent successfully to noushidhk@gmail.com
+[INFO] 2025-11-11 04:16:55,327 users: OTP email sent to noushidhk@gmail.com
+[INFO] 2025-11-11 04:16:55,368 users: OTP verification for user: noushidhk@gmail.com
+[INFO] 2025-11-11 04:17:19,306 users: OTP verification for user: noushidhk@gmail.com
+[INFO] 2025-11-11 04:17:19,321 users: OTP verified successfully for noushidhk@gmail.com
+[INFO] 2025-11-11 04:24:21,257 users: Signup attempt: email=noushidhk@gmail.com, referral=PE1XYUDB3J
+[INFO] 2025-11-11 04:24:21,324 users: User noushidhk@gmail.com was referred by shaad@sample.com
+[INFO] 2025-11-11 04:24:21,948 users: User created (not verified): noushidhk@gmail.com
+[INFO] 2025-11-11 04:24:21,953 users: OTP generated for noushidhk@gmail.com: 345864
+[INFO] 2025-11-11 04:24:43,806 users: OTP email sent successfully to noushidhk@gmail.com
+[INFO] 2025-11-11 04:24:43,807 users: OTP email sent to noushidhk@gmail.com
+[INFO] 2025-11-11 04:24:43,872 users: OTP verification for user: noushidhk@gmail.com
+[INFO] 2025-11-11 04:25:04,443 users: OTP verification for user: noushidhk@gmail.com
+[INFO] 2025-11-11 04:25:04,457 users: OTP verified successfully for noushidhk@gmail.com
+[INFO] 2025-11-11 04:25:04,470 users: User logged in after OTP verification: noushidhk@gmail.com
+[INFO] 2025-11-11 04:25:48,421 users: Password reset link email sent successfully to noushidhk@gmail.com
+[INFO] 2025-11-11 04:25:48,422 users: reset email sent to noushidhk@gmail.com
+[INFO] 2025-11-11 04:27:44,830 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-11 04:27:45,494 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-11 05:32:54,838 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-11 05:32:55,495 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-11 05:57:09,245 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-11 05:57:09,900 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-11 07:22:25,289 users: Signup attempt: email=mhdansil1221@gmail.com, referral=
+[INFO] 2025-11-11 07:22:26,007 users: User created (not verified): mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:22:26,016 users: OTP generated for mhdansil1221@gmail.com: 875279
+[INFO] 2025-11-11 07:22:30,742 users: OTP email sent successfully to mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:22:30,744 users: OTP email sent to mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:22:30,813 users: OTP verification for user: mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:23:01,357 users: OTP verification for user: mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:23:01,371 users: OTP verified successfully for mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:23:01,376 users: User logged in after OTP verification: mhdansil1221@gmail.com
+[INFO] 2025-11-11 07:25:20,606 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-11 07:25:21,245 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-11 13:24:03,536 users: Signup attempt: email=shahlssss4@gmail.com, referral=
+[INFO] 2025-11-11 13:24:04,223 users: User created (not verified): shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:04,233 users: OTP generated for shahlssss4@gmail.com: 766570
+[INFO] 2025-11-11 13:24:08,566 users: OTP email sent successfully to shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:08,567 users: OTP email sent to shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:08,668 users: OTP verification for user: shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:42,208 users: OTP verification for user: shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:42,213 users: OTP verified successfully for shahlssss4@gmail.com
+[INFO] 2025-11-11 13:24:42,222 users: User logged in after OTP verification: shahlssss4@gmail.com
+[INFO] 2025-11-11 13:44:14,281 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-11 13:44:14,911 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-11 14:15:03,485 users: Signup attempt: email=arshad.kannankuziyil@gmail.com, referral=
+[INFO] 2025-11-11 14:15:04,178 users: User created (not verified): arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:04,183 users: OTP generated for arshad.kannankuziyil@gmail.com: 605478
+[INFO] 2025-11-11 14:15:07,812 users: OTP email sent successfully to arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:07,814 users: OTP email sent to arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:07,892 users: OTP verification for user: arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:50,159 users: OTP verification for user: arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:50,162 users: OTP verified successfully for arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 14:15:50,166 users: User logged in after OTP verification: arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-11 15:15:55,600 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-11 15:15:56,235 users: Admin logged in: admin@shoeverse.com

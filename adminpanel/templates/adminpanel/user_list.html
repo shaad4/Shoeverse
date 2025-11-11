@@ -1,0 +1,504 @@
+{% extends "adminpanel/base_admin.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+    {% include "adminpanel/partials/breadcrumb.html" with breadcrumbs=breadcrumbs %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="mb-6 flex items-center justify-between">
+    <h2 class="text-heading font-bold text-white">Customers</h2>
+
+    <a href="#" onclick="openAddUserModal()"
+   class="bg-primary text-dark font-bold px-4 py-2 rounded-button hover:opacity-90">
+    + Add User
+    </a>
+</div>
+
+<!-- Search Bar -->
+<form method="GET" class="mb-6 flex items-center gap-3">
+    <div class="flex items-center rounded-button overflow-hidden bg-sidebar-bg border border-border w-full max-w-xl">
+        <div class="bg-sidebar-bg px-4 py-2 flex items-center justify-center">
+            <svg class="w-6 h-6 text-muted-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        <input type="search" name="search" value="{{ search_query }}"
+               class="flex-1 bg-sidebar-bg text-white px-4 py-2 focus:outline-none"
+               placeholder="Search users by name or email">
+    </div>
+
+    {% if search_query %}
+    <a href="{% url 'admin_user_list' %}"
+       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-2">
+        Clear
+    </a>
+    {% endif %}
+</form>
+
+<!-- ✅ FILTERS ROW -->
+<form method="GET" class="flex flex-wrap items-center gap-4 mt-4">
+
+    <!-- ROLE FILTER -->
+    <select name="role"
+        class="px-4 py-2 bg-sidebar-bg text-white border border-border rounded-button">
+        <option value="">Role</option>
+        <option value="user" {% if request.GET.role == "user" %}selected{% endif %}>User</option>
+        <option value="admin" {% if request.GET.role == "admin" %}selected{% endif %}>Admin</option>
+    </select>
+
+    <!-- STATUS FILTER -->
+    <select name="status"
+        class="px-4 py-2 bg-sidebar-bg text-white border border-border rounded-button">
+        <option value="">Status</option>
+        <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>Active</option>
+        <option value="blocked" {% if request.GET.status == "blocked" %}selected{% endif %}>Blocked</option>
+    </select>
+
+    <!-- DATE SORT FILTER -->
+    <select name="joined"
+        class="px-4 py-2 bg-sidebar-bg text-white border border-border rounded-button">
+        <option value="">Date Joined</option>
+        <option value="newest" {% if request.GET.joined == "newest" %}selected{% endif %}>Newest First</option>
+        <option value="oldest" {% if request.GET.joined == "oldest" %}selected{% endif %}>Oldest First</option>
+    </select>
+
+    <!-- APPLY FILTER BUTTON -->
+    <button type="submit"
+        class="px-6 py-2 bg-primary text-dark rounded-button font-bold">
+        Apply Filters
+    </button>
+
+    <!-- RESET FILTERS -->
+    <a href="{% url 'admin_user_list' %}"
+       class="px-6 py-2 bg-sidebar-bg text-white border border-border rounded-button">
+        Reset Filters
+    </a>
+
+</form>
+
+
+<!-- Users Table -->
+<div class="bg-dark-green border border-border-dark rounded-card overflow-hidden">
+
+    <div class="bg-table-header grid grid-cols-12 gap-4 px-4 py-3 border-b border-border-light">
+        <div class="col-span-4 text-small text-white">Customer</div>
+        <div class="col-span-3 text-small text-white">Email</div>
+        <div class="col-span-2 text-small text-white">Role</div>
+        <div class="col-span-2 text-small text-white">Status</div>
+        <div class="col-span-1 text-small text-muted-light text-center">Actions</div>
+    </div>
+
+    <div class="divide-y divide-border-light">
+
+        {% for user in page_obj %}
+        <div class="grid grid-cols-12 gap-4 px-4 py-4 items-center">
+
+            <!-- Avatar & Name -->
+            <div class="col-span-4 flex items-center gap-3">
+
+                {% if user.profileImage %}
+                <img src="{{ user.profileImage.url }}"
+                     class="w-12 h-12 rounded-full object-cover border border-border-light">
+                {% else %}
+                <div class="w-12 h-12 rounded-full bg-sidebar-bg flex items-center justify-center border border-border-light">
+                    <svg class="w-6 h-6 text-muted-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5.121 17.804A9 9 0 1118.88 17.803M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                {% endif %}
+
+                <div>
+                    <div class="text-small text-white font-medium">{{ user.fullName }}</div>
+                    <div class="text-small text-muted-light">
+                        Joined {{ user.createdAt|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-span-3 text-small text-muted-light">{{ user.email }}</div>
+
+            <!-- Role -->
+            <div class="col-span-2">
+                <span class="px-3 py-1 rounded-button bg-sidebar-bg text-white text-small font-bold">
+                    {{ user.role|title }}
+                </span>
+            </div>
+
+            <!-- Status -->
+            <div class="col-span-2">
+                {% if user.is_active %}
+                <span class="px-3 py-1 rounded-button bg-status-bg text-white text-small">Active</span>
+                {% else %}
+                <span class="px-3 py-1 rounded-button bg-logout text-white text-small">Blocked</span>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+        
+        <div class="col-span-1 flex justify-center">
+            <div class="flex items-center space-x-4">
+
+                <!-- ✅ EDIT BUTTON -->
+                <button
+                    onclick="openEditUserModal(
+                        '{{ user.id }}',
+                        '{{ user.fullName }}',
+                        '{{ user.email }}',
+                        '{{ user.phoneNumber }}',
+                        '{{ user.dateOfBirth|date:"Y-m-d" }}',
+                        '{{ user.gender }}',
+                        '{{ user.role }}'
+                    )"
+                    class="text-primary hover:text-white text-small font-bold">
+                    Edit
+                </button>
+
+                {% if user.role != "admin" %}
+
+                    {% if user.is_active %}
+                    <button
+                        onclick="openConfirmModal(
+                            '{% url "admin_block_user" user.id %}',
+                            'Block User',
+                            'Are you sure you want to block {{ user.fullName }}?'
+                        )"
+                        class="text-logout hover:text-white text-small font-bold">
+                        Block
+                    </button>
+
+                    {% else %}
+                    <button
+                        onclick="openConfirmModal(
+                            '{% url "admin_unblock_user" user.id %}',
+                            'Unblock User',
+                            'Are you sure you want to unblock {{ user.fullName }}?'
+                        )"
+                        class="text-positive hover:text-white text-small font-bold">
+                        Unblock
+                    </button>
+                    {% endif %}
+
+                {% else %}
+                    <span class="text-muted-light">—</span>
+                {% endif %}
+            </div>
+        </div>
+
+        </div>
+        {% empty %}
+        <div class="px-6 py-6 text-center text-muted-light">
+            No users found.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="mt-6 flex items-center justify-center gap-2">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}"
+           class="w-10 h-10 grid place-items-center bg-sidebar-bg text-white border border-border rounded-button">‹</a>
+    {% endif %}
+
+    <span class="w-10 h-10 grid place-items-center bg-primary text-dark rounded-button font-bold">
+        {{ page_obj.number }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}"
+           class="w-10 h-10 grid place-items-center bg-sidebar-bg text-white border border-border rounded-button">›</a>
+    {% endif %}
+</div>
+
+<!-- ✅ MOVE MODAL INSIDE THE TEMPLATE -->
+<div id="confirmModalOverlay" class="hidden fixed inset-0 bg-black/60 z-50"></div>
+
+<div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="bg-dark-green rounded-card border border-border shadow-xl w-full max-w-md">
+
+        <div class="px-6 py-4 border-b border-border-light flex items-center justify-between">
+            <h3 id="confirmTitle" class="text-lg font-bold text-white"></h3>
+            <button onclick="closeConfirmModal()" class="text-muted-light hover:text-white">&times;</button>
+        </div>
+
+        <div class="px-6 py-5">
+            <p id="confirmMessage" class="text-small text-muted-light"></p>
+        </div>
+
+        <div class="px-6 py-4 border-t border-border-light flex justify-end gap-3">
+            <button class="px-4 py-2 bg-sidebar-bg text-white border border-border rounded-button"
+                    onclick="closeConfirmModal()">Cancel</button>
+
+            <form id="confirmForm" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit"
+                        class="px-4 py-2 bg-primary text-dark font-bold rounded-button">
+                    Confirm
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+function openConfirmModal(actionUrl, title, message) {
+    document.getElementById("confirmTitle").innerText = title;
+    document.getElementById("confirmMessage").innerText = message;
+    document.getElementById("confirmForm").action = actionUrl;
+
+    document.getElementById("confirmModal").classList.remove("hidden");
+    document.getElementById("confirmModalOverlay").classList.remove("hidden");
+}
+
+function closeConfirmModal() {
+    document.getElementById("confirmModal").classList.add("hidden");
+    document.getElementById("confirmModalOverlay").classList.add("hidden");
+}
+
+document.getElementById("confirmModalOverlay").onclick = closeConfirmModal;
+</script>
+
+<!-- ✅ ADD USER MODAL -->
+<div id="addUserOverlay" class="hidden fixed inset-0 bg-black/60 z-50"></div>
+
+<div id="addUserModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <form method="POST" action="{% url 'admin_add_user' %}"
+          enctype="multipart/form-data"
+          class="w-full max-w-2xl bg-dark-green border border-border rounded-card p-8 space-y-6">
+
+        {% csrf_token %}
+        
+        <!-- Modal Title -->
+        <h3 class="text-2xl font-bold text-white mb-2">Add New User</h3>
+
+        <!-- Form Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Full Name -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Full Name</label>
+                <input name="fullName" required
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Email</label>
+                <input type="email" name="email" required
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <!-- Phone -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Phone Number</label>
+                <input name="phoneNumber"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <!-- DOB -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Date of Birth</label>
+                <input type="date" name="dateOfBirth"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <!-- Gender -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Gender</label>
+                <select name="gender"
+                        class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Role -->
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light text-small">Role</label>
+                <select name="role"
+                        class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <!-- Profile Image -->
+            <div class="flex flex-col space-y-2 md:col-span-2">
+                <label class="text-muted-light text-small">Profile Image</label>
+                <input type="file" name="profileImage"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-4 mt-4">
+            <button type="button"
+                    onclick="closeAddUserModal()"
+                    class="px-6 py-3 bg-sidebar-bg text-white border border-border rounded-button">
+                Cancel
+            </button>
+
+            <button type="submit"
+                    class="px-6 py-3 bg-primary text-dark rounded-button font-bold">
+                Add User
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+function openAddUserModal() {
+    document.getElementById("addUserModal").classList.remove("hidden");
+    document.getElementById("addUserOverlay").classList.remove("hidden");
+}
+
+function closeAddUserModal() {
+    document.getElementById("addUserModal").classList.add("hidden");
+    document.getElementById("addUserOverlay").classList.add("hidden");
+}
+
+document.getElementById("addUserOverlay").onclick = closeAddUserModal;
+</script>
+
+
+<!-- ✅ EDIT USER MODAL -->
+<div id="editUserOverlay" class="hidden fixed inset-0 bg-black/60 z-50"></div>
+
+<div id="editUserModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+
+    <form id="editUserForm"
+          method="POST"
+          enctype="multipart/form-data"
+          class="w-full max-w-2xl bg-dark-green border border-border rounded-card p-8 space-y-6">
+
+        {% csrf_token %}
+
+        <h3 class="text-2xl font-bold text-white mb-2">Edit User</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Full Name</label>
+                <input id="edit_fullName" name="fullName"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Email</label>
+                <input id="edit_email" name="email"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Phone Number</label>
+                <input id="edit_phoneNumber" name="phoneNumber"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Date of Birth</label>
+                <input type="date" id="edit_dateOfBirth" name="dateOfBirth"
+                       class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Gender</label>
+                <select id="edit_gender" name="gender"
+                        class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-muted-light">Role</label>
+                <select id="edit_role" name="role"
+                        class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2 flex flex-col space-y-2">
+            <label class="text-muted-light">Profile Image</label>
+
+            <!-- File Upload -->
+            <input
+                type="file"
+                name="profileImage"
+                class="bg-sidebar-bg text-white border border-border rounded-button px-4 py-3 w-full"
+            >
+
+            <!-- Clear Image Option -->
+            <label class="flex items-center space-x-2 text-muted-light">
+                <input type="checkbox" name="removeImage" class="rounded">
+                <span>Clear Image</span>
+            </label>
+        </div>
+
+
+        </div>
+
+        <div class="flex justify-end gap-4 mt-4">
+            <button type="button"
+                    onclick="closeEditUserModal()"
+                    class="px-6 py-3 bg-sidebar-bg text-white border border-border rounded-button">
+                Cancel
+            </button>
+
+            <button type="submit"
+                    class="px-6 py-3 bg-primary text-dark rounded-button font-bold">
+                Save Changes
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+function openEditUserModal(id, fullName, email, phone, dob, gender, role) {
+
+    // ✅ Set form action dynamically
+    document.getElementById("editUserForm").action = `/adminpanel/users/edit/${id}/`;
+
+    // ✅ Fill fields
+    document.getElementById("edit_fullName").value = fullName;
+    document.getElementById("edit_email").value = email;
+    document.getElementById("edit_phoneNumber").value = phone;
+    document.getElementById("edit_dateOfBirth").value = dob || "";
+
+    document.getElementById("edit_gender").value = gender || "";
+    document.getElementById("edit_role").value = role || "user";
+
+    // ✅ Show modal
+    document.getElementById("editUserModal").classList.remove("hidden");
+    document.getElementById("editUserOverlay").classList.remove("hidden");
+}
+
+function closeEditUserModal() {
+    document.getElementById("editUserModal").classList.add("hidden");
+    document.getElementById("editUserOverlay").classList.add("hidden");
+}
+
+document.getElementById("editUserOverlay").onclick = closeEditUserModal;
+</script>
+
+
+
+
+{% endblock %}

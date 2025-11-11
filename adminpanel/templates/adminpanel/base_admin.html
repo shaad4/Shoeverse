@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoeverse Admin Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#38E078',
+                        'dark-green': '#122117',
+                        'sidebar-bg': '#264533',
+                        'sidebar-active': '#99C2A8',
+                        'muted': '#99C2A8',
+                        'border': '#3B5E47',
+                        'status-bg': '#294233',
+                        'logout': '#E03838',
+                        'positive': '#0AD942',
+                        'table-header': '#1C2E24',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style> body { background: #122117; } </style>
+</head>
+
+<body class="text-white bg-dark-green">
+
+<div class="flex flex-col min-h-screen">
+
+    {% include 'adminpanel/partials/navbar.html' %}
+    {% include 'adminpanel/partials/sidebar.html' %}
+
+    <main class="fixed top-16 left-80 right-0 h-[calc(100vh-4rem)] overflow-y-auto bg-dark-green">
+        <div class="p-6">
+
+            {% block breadcrumbs %}{% endblock breadcrumbs %}
+            {% block content %}{% endblock content %}
+
+        </div>
+    </main>
+
+</div>
+
+</body>
+</html>

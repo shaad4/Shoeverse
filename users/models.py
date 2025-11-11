@@ -5,7 +5,10 @@ from .managers import UserManager
 # Create your models here.
 
 def profile_upload_path(instance, filename):
-    return f"profiles/user_{instance.id}/{filename}"
+    if instance.pk:
+        return f"profiles/user_{instance.pk}/{filename}"
+    return f"profiles/temp/{filename}"
+
 
 class User(AbstractUser):
     #remove first_name and last_name
