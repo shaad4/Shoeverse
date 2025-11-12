@@ -1,0 +1,57 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Edit Product{% endblock %}
+{% block content %}
+
+{% include 'adminpanel/partials/breadcrumb.html' %}
+
+<h1 class="text-2xl font-semibold text-white mb-6">
+    Edit Product — <span class="text-green-400">{{ product.name }}</span>
+</h1>
+
+<form method="POST" enctype="multipart/form-data"
+      class="space-y-4 bg-[#1A1A1A] p-6 rounded-2xl border border-border shadow-lg">
+    
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Existing Images -->
+    <div>
+        <label class="block text-sm mb-1 text-gray-300">Existing Images</label>
+        <div class="flex flex-wrap gap-4">
+            {% for img in existing_images %}
+            <div class="relative group">
+                <img src="{{ img.image.url }}" alt="{{ product.name }}" 
+                     class="w-24 h-24 object-cover rounded border border-border shadow">
+                <label class="absolute top-1 right-1 bg-red-700 text-xs px-1 py-[2px] rounded text-white hidden group-hover:block cursor-pointer">
+                    <input type="checkbox" name="remove_images" value="{{ img.id }}" class="hidden">
+                    ✕
+                </label>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-sm">No images uploaded.</p>
+            {% endfor %}
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Hover an image and click ✕ to remove.</p>
+    </div>
+
+    <!-- Upload New Images -->
+    <div>
+        <label class="block text-sm mb-1 text-gray-300">Add New Images (Max 3 total)</label>
+        <input type="file" name="images" multiple accept="image/*"
+               class="w-full p-2 rounded bg-[#1F1F1F] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600">
+    </div>
+
+   
+    <div class="flex justify-end space-x-2 pt-4">
+        <a href="{% url 'admin_product_list' %}"
+           class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md text-white">
+            Cancel
+        </a>
+        <button type="submit"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-white">
+            Save Changes
+        </button>
+    </div>
+</form>
+
+{% endblock %}

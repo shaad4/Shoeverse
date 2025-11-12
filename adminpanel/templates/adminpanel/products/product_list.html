@@ -1,0 +1,225 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Product Management{% endblock %}
+{% block content %}
+
+<!-- Include breadcrumb -->
+{% include 'adminpanel/partials/breadcrumb.html' %}
+<div x-data="{ openAddModal: false }">
+<!-- Header -->
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-white">Product Management</h1>
+
+    <div class="flex items-center space-x-3">
+        <!-- Search -->
+        <form method="get" class="flex space-x-2">
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Search product..."
+                class="px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border focus:ring focus:ring-blue-500"
+            />
+            <button
+                type="submit"
+                class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700"
+            >
+                Search
+            </button>
+        </form>
+
+        <!-- Add Product -->
+        <button @click="openAddModal = true"
+                class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md shadow">
+            + Add Product
+        </button>
+
+    </div>
+</div>
+
+<!-- Product Table -->
+<div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
+    <table class="min-w-full text-white">
+        <thead class="bg-[#1F1F1F] text-gray-300 uppercase text-sm">
+            <tr>
+                <th class="px-6 py-3 text-left">#</th>
+                <th class="px-6 py-3 text-left">Image</th>
+                <th class="px-6 py-3 text-left">Product Name</th>
+                <th class="px-6 py-3 text-left">Category</th>
+                <th class="px-6 py-3 text-left">Color</th>
+                <th class="px-6 py-3 text-left">Price</th>
+                <th class="px-6 py-3 text-left">Stock</th>
+                <th class="px-6 py-3 text-left">Variants</th>
+                <th class="px-6 py-3 text-left">Status</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in page_obj %}
+            <tr class="border-t border-border hover:bg-[#2A2A2A] transition">
+
+                <td class="px-6 py-4">{{ forloop.counter0|add:page_obj.start_index }}</td>
+                <td class="px-6 py-4">
+                    {% with primary=product.images.first %}
+                        {% if primary %}
+                            <img src="{{ primary.image.url }}" alt="{{ product.name }}" class="w-12 h-12 rounded object-cover border border-border">
+                        {% else %}
+                            <span class="text-gray-400 text-sm">No image</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+
+
+
+                <td class="px-6 py-4 font-medium">{{ product.name }}</td>
+                <td class="px-6 py-4">{{ product.get_category_display }}</td>
+                <td class="px-6 py-4">{{ product.color }}</td>
+                <td class="px-6 py-4">₹{{ product.price }}</td>
+                <td class="px-6 py-4">
+                    {% with stock=product.total_stock %}
+                        {% if stock > 0 %}
+                            <span class="text-green-400">{{ stock }}</span>
+                        {% else %}
+                            <span class="text-red-400">Out of Stock</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <a href="{% url 'admin_product_variants' product.id %}"
+                        class="text-blue-400 hover:underline">Manage</a>
+                </td>
+
+                <td class="px-6 py-4">
+                    {% if product.is_active %}
+                        <span class="px-2 py-1 text-xs bg-green-700 text-white rounded">Listed</span>
+                    {% else %}
+                        <span class="px-2 py-1 text-xs bg-red-700 text-white rounded">Unlisted</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center space-x-3">
+                    <a href="{% url 'admin_product_edit' product.id %}" class="text-blue-400 hover:underline">Edit</a>
+                    {% if product.is_active %}
+                        <a href="{% url 'admin_product_toggle' product.id %}" class="text-yellow-400 hover:underline">Unlist</a>
+                    {% else %}
+                        <a href="{% url 'admin_product_toggle' product.id %}" class="text-green-400 hover:underline">List</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center py-6 text-gray-400">No products found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="flex justify-between items-center text-gray-400 text-sm mt-4">
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="flex space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"
+               class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Prev</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
+            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}"
+                   class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"
+               class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Next</a>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Add Product Modal -->
+
+    <!-- Modal Background -->
+    <div x-show="openAddModal"
+         class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+         x-transition>
+        <div class="bg-[#1A1A1A] p-6 rounded-2xl w-[28rem] max-h-[90vh] shadow-xl relative border border-border overflow-y-auto">
+
+            <!-- Close Button -->
+            <button @click="openAddModal = false"
+                    class="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl">&times;</button>
+
+            <h2 class="text-xl font-semibold mb-5 text-white border-b border-border pb-2">
+                Add New Product
+            </h2>
+
+            <form method="POST" action="{% url 'admin_product_add' %}" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                
+                <!-- Form Fields -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Price</label>
+                            {{ form.price }}
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Old Price</label>
+                            {{ form.old_price }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Color</label>
+                            {{ form.color }}
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Category</label>
+                            {{ form.category }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        {{ form.is_active }}
+                        <label class="text-sm text-gray-400">Is Active</label>
+                    </div>
+                </div>
+
+                <div>
+                <label class="block text-sm mb-1 text-gray-300">Product Images (Max 3)</label>
+                <input type="file" name="images" accept="image/*" multiple
+                    class="w-full p-2 rounded bg-[#1F1F1F] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600">
+                <p class="text-xs text-gray-400 mt-1">You can upload up to 3 images.</p>
+                </div>
+
+
+                <!-- Buttons -->
+                <div class="flex justify-end space-x-2 pt-5">
+                    <button type="button"
+                            @click="openAddModal = false"
+                            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md text-white transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-white transition">
+                        Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

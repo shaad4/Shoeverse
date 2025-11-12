@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     #customapps
     'users.apps.UsersConfig',
     'adminpanel',
+    'products',
+    'shop',
+    
 ]
 
 #change the deafult auth user

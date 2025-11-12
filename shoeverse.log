@@ -130,3 +130,16 @@
 [INFO] 2025-11-11 14:15:50,166 users: User logged in after OTP verification: arshad.kannankuziyil@gmail.com
 [INFO] 2025-11-11 15:15:55,600 users: Admin login attempt: admin@shoeverse.com
 [INFO] 2025-11-11 15:15:56,235 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-12 13:32:40,723 users: Signup attempt: email=heyyanudev@gmail.com, referral=
+[INFO] 2025-11-12 13:32:41,435 users: User created (not verified): heyyanudev@gmail.com
+[INFO] 2025-11-12 13:32:41,440 users: OTP generated for heyyanudev@gmail.com: 513590
+[INFO] 2025-11-12 13:32:45,481 users: OTP email sent successfully to heyyanudev@gmail.com
+[INFO] 2025-11-12 13:32:45,483 users: OTP email sent to heyyanudev@gmail.com
+[INFO] 2025-11-12 13:32:45,540 users: OTP verification for user: heyyanudev@gmail.com
+[INFO] 2025-11-12 13:33:04,633 users: OTP verification for user: heyyanudev@gmail.com
+[INFO] 2025-11-12 13:33:04,641 users: OTP verified successfully for heyyanudev@gmail.com
+[INFO] 2025-11-12 13:33:04,653 users: User logged in after OTP verification: heyyanudev@gmail.com
+[INFO] 2025-11-12 13:33:46,312 users: Admin login attempt: 
+[WARNING] 2025-11-12 13:33:46,943 users: Admin login failed: invalid credentials 
+[INFO] 2025-11-12 13:33:57,210 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-12 13:33:57,828 users: Admin logged in: admin@shoeverse.com

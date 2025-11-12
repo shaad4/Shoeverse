@@ -7,6 +7,7 @@
     <title>Shoeverse Admin Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     <script>
         tailwind.config = {
@@ -38,6 +39,17 @@
 
     {% include 'adminpanel/partials/navbar.html' %}
     {% include 'adminpanel/partials/sidebar.html' %}
+    
+    {% if messages %}
+    <div class="space-y-2 mb-4">
+        {% for message in messages %}
+            <div class="p-3 rounded-md {{ message.tags }} 
+                        {% if message.tags == 'success' %}bg-green-700{% elif message.tags == 'error' %}bg-red-700{% else %}bg-gray-700{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main class="fixed top-16 left-80 right-0 h-[calc(100vh-4rem)] overflow-y-auto bg-dark-green">
         <div class="p-6">
