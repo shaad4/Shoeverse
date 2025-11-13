@@ -21,6 +21,7 @@ urlpatterns = [
     path("products/<int:product_id>/variants/<int:variant_id>/edit/", views.product_variant_edit_view, name="admin_product_variant_edit"),
     path("products/<int:product_id>/variants/<int:variant_id>/delete/", views.product_variant_delete_view, name="admin_product_variant_delete"),
 
+    path("logout/", views.admin_logout_view, name="admin_logout"),
 
 
 

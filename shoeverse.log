@@ -143,3 +143,43 @@
 [WARNING] 2025-11-12 13:33:46,943 users: Admin login failed: invalid credentials 
 [INFO] 2025-11-12 13:33:57,210 users: Admin login attempt: admin@shoeverse.com
 [INFO] 2025-11-12 13:33:57,828 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-12 16:01:47,639 users: Signup attempt: email=manhargurukkal2@gmail.com, referral=GKG9QBQGJ1
+[WARNING] 2025-11-12 16:01:47,915 users: Signup failed: Numeric-only password (manhargurukkal2@gmail.com)
+[INFO] 2025-11-12 16:02:41,676 users: Signup attempt: email=manhargurukkal2@gmail.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-12 16:02:41,738 users: User manhargurukkal2@gmail.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-12 16:02:42,703 users: User created (not verified): manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:02:42,714 users: OTP generated for manhargurukkal2@gmail.com: 167302
+[INFO] 2025-11-12 16:02:54,577 users: OTP email sent successfully to manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:02:54,578 users: OTP email sent to manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:02:54,686 users: OTP verification for user: manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:03:22,166 users: OTP verification for user: manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:03:22,171 users: OTP verified successfully for manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:03:22,181 users: User logged in after OTP verification: manhargurukkal2@gmail.com
+[INFO] 2025-11-12 16:04:03,233 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-12 16:04:04,161 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 04:00:16,762 users: Login attempt for email: sample@sample.com
+[WARNING] 2025-11-13 04:00:18,068 users: Login failed for email: sample@sample.com
+[INFO] 2025-11-13 04:00:26,350 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 04:00:27,015 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-13 04:16:19,945 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 04:16:20,622 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-13 06:37:35,641 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-13 06:37:36,288 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 06:45:03,788 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 06:45:04,452 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-13 06:45:23,875 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-13 06:45:24,503 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 06:46:59,854 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-13 06:47:00,520 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 06:47:14,581 users: Admin login attempt: 
+[WARNING] 2025-11-13 06:47:15,247 users: Admin login failed: invalid credentials 
+[INFO] 2025-11-13 06:47:23,610 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-13 06:47:24,286 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 06:48:35,302 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 06:48:35,973 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-13 07:22:36,182 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 07:22:36,854 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-13 07:51:30,204 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-13 07:51:30,831 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-13 09:19:42,002 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-13 09:19:42,684 users: User logged in successfully: noushidhk@gmail.com

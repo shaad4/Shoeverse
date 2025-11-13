@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 import logging
@@ -401,3 +401,9 @@ def product_variant_delete_view(request, product_id, variant_id):
     messages.success(request, f"Variant (Size {variant.size}) deleted successfully!")
 
     return redirect("admin_product_variants", product_id=product.id)
+
+
+def admin_logout_view(request):
+    logout(request)
+    messages.success(request, "Logged out successfully!")
+    return redirect("admin_login")

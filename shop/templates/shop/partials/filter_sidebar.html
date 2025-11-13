@@ -1,0 +1,157 @@
+<div class="space-y-6">
+
+    <!-- FILTER PANEL -->
+    <div class="bg-panel border border-border-soft/60 rounded-[20px] overflow-hidden shadow-panel">
+
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-border-soft/40">
+            <div class="flex items-center justify-between">
+                <span class="text-subheading font-semibold text-white">Filters</span>
+
+                <!-- CLEAR ALL resets all filters -->
+                <a href="{% url 'shop_products' %}"
+                   class="text-small text-muted hover:text-white transition-colors duration-200">
+                    Clear all
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="GET" action="" class="px-6 py-5 space-y-6 text-body text-white">
+
+            <!-- CATEGORY -->
+            <fieldset class="space-y-4">
+                <legend class="text-subheading font-semibold">Category</legend>
+                <div class="flex flex-wrap gap-3">
+
+                    {% for cat in categories %}
+                    <label 
+                        class="chip inline-flex items-center gap-2 rounded-button px-4 py-2 
+                        {% if active_category == cat %} bg-card-dark text-white {% else %} bg-panel text-white {% endif %}
+                        text-small font-medium cursor-pointer transition-all duration-200 hover:bg-primary/20 border border-transparent"
+                    >
+                        <!-- Linking with correct id & for is IMPORTANT -->
+                        <input 
+                            type="radio"
+                            name="category"
+                            id="cat_{{ cat }}"
+                            value="{{ cat }}"
+                            class="hidden"
+                            {% if active_category == cat %} checked {% endif %}
+                            onchange="this.form.submit()"
+                        >
+                        {{ cat|title }}
+                    </label>
+                    {% endfor %}
+
+                </div>
+            </fieldset>
+
+            <!-- SIZE FILTER -->
+            <fieldset class="space-y-4">
+                <legend class="text-subheading font-semibold">Size</legend>
+                <div class="flex flex-wrap gap-2">
+
+                    {% for size in sizes %}
+                    <label 
+                        class="chip rounded-button px-4 py-2 cursor-pointer
+                        {% if size|stringformat:'s' in active_sizes %}
+                            bg-card-dark border-transparent text-white
+                        {% else %}
+                            bg-panel border border-border-soft text-white
+                        {% endif %}
+                        text-small font-medium hover:border-primary hover:bg-primary/10 transition-all duration-200"
+                    >
+                        <!-- Auto-submit size filter -->
+                        <input 
+                            type="checkbox" 
+                            name="size" 
+                            value="{{ size }}" 
+                            class="hidden"
+                            {% if size|stringformat:'s' in active_sizes %} checked {% endif %}
+                            onchange="this.form.submit()"
+                        >
+                        UK {{ size }}
+                    </label>
+                    {% endfor %}
+
+                </div>
+            </fieldset>
+
+            <!-- COLOR FILTER (Search bar) -->
+            <fieldset class="space-y-4">
+                <legend class="text-subheading font-semibold">Color</legend>
+
+                <div class="flex items-center gap-3 bg-panel border border-border-soft rounded-button px-4 py-2">
+                    <span class="text-small text-muted">🎨</span>
+                    <input 
+                        type="text" 
+                        name="color"
+                        value="{{ active_color }}"
+                        placeholder="Search color (e.g., black, red)"
+                        class="w-full bg-transparent text-white placeholder:text-muted text-small focus:outline-none"
+                    >
+                </div>
+            </fieldset>
+
+            <!-- PRICE RANGE -->
+            <fieldset class="space-y-4">
+                <legend class="text-subheading font-semibold">Price Range</legend>
+
+                <div class="flex flex-wrap items-center gap-3">
+
+                    <div class="flex items-center gap-2 bg-panel border border-border-soft rounded-button px-4 py-2">
+                        <span class="text-small text-muted">₹</span>
+                        <input 
+                            type="number" 
+                            name="min_price" 
+                            min="0" 
+                            value="{{ min_price }}"
+                            placeholder="2499"
+                            class="w-20 bg-transparent text-white placeholder:text-muted text-small focus:outline-none"
+                        >
+                    </div>
+
+                    <span class="text-muted">to</span>
+
+                    <div class="flex items-center gap-2 bg-panel border border-border-soft rounded-button px-4 py-2">
+                        <span class="text-small text-muted">₹</span>
+                        <input 
+                            type="number" 
+                            name="max_price" 
+                            min="0" 
+                            value="{{ max_price }}"
+                            placeholder="15999"
+                            class="w-24 bg-transparent text-white placeholder:text-muted text-small focus:outline-none"
+                        >
+                    </div>
+
+                </div>
+            </fieldset>
+
+            <button type="submit"
+                class="w-full bg-primary text-dark-surface font-bold text-small h-12 rounded-button hover:opacity-90 active:scale-[0.99] transition-all duration-200">
+                Apply Filters
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- HELP BOX -->
+    <div class="bg-panel border border-border-soft/60 rounded-[20px] px-6 py-5 shadow-panel">
+        <h2 class="text-subheading font-semibold mb-4">Need Help?</h2>
+        <p class="text-small text-muted leading-relaxed">
+            Chat with our stylists to find your perfect fit and get tailored recommendations crafted for your next adventure.
+        </p>
+        <button type="button"
+            class="mt-4 inline-flex items-center justify-center gap-2 bg-card-dark text-white text-small font-semibold px-4 h-10 rounded-button hover:bg-primary/20 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16h6a7 7 0 107-7V9a2 2 0 00-2-2h-1"></path>
+            </svg>
+            Start a chat
+        </button>
+    </div>
+
+</div>

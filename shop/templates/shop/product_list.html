@@ -1,0 +1,153 @@
+
+{% extends "shop/base_shop.html" %}
+{% load static %}
+{% block title %}Products - Shoeverse{% endblock %}
+
+{% block content %}
+
+<section class="max-w-container mx-auto px-5 md:px-10 space-y-8">
+
+    <!-- Header -->
+    <header class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mt-10">
+        <div class="flex flex-col gap-2">
+            <p class="text-sm uppercase tracking-[0.24em] text-muted">Discover</p>
+            <h1 class="text-3xl font-bold">
+                {% if category %}
+                    Featured Shoes for {{ category|title }}
+                {% else %}
+                    Featured Shoes
+                {% endif %}
+            </h1>
+            <p class="text-body text-muted max-w-2xl">
+                Browse the latest drops and high-performance footwear.
+            </p>
+        </div>
+    </header>
+
+    <div class="grid lg:grid-cols-[320px_1fr] gap-6 xl:gap-8">
+
+        <!-- FILTER SIDEBAR -->
+        {% include "shop/partials/filter_sidebar.html" %}
+
+        <!-- PRODUCTS GRID -->
+        <div class="space-y-6">
+
+            <h2 class="text-2xl font-semibold text-white">Featured Shoes</h2>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+                {% for product in products %}
+                <article class="flex flex-col bg-panel border border-border-soft rounded-[20px] overflow-hidden">
+
+                    <!-- Product Image -->
+                    <div class="relative w-full h-56 md:h-64 lg:h-72 bg-card-dark/60 overflow-hidden rounded-t-[20px]">
+
+                        {% if product.images.first %}
+                            <img 
+                                src="{{ product.images.first.image.url }}"
+                                class="w-full h-full object-cover object-center"
+                                alt="{{ product.name }}"
+                            >
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-muted">
+                                No Image
+                            </div>
+                        {% endif %}
+
+                        <!-- Wishlist Button - Top Right -->
+                        <button 
+                            class="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full 
+                                bg-panel/70 backdrop-blur border border-border-soft hover:bg-primary/20 transition"
+                            aria-label="Wishlist"
+                        >
+                            <img src="{% static 'images/icon-heart.svg' %}" class="w-5 h-5">
+                        </button>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="flex flex-col px-6 pt-5 pb-6 gap-3">
+
+                        <h3 class="text-xl font-semibold text-white">{{ product.name }}</h3>
+                        <p class="text-small text-muted">{{ product.color }}</p>
+
+                        <!-- PRICE AREA -->
+                        <div class="mt-2 space-y-1">
+
+                            <!-- Current Price -->
+                            <span class="text-lg font-semibold text-white">₹ {{ product.price }}</span>
+
+                            <!-- Future: Offer price -->
+                            {% if product.old_price %}
+                            <span class="text-small text-muted line-through block">
+                                ₹ {{ product.old_price }}
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                        <!-- Add to Cart Button -->
+                        <button 
+                            class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
+                                bg-primary text-dark font-semibold hover:opacity-90 transition">
+                            <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
+                            Add to Cart
+                        </button>
+
+                    </div>
+
+                </article>
+
+
+                {% empty %}
+                    <p class="text-muted">No products found.</p>
+                {% endfor %}
+
+            </div>
+
+            <!-- PAGINATION -->
+            {% if page_obj.has_other_pages %}
+            <nav class="flex items-center justify-center gap-4 pt-6" aria-label="Pagination">
+
+                <!-- Previous -->
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}"
+                       class="w-12 h-12 flex items-center justify-center rounded-button 
+                              border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
+                        &lt;
+                    </a>
+                {% else %}
+                    <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                                border border-border-soft/40 text-gray-600 cursor-not-allowed">
+                        &lt;
+                    </span>
+                {% endif %}
+
+                <!-- Current Page -->
+                <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                            bg-primary text-dark font-bold border border-transparent">
+                    {{ page_obj.number }}
+                </span>
+
+                <!-- Next -->
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}"
+                       class="w-12 h-12 flex items-center justify-center rounded-button 
+                              border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
+                        &gt;
+                    </a>
+                {% else %}
+                    <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                                border border-border-soft/40 text-gray-600 cursor-not-allowed">
+                        &gt;
+                    </span>
+                {% endif %}
+
+            </nav>
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

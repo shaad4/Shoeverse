@@ -1,8 +1,55 @@
-<nav class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-dark" role="navigation" aria-label="Main navigation">
+<!-- <nav class="fixed top-0 left-0 right-0 z-50 border-b border-border bg-dark" role="navigation" aria-label="Main navigation">
     <div class="max-w-container mx-auto px-5 md:px-10">
         <div class="flex items-center justify-between h-16 py-3">
 
-            <!-- Logo -->
+            {% load static %}
+<header class="fixed top-0 left-0 right-0 px-6 py-4 bg-dark-green border-b border-border z-50">
+    <div class="flex items-center justify-between">
+        
+        
+        <div class="flex items-center gap-4">
+            <div class="w-5 h-5">
+                <img src="{% static 'images/logo.svg' %}" class="w-full h-full" />
+            </div>
+            <h1 class="text-lg font-bold text-white">Shoeverse Admin Dashboard</h1>
+        </div>
+
+       
+        {% if request.user.is_authenticated and request.user.role == "admin" %}
+        <div class="flex items-center gap-4">
+
+           
+            <form method="GET" action="{% url 'admin_product_list' %}">
+                <input 
+                    type="text" 
+                    name="q" 
+                    placeholder="Search..." 
+                    class="bg-[#1F1F1F] border border-border px-3 py-1.5 rounded-md text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+            </form>
+
+            
+            <div class="relative group">
+                <button class="bg-card-dark p-2 rounded-full border border-border hover:bg-primary/20 transition">
+                    {% if request.user.profileImage %}
+                    <img src="{{ request.user.profileImage.url }}" class="w-7 h-7 rounded-full object-cover" />
+                    {% else %}
+                    <img src="{% static 'images/icon-profile.svg' %}" class="w-6 h-6" />
+                    {% endif %}
+                </button>
+
+                
+                <div class="absolute right-0 mt-2 w-40 bg-dark-green border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <a href="#" class="block px-4 py-2 text-white hover:bg-primary/20">Profile</a>
+                    <a href="{% url 'admin_logout' %}" class="block px-4 py-2 text-red-400 hover:bg-red-700/30">Logout</a>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+</header>
             <div class="flex items-center gap-4">
                 <div class="w-4 h-4 flex-shrink-0">
                     <img src="/static/images/logo.svg" alt="Shoeverse Logo" class="w-full h-full">
@@ -10,14 +57,14 @@
                 <a href="/" class="text-lg font-bold text-white hover:opacity-80 transition-opacity">Shoeverse</a>
             </div>
 
-            <!-- Desktop Navigation -->
+           
             <div class="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
                 <a href="#" class="text-small font-medium text-white hover:text-primary transition-colors">Men</a>
                 <a href="#" class="text-small font-medium text-white hover:text-primary transition-colors">Women</a>
                 <a href="#" class="text-small font-medium text-white hover:text-primary transition-colors">Kids</a>
             </div>
 
-            <!-- Right Actions -->
+           
             <div class="flex items-center gap-2">
                 <a href="/login/" class="bg-primary text-dark font-bold text-small px-4 py-2 h-10 rounded-button hover:opacity-90 transition">Login</a>
 
@@ -29,7 +76,7 @@
                     <img src="/static/images/icon-profile.svg" alt="" class="w-5 h-5">
                 </button>
 
-                <!-- Mobile Menu Button -->
+               
                 <button id="mobileMenuBtn" class="md:hidden bg-dark-green text-white p-2.5 h-10 w-10 rounded-button hover:opacity-90 transition" aria-label="Toggle menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -39,12 +86,113 @@
         </div>
     </div>
 
-    <!-- Mobile Menu -->
+   
     <div id="mobileMenu" class="hidden md:hidden border-t border-border bg-dark">
         <div class="max-w-container mx-auto px-5 py-4 space-y-3">
             <a href="#" class="block text-small font-medium text-white hover:text-primary transition py-2">Men</a>
             <a href="#" class="block text-small font-medium text-white hover:text-primary transition py-2">Women</a>
             <a href="#" class="block text-small font-medium text-white hover:text-primary transition py-2">Kids</a>
+        </div>
+    </div>
+</nav> -->
+
+{% load static %}
+
+<nav class="fixed top-0 left-0 right-0 z-50 border-b border-dark-green/30 bg-dark">
+    <div class="max-w-container mx-auto px-5 md:px-10">
+        <div class="flex items-center justify-between h-16 py-3">
+
+            <!-- LEFT: LOGO -->
+            <div class="flex items-center gap-4">
+                <div class="w-4 h-4 flex-shrink-0">
+                    <img src="{% static 'images/logo.svg' %}" alt="Shoeverse Logo" class="w-full h-full">
+                </div>
+                <a href="/" class="text-lg font-bold text-white hover:opacity-80 transition">Shoeverse</a>
+            </div>
+
+            <!-- CENTER: MENU LINKS -->
+            <div class="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+                <a href="{% url 'shop_category' 'men' %}" class="text-small font-medium text-white hover:text-primary transition">Men</a>
+                <a href="{% url 'shop_category' 'women' %}" class="text-small font-medium text-white hover:text-primary transition">Women</a>
+                <a href="{% url 'shop_category' 'kids' %}" class="text-small font-medium text-white hover:text-primary transition">Kids</a>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="flex items-center gap-3">
+
+                <!-- SHOW SEARCH ONLY WHEN LOGGED IN -->
+                {% if request.user.is_authenticated %}
+                <form method="GET" action="{% url 'shop_search' %}" class="hidden md:block">
+                    <input type="text" name="q"
+                        placeholder="Search shoes..."
+                        class="bg-dark-green/60 border border-border-light px-4 py-2 h-10 rounded-button text-white text-small focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                </form>
+                {% endif %}
+
+                <!-- CART ALWAYS VISIBLE -->
+                <a href="#"
+                   class="bg-dark-green text-white p-2.5 h-10 w-10 rounded-button hover:opacity-90 transition">
+                    <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5"/>
+                </a>
+
+                <!-- BEFORE LOGIN → SHOW LOGIN BUTTON -->
+                {% if not request.user.is_authenticated %}
+                <a href="{% url 'login' %}"
+                   class="bg-primary text-dark font-bold text-small px-4 h-10 flex items-center rounded-button hover:opacity-90 transition">
+                    Login
+                </a>
+                {% endif %}
+
+                <!-- AFTER LOGIN → SHOW PROFILE ICON -->
+                {% if request.user.is_authenticated %}
+                <!-- Wishlist Icon -->
+                <a href="#"
+                class="bg-dark-green text-white p-2.5 h-10 w-10 rounded-button 
+                        hover:opacity-90 transition flex items-center justify-center"
+                aria-label="Wishlist">
+                    <img src="{% static 'images/icon-heart.svg' %}" 
+                        alt="Wishlist" 
+                        class="w-5 h-5">
+                </a>
+
+                <div class="relative group">
+                    <button class="bg-dark-green h-10 w-10 rounded-full flex items-center justify-center border border-border hover:bg-primary/20 transition">
+                        {% if request.user.profileImage %}
+                            <img src="{{ request.user.profileImage.url }}" 
+                                class="h-9 w-9 rounded-full object-cover border border-dark" />
+                        {% else %}
+                            <img src="{% static 'images/icon-profile.svg' %}" class="h-5 w-5" />
+                        {% endif %}
+                    </button>
+
+
+                    <!-- Dropdown -->
+                    <div class="absolute right-0 mt-2 w-40 bg-dark-green border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        <a href="#" class="block px-4 py-2 text-white hover:bg-primary/20">My Account</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-400 hover:bg-red-700/30">Logout</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- MOBILE MENU BUTTON -->
+                <button id="mobileMenuBtn"
+                    class="md:hidden bg-dark-green text-white p-2.5 h-10 w-10 rounded-button hover:opacity-90 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu" class="hidden md:hidden border-t border-dark-green/30 bg-dark">
+        <div class="px-5 py-4 space-y-3">
+            <a href="#" class="block text-small font-medium text-white hover:text-primary py-2">Men</a>
+            <a href="#" class="block text-small font-medium text-white hover:text-primary py-2">Women</a>
+            <a href="#" class="block text-small font-medium text-white hover:text-primary py-2">Kids</a>
         </div>
     </div>
 </nav>
