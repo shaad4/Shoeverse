@@ -1,9 +1,36 @@
 <nav class="text-muted text-sm mb-4">
     {% for b in breadcrumbs %}
-        {% if not forloop.last %}
-            <a href="{{ b.url }}" class="hover:text-white">{{ b.label }}</a> /
+        
+        {% if b.url %}
+            <a href="
+                {% if b.url|slice:':1' == '/' %}
+                    {{ b.url }}
+                {% else %}
+                    {% if b.args %}
+                        {% url b.url b.args.0 %}
+                    {% else %}
+                        {% url b.url %}
+                    {% endif %}
+                {% endif %}
+            " class="hover:text-white">
+
+                {% if b.label %}
+                    {{ b.label }}
+                {% elif b.name %}
+                    {{ b.name }}
+                {% endif %}
+
+            </a>
         {% else %}
-            <span class="text-white">{{ b.label }}</span>
+            <span class="text-white">
+                {% if b.label %}
+                    {{ b.label }}
+                {% elif b.name %}
+                    {{ b.name }}
+                {% endif %}
+            </span>
         {% endif %}
+
+        {% if not forloop.last %} / {% endif %}
     {% endfor %}
 </nav>

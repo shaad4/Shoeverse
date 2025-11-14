@@ -238,17 +238,28 @@ def product_list_view(request):
 
     form = ProductForm()
 
-    context = {
-        "page_obj" : page_obj,
-        "query" : query,
-        "breadcrumb" : [
-            {"name" : "Dashboard", "url": "admin_dashboard"},
-            {"name" : "Product Management", "url": "admin_product_list"},
+    # context = {
+    #     "page_obj" : page_obj,
+    #     "query" : query,
+    #     "breadcrumbs" : [
+    #         {"name" : "Dashboard", "url": "admin_dashboard"},
+    #         {"name" : "Product Management", "url": "admin_product_list"},
 
+    #     ],
+    #     "active_page": "products",
+    #      "form": form, 
+    # }
+    context = {
+        "page_obj": page_obj,
+        "query": query,
+        "breadcrumbs": [
+            {"name": "Dashboard", "url": "admin_dashboard"},
+            {"name": "Product Management", "url": "admin_product_list"},
         ],
         "active_page": "products",
-         "form": form, 
+        "form": form,
     }
+
     
     return  render(request, "adminpanel/products/product_list.html", context)
     
@@ -282,16 +293,28 @@ def product_variant_list_view(request, product_id):
 
     form = ProductVarientForm()
 
+    # context = {
+    #     "product" : product,
+    #     "variants":  variants,
+    #     "form" : form,
+    #     "breadcrumbs" : [
+    #         {"name":"Dashboard", "url":"admin_dashboard"},
+    #         {"name":"Products", "url" :"admin_product_list"},
+    #         {"name":f"Variants of {product.name}", "url":"admin_product_variants"},
+    #     ],
+    # }
     context = {
-        "product" : product,
-        "variants":  variants,
-        "form" : form,
-        "breadcrumb" : [
-            {"name":"Dashboard", "url":"admin_dashboard"},
-            {"name":"Products", "url" :"admin_product_list"},
-            {"name":f"Variants of {product.name}", "url":"admin_product_variants"},
+        "product": product,
+        "variants": variants,
+        "form": form,
+        "breadcrumbs": [
+            {"name": "Dashboard", "url": "admin_dashboard"},
+            {"name": "Products", "url": "admin_product_list"},
+            {"name": f"Variants of {product.name}", "url": "admin_product_variants", "args": [product.id]},
         ],
     }
+
+
 
     return render(request, "adminpanel/products/product_variant_list.html", context)
 
@@ -348,17 +371,30 @@ def product_edit_view(request, product_id):
     else:
         form = ProductForm(instance=product)
 
+    # context = {
+    #     "form" : form,
+    #     "product" : product,
+    #     "existing_images":existing_images,
+    #     "breadcrumbs": [
+    #         {"name": "Dashboard", "url": "admin_dashboard"},
+    #         {"name": "Product Management", "url": "admin_product_list"},
+    #         {"name": f"Edit {product.name}", "url": "admin_product_edit"},
+    #     ],
+    #     "active_page":"products",
+    # }
+
     context = {
-        "form" : form,
-        "product" : product,
-        "existing_images":existing_images,
-        "breadcrumb": [
+        "form": form,
+        "product": product,
+        "existing_images": existing_images,
+        "breadcrumbs": [
             {"name": "Dashboard", "url": "admin_dashboard"},
             {"name": "Product Management", "url": "admin_product_list"},
-            {"name": f"Edit {product.name}", "url": "admin_product_edit"},
+            {"name": f"Edit {product.name}", "url": "admin_product_edit", "args": [product.id]},
         ],
-        "active_page":"products",
+        "active_page": "products",
     }
+
 
     return render(request, "adminpanel/products/product_edit.html",  context)
 

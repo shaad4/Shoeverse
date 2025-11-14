@@ -16,23 +16,42 @@
 
     <!-- Existing Images -->
     <div>
-        <label class="block text-sm mb-1 text-gray-300">Existing Images</label>
-        <div class="flex flex-wrap gap-4">
-            {% for img in existing_images %}
-            <div class="relative group">
-                <img src="{{ img.image.url }}" alt="{{ product.name }}" 
-                     class="w-24 h-24 object-cover rounded border border-border shadow">
-                <label class="absolute top-1 right-1 bg-red-700 text-xs px-1 py-[2px] rounded text-white hidden group-hover:block cursor-pointer">
-                    <input type="checkbox" name="remove_images" value="{{ img.id }}" class="hidden">
-                    ✕
-                </label>
-            </div>
-            {% empty %}
-            <p class="text-gray-400 text-sm">No images uploaded.</p>
-            {% endfor %}
+    <label class="block text-sm mb-1 text-gray-300">Existing Images</label>
+    <div class="flex flex-wrap gap-4">
+
+        {% for img in existing_images %}
+        <div class="relative group" id="image-{{ img.id }}">
+            <img src="{{ img.image.url }}" alt="{{ product.name }}" 
+                 class="w-24 h-24 object-cover rounded border border-border shadow">
+
+            <button type="button"
+                    class="absolute top-1 right-1 bg-red-700 text-xs px-1 py-[2px] text-white rounded hidden group-hover:block"
+                    onclick="removeImage({{ img.id }})">
+                ✕
+            </button>
+
+            <!-- HIDDEN CHECKBOX for backend -->
+            <input type="checkbox" class="hidden" name="remove_images" id="chk-{{ img.id }}" value="{{ img.id }}">
         </div>
-        <p class="text-xs text-gray-500 mt-1">Hover an image and click ✕ to remove.</p>
-    </div>
+        {% endfor %}
+
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Hover an image and click ✕ to remove.</p>
+        </div>
+
+        <script>
+        function removeImage(id) {
+            const chk = document.getElementById("chk-" + id);
+            const box = document.getElementById("image-" + id);
+
+            chk.checked = true;                // mark for deletion
+            box.style.opacity = "0.3";         // visual feedback
+            box.style.border = "2px solid red";
+        }
+        </script>
+
+
+
 
     <!-- Upload New Images -->
     <div>

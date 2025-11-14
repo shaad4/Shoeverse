@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,  get_object_or_404, redirect
 from products.models import Product
 from django.core.paginator import Paginator
 # Create your views here.
@@ -89,3 +89,46 @@ def product_list_view(request, category=None):
     return render(request, "shop/product_list.html", context)
     
 
+
+def  product_detail_view(request, product_id):
+
+    #get the product
+    product = get_object_or_404(
+        Product.objects.prefetch_related("images","variants"),
+        id=product_id
+    )
+
+    if not product.is_active:
+        return redirect("shop_products")
+    
+    #fetching all the product variantes
+    variants = product.variants.filter(is_active=True).order_by("size")
+
+    #fetch images
+    images = product.images.all().order_by("-is_primary","id")
+
+    #related_products
+    related_products = Product.objects.filter(
+        category=product.category,
+        is_active = True,
+    ).exclude(id=product.id)[:6]
+
+    #stock check
+    total_stock = sum(v.stock for v in variants)
+    is_out_of_stock = total_stock == 0
+
+    #cart
+    if request.GET.get("action") == "add_to_cart":
+        if is_out_of_stock:
+            return redirect("shop_products")
+        ##cart logics later##
+
+    context = {
+        "product" : product,
+        "variants" : variants,
+        "images" : images,
+        "related_products" : related_products,
+        "is_out_of_stock" : is_out_of_stock,
+    }
+
+    return render(request, "shop/product_detail.html", context)

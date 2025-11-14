@@ -19,6 +19,10 @@ class Product(models.Model):
     color  = models.CharField(max_length=50)
     category  = models.CharField(max_length=10, choices=CATEGORY_CHOICE)
     is_active = models.BooleanField(default=True)
+
+    highlights = models.TextField(blank=True, null=True)         # newline separated list
+    specifications = models.TextField(blank=True, null=True)     # key:value list
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

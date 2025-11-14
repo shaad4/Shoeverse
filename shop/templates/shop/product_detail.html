@@ -1,0 +1,342 @@
+{% extends "shop/base_shop.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Shoeverse{% endblock %}
+
+{% block content %}
+
+<section class="max-w-container mx-auto px-5 md:px-10 lg:px-20 pt-10 pb-20 text-white">
+
+    <!-- =======================
+         BREADCRUMB
+    ======================== -->
+    <nav aria-label="breadcrumb" class="text-small text-muted mb-6 uppercase tracking-[0.18em]">
+        <ol class="flex items-center gap-2">
+            <li><a href="{% url 'shop_products' %}" class="hover:text-primary">Products</a></li>
+            <li>/</li>
+            <li><a href="{% url 'shop_products' %}?category={{ product.category|lower }}" 
+                   class="hover:text-primary">
+                {{ product.category|title }}
+            </a></li>
+            <li>/</li>
+            <li class="text-white">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+
+
+    <!-- =======================
+         PRODUCT MAIN GRID
+    ======================== -->
+    <div class="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16">
+
+        <!-- LEFT: IMAGE GALLERY -->
+            <div class="space-y-6">
+
+                <!-- MAIN IMAGE -->
+                <div id="mainImageWrapper"
+                    class="relative aspect-[4/4] rounded-[20px] overflow-hidden bg-card-dark flex items-center justify-center">
+                    
+                    <img id="mainImage"
+                        src="{{ images.0.image.url }}"
+                        alt="{{ product.name }}"
+                        class="w-full h-full object-cover transition-all duration-300">
+
+                     <!-- ZOOM BUTTON -->
+                    <button id="zoomBtn"
+                        class="absolute top-4 right-4 bg-dark-green/80 text-white text-sm px-3 py-1.5 rounded-full border border-border-soft hover:bg-primary/20 transition">
+                            🔍 
+                    </button>
+                </div>
+
+               
+
+                <!-- THUMBNAILS -->
+                <div class="grid grid-cols-3 gap-4">
+                    {% for img in images %}
+                    <button 
+                        class="thumbBtn rounded-[14px] overflow-hidden bg-panel border border-border-soft hover:border-primary transition p-2"
+                        onclick="swapImage('{{ img.image.url }}', this)">
+                        
+                        <img src="{{ img.image.url }}"
+                            class="w-full h-full object-cover rounded-md">
+                    </button>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <!-- IMAGE SWAP SCRIPT -->
+            <script>
+            function swapImage(newSrc, thumbElement) {
+                const mainImage = document.getElementById("mainImage");
+                const buttons = document.querySelectorAll(".thumbBtn");
+
+                // Update main image
+                mainImage.src = newSrc;
+
+                // Reset borders
+                buttons.forEach(btn => btn.classList.remove("border-primary"));
+
+                // Highlight active thumbnail
+                thumbElement.classList.add("border-primary");
+            }
+            </script>
+
+
+
+        <!-- RIGHT: PRODUCT INFO -->
+        <div class="flex flex-col gap-8">
+
+            <!-- TITLE + RATINGS -->
+            <div class="space-y-3">
+                <h1 class="text-4xl font-bold">{{ product.name }}</h1>
+
+                <div class="flex items-center gap-3 text-small text-muted">
+                    <div class="flex items-center gap-1 text-primary">
+                        ⭐ <span>4.5</span>
+                    </div>
+                    <span>128 Reviews</span>
+                </div>
+
+                <p class="text-muted max-w-xl">{{ product.description }}</p>
+            </div>
+
+
+
+            <!-- PRICE -->
+            <div class="flex items-baseline gap-4">
+                <p class="text-3xl font-semibold text-primary">₹ {{ product.price }}</p>
+
+                {% if product.old_price %}
+                <p class="line-through text-muted">₹ {{ product.old_price }}</p>
+                {% endif %}
+            </div>
+
+
+
+            <!-- COLOR Detail -->
+            {% if product.color %}
+            <div class="space-y-2">
+                <p class="uppercase tracking-widest text-small text-muted">Color</p>
+
+                <div class="flex items-center gap-2">
+                    <!-- Optional color circle (auto from name if available later) -->
+                    <span class="inline-block h-4 w-4 rounded-full bg-panel border border-border-soft"></span>
+
+                    <span class="text-body text-white font-medium">
+                        {{ product.color|title }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+
+
+
+            <!-- SIZE OPTIONS -->
+            <div class="space-y-3">
+                <p class="uppercase tracking-widest text-small text-muted">Size</p>
+
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    {% for size in variants %}
+                    <button class="rounded-button py-3 bg-panel border border-border-soft text-small hover:border-primary transition">
+                        UK {{ size }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+
+
+            <!-- QUANTITY + BUTTONS -->
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+    
+                <!-- QUANTITY BOX -->
+                <div>
+                    <p class="uppercase text-small tracking-widest text-muted mb-2">Quantity</p>
+                    <div class="h-12 flex items-center justify-between bg-panel border border-border-soft rounded-button px-4 w-36">
+                        <button class="text-white text-xl">−</button>
+                        <span>1</span>
+                        <button class="text-primary text-xl font-bold">+</button>
+                    </div>
+                </div>
+
+                <!-- ADD TO CART -->
+                <button class="flex-1 h-12 bg-primary text-dark font-semibold rounded-button hover:opacity-90 transition w-full sm:w-auto">
+                    Add to Cart
+                </button>
+
+                <!-- WISHLIST -->
+                <button class="h-12 w-12 flex items-center justify-center rounded-button border border-border-soft hover:border-primary hover:bg-primary/10 transition">
+                    <img src="{% static 'images/icon-heart.svg' %}" class="w-6 h-6" />
+                </button>
+            </div>
+
+
+
+
+            <!-- HIGHLIGHTS & SPECS -->
+            <div class="grid md:grid-cols-2 gap-6 bg-panel border border-border-soft rounded-[20px] p-6">
+
+                <div>
+                    <h2 class="text-heading font-semibold mb-4">Highlights</h2>
+                    {% if product.highlights %}
+                    <ul class="space-y-2 text-small text-muted">
+                        {% for item in product.highlights.splitlines %}
+                            {% if item.strip %}
+                            <li>{{ item }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                </div>
+
+                <div>
+                    <h2 class="text-heading font-semibold mb-4">Specifications</h2>
+                    {% if product.specifications %}
+                    <div>
+                        <h2 class="text-heading font-semibold mb-4">Specifications</h2>
+
+                        <pre class="whitespace-pre-line text-small text-muted">
+                    {{ product.specifications }}
+                        </pre>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <!-- =======================
+         REVIEWS SECTION
+    ======================== -->
+    <section class="mt-20 border-t border-border-soft pt-14">
+        <h2 class="text-2xl font-semibold mb-6">Customer Reviews</h2>
+
+        <div class="grid lg:grid-cols-[300px_1fr] gap-10">
+
+            <!-- SUMMARY BOX -->
+            <div class="rounded-[20px] bg-panel border border-border-soft p-6">
+                <p class="text-small text-muted uppercase mb-1">Overall Rating</p>
+
+                <div class="flex items-end gap-3">
+                    <span class="text-5xl font-bold text-white">4.5</span>
+                    <span class="text-muted">/ 5</span>
+                </div>
+
+                <p class="text-small text-muted mt-4">
+                    Based on 128 reviews
+                </p>
+            </div>
+
+
+            <!-- REVIEWS LIST -->
+            <div class="space-y-6">
+
+                <div class="rounded-[20px] bg-panel border border-border-soft p-6">
+                    <h3 class="font-semibold">Emily Carter</h3>
+                    <p class="text-small text-muted">2 months ago</p>
+                    <p class="mt-4 text-muted text-small">
+                        These shoes are a game-changer! Super comfortable and great for long runs.
+                    </p>
+                </div>
+
+                <div class="rounded-[20px] bg-panel border border-border-soft p-6">
+                    <h3 class="font-semibold">David Lee</h3>
+                    <p class="text-small text-muted">3 months ago</p>
+                    <p class="mt-4 text-muted text-small">
+                        Great cushioning and stability. Could use slightly better breathability.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+
+    <!-- =======================
+         RELATED PRODUCTS
+    ======================== -->
+    <section class="mt-20">
+        <h2 class="text-2xl font-semibold mb-6">You Might Also Like</h2>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+            {% for p in related_products %}
+            <article class="group bg-panel border border-border-soft rounded-[16px] p-4 
+                            hover:border-primary/60 hover:shadow-[0_0_12px_rgba(56,224,120,0.15)] 
+                            transition-all duration-300 cursor-pointer">
+
+                <!-- IMAGE -->
+                <div class="aspect-[4/3] rounded-[14px] overflow-hidden bg-card-dark">
+                    <img src="{{ p.images.first.image.url }}" 
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+
+                <!-- CONTENT -->
+                <div class="mt-3 space-y-1.5">
+                    <p class="text-xs text-muted uppercase tracking-wide">{{ p.color }}</p>
+
+                    <h3 class="text-base font-semibold text-white leading-tight">
+                        {{ p.name }}
+                    </h3>
+
+                    <p class="text-primary font-semibold text-sm mt-1">
+                        ₹ {{ p.price }}
+                    </p>
+                </div>
+
+            </article>
+            {% endfor %}
+
+
+
+        </div>
+    </section>
+
+</section>
+
+<div id="zoomModal"
+     class="fixed inset-0 bg-black/80 backdrop-blur flex items-center justify-center hidden z-50">
+
+    <img id="zoomedImage"
+         src=""
+         class="max-w-[90%] max-h-[90%] object-contain rounded-[12px] shadow-xl">
+</div>
+
+<script>
+    // MAIN IMAGE
+    const mainImage = document.getElementById("mainImage");
+
+    // Thumbnail click → swap image
+    document.querySelectorAll(".thumb").forEach(thumb => {
+        thumb.addEventListener("click", () => {
+            mainImage.src = thumb.dataset.image;
+        });
+    });
+
+    // ZOOM
+    const zoomBtn = document.getElementById("zoomBtn");
+    const zoomModal = document.getElementById("zoomModal");
+    const zoomedImage = document.getElementById("zoomedImage");
+
+    zoomBtn.addEventListener("click", () => {
+        zoomedImage.src = mainImage.src;
+        zoomModal.classList.remove("hidden");
+    });
+
+    zoomModal.addEventListener("click", () => {
+        zoomModal.classList.add("hidden");
+    });
+</script>
+
+
+{% endblock %}
