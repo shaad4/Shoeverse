@@ -243,8 +243,5 @@ SOCIALACCOUNT_PROVIDERS = {
 
 
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    "https://www.googleapis.com/auth/userinfo.profile",
-    "https://www.googleapis.com/auth/userinfo.email",
-    "openid",
-]
+SESSION_COOKIE_AGE = 1800     # 30 minutes
+SESSION_SAVE_EVERY_REQUEST = True

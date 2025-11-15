@@ -271,6 +271,7 @@
         <div class="grid md:grid-cols-3 gap-6">
 
             {% for p in related_products %}
+            <a href="{% url 'product_detail' p.id %}">
             <article class="group bg-panel border border-border-soft rounded-[16px] p-4 
                             hover:border-primary/60 hover:shadow-[0_0_12px_rgba(56,224,120,0.15)] 
                             transition-all duration-300 cursor-pointer">
@@ -295,6 +296,7 @@
                 </div>
 
             </article>
+            </a>
             {% endfor %}
 
 

@@ -4,6 +4,8 @@
 
 <!-- Include breadcrumb -->
 {% include 'adminpanel/partials/breadcrumb.html' %}
+<div x-data="{ openAddModal: false, confirmOpen: false, confirmUrl: '', confirmText: '' }">
+
 <div x-data="{ openAddModal: false }">
 <!-- Header -->
 <div class="flex justify-between items-center mb-6">
@@ -98,10 +100,27 @@
                 <td class="px-6 py-4 text-center space-x-3">
                     <a href="{% url 'admin_product_edit' product.id %}" class="text-blue-400 hover:underline">Edit</a>
                     {% if product.is_active %}
-                        <a href="{% url 'admin_product_toggle' product.id %}" class="text-yellow-400 hover:underline">Unlist</a>
+                        <button 
+                            @click="
+                                confirmOpen = true; 
+                                confirmUrl = '{% url 'admin_product_toggle' product.id %}'; 
+                                confirmText = 'Are you sure you want to UNLIST {{ product.name }}?';
+                            "
+                            class="text-yellow-400 hover:underline">
+                            Unlist
+                        </button>
                     {% else %}
-                        <a href="{% url 'admin_product_toggle' product.id %}" class="text-green-400 hover:underline">List</a>
+                        <button 
+                            @click="
+                                confirmOpen = true; 
+                                confirmUrl = '{% url 'admin_product_toggle' product.id %}'; 
+                                confirmText = 'Are you sure you want to LIST {{ product.name }}?';
+                            "
+                            class="text-green-400 hover:underline">
+                            List
+                        </button>
                     {% endif %}
+
                 </td>
             </tr>
             {% empty %}
@@ -240,6 +259,36 @@
         </form>
     </div>
 </div>
+
+
+
+
+    <!-- CONFIRM MODAL -->
+    <div x-show="confirmOpen"
+         class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+         x-transition>
+         
+        <div class="bg-[#1A1A1A] p-6 rounded-xl w-[22rem] shadow-xl border border-border relative">
+
+            <h2 class="text-xl font-semibold mb-4 text-white" x-text="confirmText"></h2>
+
+            <div class="flex justify-end gap-3">
+                <button 
+                    @click="confirmOpen=false"
+                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md">
+                    Cancel
+                </button>
+
+                <a :href="confirmUrl"
+                   class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md">
+                    Confirm
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 
 

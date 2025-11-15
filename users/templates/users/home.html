@@ -21,28 +21,29 @@
                     <p class="text-body text-white text-center mb-8 max-w-[687px]">
                         Discover exclusive collections for Men, Women, and Kids.
                     </p>
-                    <button
+                    <a href="{% url 'shop_products' %}"
                         class="bg-primary text-dark font-bold text-body px-5 py-3 h-12 rounded-button-lg hover:opacity-90">
                         Shop Now
-                    </button>
+                    </a>
                 </div>
             </div>
 
             <!-- Search Bar -->
             <div id="searchWrap" class="mb-5">
-                <div id="searchBar" class="flex h-12 rounded-card overflow-hidden">
+                <form action="{% url 'shop_products' %}" class="flex h-12 rounded-card overflow-hidden">
                     <div class="bg-dark-green flex items-center justify-center px-4">
                         <img src="{% static 'images/icon-search.svg' %}" alt="" class="w-6 h-6">
                     </div>
 
                     <input 
                         type="search" 
+                        name = "q"
                         placeholder="Search for your perfect pair..." 
                         class="flex-1 bg-dark-green text-white placeholder-muted text-body px-4 py-2 
                                focus:outline-none focus:ring-2 focus:ring-primary"
                         aria-label="Search"
                     >
-                </div>
+                </form>
             </div>
 
         </div>
@@ -108,54 +109,64 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-4 py-4">
 
             <!-- Product Card -->
+            <a href="{% url 'product_detail' p1.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
+
             <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
                 <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{% static 'images/product-velocity-x.png' %}"
+                    <img src="{{ p1.images.first.image.url }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
                 <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">Velocity X</h3>
-                    <p class="text-small text-muted mb-1">High-performance running shoe</p>
-                    <p class="text-small text-muted">₹ 7,999</p>
+                    <h3 class="text-body font-medium text-dark mb-1">{{p1.name}}</h3>
+                    <p class="text-small text-muted mb-1">{{p1.color}}</p>
+                    <p class="text-small text-muted">₹ {{p1.price}}</p>
                 </div>
             </div>
+
+            </a>
 
             <!-- Copy similar cards below -->
+            <a href="{% url 'product_detail' p2.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
             <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
                 <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{% static 'images/product-stride-pro.png' %}"
+                    <img src="{{ p2.images.first.image.url }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
                 <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">Stride Pro</h3>
-                    <p class="text-small text-muted mb-1">Durable and comfortable</p>
-                    <p class="text-small text-muted">₹ 5,999</p>
+                    <h3 class="text-body font-medium text-dark mb-1">{{p2.name}}</h3>
+                    <p class="text-small text-muted mb-1">{{p2.color}}</p>
+                    <p class="text-small text-muted">₹ {{p2.price}}</p>
                 </div>
             </div>
+            </a>
 
+            <a href="{% url 'product_detail' p3.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
             <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
                 <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{% static 'images/product-airbound-max.png' %}"
+                    <img src="{{ p3.images.first.image.url }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
                 <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">Airbound Max</h3>
-                    <p class="text-small text-muted mb-1">Lightweight and responsive</p>
-                    <p class="text-small text-muted">₹ 3,699</p>
+                    <h3 class="text-body font-medium text-dark mb-1">{{p3.name}}</h3>
+                    <p class="text-small text-muted mb-1">{{p3.color}}</p>
+                    <p class="text-small text-muted">₹ {{p3.price}}</p>
                 </div>
             </div>
+            </a>
 
+            <a href="{% url 'product_detail' p4.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
             <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
                 <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{% static 'images/product-court-conqueror.png' %}"
+                    <img src="{{ p4.images.first.image.url }}"
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
                 <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">Court Conqueror</h3>
-                    <p class="text-small text-muted mb-1">Designed for court sports</p>
-                    <p class="text-small text-muted">₹ 12,900</p>
+                    <h3 class="text-body font-medium text-dark mb-1">{{p4.name}}</h3>
+                    <p class="text-small text-muted mb-1">{{p4.color}}</p>
+                    <p class="text-small text-muted">₹ {{p4.price}}</p>
                 </div>
             </div>
+            </a>
 
         </div>
     </div>
@@ -170,33 +181,30 @@
         <div class="flex flex-col md:flex-row gap-6 md:gap-[88px] px-4 py-4">
 
             <!-- Category Card -->
-            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+            <a href="{% url 'shop_category' 'men' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
                 <div class="absolute inset-0 category-gradient z-10"></div>
                 <img src="{% static 'images/category-mens.png' %}"
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
                     <h3 class="text-body font-bold text-white mb-2">Men's Shoes</h3>
-                    <p class="text-body font-bold text-white">Mens</p>
                 </div>
             </a>
 
-            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+            <a href="{% url 'shop_category' 'women' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
                 <div class="absolute inset-0 category-gradient z-10"></div>
                 <img src="{% static 'images/category-womens.png' %}"
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
                     <h3 class="text-body font-bold text-white mb-2">Women's Shoes</h3>
-                    <p class="text-body font-bold text-white">Womens</p>
                 </div>
             </a>
 
-            <a href="#" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
+            <a href="{% url 'shop_category' 'kids' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
                 <div class="absolute inset-0 category-gradient z-10"></div>
                 <img src="{% static 'images/category-kids.png' %}"
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
                     <h3 class="text-body font-bold text-white mb-2">Kids' Shoes</h3>
-                    <p class="text-body font-bold text-white">Kids</p>
                 </div>
             </a>
 

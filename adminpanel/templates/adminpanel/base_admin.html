@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shoeverse Admin Dashboard</title>
+    {% load static %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">
+
+
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -40,16 +44,7 @@
     {% include 'adminpanel/partials/navbar.html' %}
     {% include 'adminpanel/partials/sidebar.html' %}
     
-    {% if messages %}
-    <div class="space-y-2 mb-4">
-        {% for message in messages %}
-            <div class="p-3 rounded-md {{ message.tags }} 
-                        {% if message.tags == 'success' %}bg-green-700{% elif message.tags == 'error' %}bg-red-700{% else %}bg-gray-700{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    
 
     <main class="fixed top-16 left-80 right-0 h-[calc(100vh-4rem)] overflow-y-auto bg-dark-green">
         <div class="p-6">
@@ -61,6 +56,33 @@
     </main>
 
 </div>
+
+{% if messages %}
+<div id="toast-container" class="fixed top-5 right-5 z-[9999] space-y-3">
+    {% for message in messages %}
+        <div class="toast px-4 py-3 rounded-lg shadow-lg text-white
+            transition-all duration-300 transform
+            {% if message.tags == 'success' %} bg-green-600
+            {% elif message.tags == 'error' %} bg-red-600
+            {% elif message.tags == 'warning' %} bg-yellow-600
+            {% else %} bg-blue-600 {% endif %}">
+            
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+<script>
+    // Auto fade-out after 3 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach((toast) => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(20px)';
+            setTimeout(() => toast.remove(), 300);
+        });
+    }, 3000);
+</script>
+
 
 </body>
 </html>

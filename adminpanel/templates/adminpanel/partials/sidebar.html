@@ -30,6 +30,20 @@
             <span class="text-small font-medium">Products</span>
         </a>
 
+        <!-- ✅ Category Management -->
+        <a href="{% url 'admin_category_list' %}" 
+        class="flex items-center gap-3 px-3 py-2 rounded-button transition-colors
+        {% if active_page == 'categories' %} bg-sidebar-active text-white {% else %} text-muted hover:bg-sidebar-active hover:text-white {% endif %}">
+
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+
+            <span class="text-small font-medium">Categories</span>
+        </a>
+
+
         <!-- ✅ Orders -->
         <a href="#" 
            class="flex items-center gap-3 px-3 py-2 rounded-button transition-colors

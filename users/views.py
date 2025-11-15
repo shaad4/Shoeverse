@@ -14,7 +14,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 
 
-
+from products.models import Product
 
 import logging
 
@@ -253,6 +253,11 @@ def resend_otp_view(request):
 
 
 def login_view(request):
+
+    storage = messages.get_messages(request)
+    for _ in storage:
+        pass 
+
     if request.method == "POST":
         email = clean_input(request.POST.get('email'))
         password = clean_input(request.POST.get('password'))
@@ -272,7 +277,7 @@ def login_view(request):
         
         login(request, user)
         logger.info(f"User logged in successfully: {email}")
-        messages.success(request, "Logged in successfully!")
+       
 
         return redirect("home")
     
@@ -347,10 +352,15 @@ def reset_password_view(request, uidb64, token):
 
 
 def home_view(request):
-    return render(request, "users/home.html")
+
+    p1 = Product.objects.get(id=9)
+    p2 = Product.objects.get(id=15)
+    p3 = Product.objects.get(id=11)
+    p4 = Product.objects.get(id=18)
+    return render(request, "users/home.html", {"p1":p1,"p2":p2,"p3":p3,"p4":p4})
 
 
 def logout_view(request):
     logout(request)
-    messages.success(request, "You have been logged out successfully.")
+    
     return redirect("home")  # Change to your landing page

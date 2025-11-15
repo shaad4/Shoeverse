@@ -14,17 +14,23 @@
 
         <!-- Django Messages -->
         {% if messages %}
-            <div class="w-full mb-4 px-1">
-                {% for message in messages %}
-                    <div class="p-3 rounded-card text-white 
-                        {% if message.tags == 'error' %} bg-red-500 
-                        {% elif message.tags == 'success' %} bg-green-600 
-                        {% else %} bg-dark-green {% endif %}">
-                        {{ message }}
+            {% for message in messages %}
+                {% if forloop.last %}
+                    <div class="w-full mb-4 px-1">
+                        <div class="p-3 rounded-card text-white 
+                            {% if message.tags == 'error' %} bg-red-500
+                            {% elif message.tags == 'success' %} bg-green-600
+                            {% else %} bg-dark-green
+                            {% endif %}">
+                            {{ message }}
+                        </div>
                     </div>
-                {% endfor %}
-            </div>
+                {% endif %}
+            {% endfor %}
         {% endif %}
+
+
+
 
         <!-- FORM START -->
         <form id="loginForm" method="POST" class="w-full px-4">

@@ -50,6 +50,10 @@ def product_list_view(request, category=None):
         products = products.order_by("-price")
     elif  sort == "new":
         products = products.order_by("-created_at")
+    elif sort == "nameAsc":
+        products = products.order_by("name")
+    elif sort == "nameDesc":
+        products = products.order_by("-name")
     else:
         products = products.order_by("-id")
 
@@ -61,12 +65,23 @@ def product_list_view(request, category=None):
 
 
 
+    filters = request.GET.copy()
+    if 'page' in filters:
+        filters.pop('page')
+    querystring = filters.urlencode()
+
     paginator = Paginator(products, 6)
     page_number  = request.GET.get("page")
     page_obj  = paginator.get_page(page_number)
 
-    categories = ["men","women","kids"]
-    sizes  = [6,7,8,9,10,11]
+    categories = ["men", "women", "kids"]
+
+    # Dynamic sizes based on category
+    if category == "kids":
+        sizes = ["1", "2", "3", "4", "5"]
+    else:  # men (default)
+        sizes = ["6", "7", "8", "9", "10", "11"]
+
 
     
 
@@ -84,6 +99,7 @@ def product_list_view(request, category=None):
         "active_sizes" : active_size,
         "sizes":sizes,
         "categories":categories,
+        "page_query" : querystring,
     }
 
     return render(request, "shop/product_list.html", context)

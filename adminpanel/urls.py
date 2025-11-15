@@ -21,6 +21,13 @@ urlpatterns = [
     path("products/<int:product_id>/variants/<int:variant_id>/edit/", views.product_variant_edit_view, name="admin_product_variant_edit"),
     path("products/<int:product_id>/variants/<int:variant_id>/delete/", views.product_variant_delete_view, name="admin_product_variant_delete"),
 
+
+    path("categories/", views.admin_category_list, name="admin_category_list"),
+    path("categories/add/", views.admin_category_add, name="admin_category_add"),
+    path("categories/edit/<int:id>/", views.admin_category_edit, name="admin_category_edit"),
+    path("categories/delete/<int:id>/", views.admin_category_delete, name="admin_category_delete"),
+
+
     path("logout/", views.admin_logout_view, name="admin_logout"),
 
 

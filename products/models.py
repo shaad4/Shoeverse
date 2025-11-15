@@ -19,7 +19,7 @@ class Product(models.Model):
     color  = models.CharField(max_length=50)
     category  = models.CharField(max_length=10, choices=CATEGORY_CHOICE)
     is_active = models.BooleanField(default=True)
-
+    subcategory = models.ForeignKey("SubCategory", on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
     highlights = models.TextField(blank=True, null=True)         # newline separated list
     specifications = models.TextField(blank=True, null=True)     # key:value list
     
@@ -68,3 +68,18 @@ class ProductImage(models.Model):
 
         img.save(self.image.path, format="JPEG", quality=85, optimize=True)
 
+
+
+class SubCategory(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(
+        max_length=10,
+        choices=Product.CATEGORY_CHOICE
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('category', 'name')
+
+    def __str__(self):
+        return f"{self.category} - {self.name}"

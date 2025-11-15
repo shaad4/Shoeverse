@@ -64,6 +64,8 @@
                         <option value="new" {% if sort == "new" %}selected{% endif %}>Newest</option>
                         <option value="priceLow" {% if sort == "priceLow" %}selected{% endif %}>Price: Low to High</option>
                         <option value="priceHigh" {% if sort == "priceHigh" %}selected{% endif %}>Price: High to Low</option>
+                        <option  value="nameAsc" {% if sort == "nameAsc" %}selected{% endif %}>aA → zZ </option>
+                        <option value="nameDesc" {% if sort == "nameDesc" %}selected{% endif %}> zZ → aA</option>
                     </select>
 
                     <button type="submit"
@@ -151,45 +153,48 @@
             </div>
 
             <!-- PAGINATION -->
-            {% if page_obj.has_other_pages %}
-            <nav class="flex items-center justify-center gap-4 pt-6" aria-label="Pagination">
+                    {% if page_obj.has_other_pages %}
+                    <nav class="flex items-center justify-center gap-4 pt-6" aria-label="Pagination">
 
-                <!-- Previous -->
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}"
-                       class="w-12 h-12 flex items-center justify-center rounded-button 
-                              border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
-                        &lt;
-                    </a>
-                {% else %}
-                    <span class="w-12 h-12 flex items-center justify-center rounded-button 
-                                border border-border-soft/40 text-gray-600 cursor-not-allowed">
-                        &lt;
-                    </span>
-                {% endif %}
+                        <!-- Previous -->
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}{% if page_query %}&{{ page_query }}{% endif %}"
+                            class="w-12 h-12 flex items-center justify-center rounded-button 
+                                    border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
+                                &lt;
+                            </a>
+                        {% else %}
+                            <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                                        border border-border-soft/40 text-gray-600 cursor-not-allowed">
+                                &lt;
+                            </span>
+                        {% endif %}
 
-                <!-- Current Page -->
-                <span class="w-12 h-12 flex items-center justify-center rounded-button 
-                            bg-primary text-dark font-bold border border-transparent">
-                    {{ page_obj.number }}
-                </span>
+                        <!-- Current Page -->
+                        <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                                    bg-primary text-dark font-bold border border-transparent">
+                            {{ page_obj.number }}
+                        </span>
 
-                <!-- Next -->
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}"
-                       class="w-12 h-12 flex items-center justify-center rounded-button 
-                              border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
-                        &gt;
-                    </a>
-                {% else %}
-                    <span class="w-12 h-12 flex items-center justify-center rounded-button 
-                                border border-border-soft/40 text-gray-600 cursor-not-allowed">
-                        &gt;
-                    </span>
-                {% endif %}
+                        <!-- Next -->
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if page_query %}&{{ page_query }}{% endif %}"
+                            class="w-12 h-12 flex items-center justify-center rounded-button 
+                                    border border-border-soft text-white hover:border-primary hover:bg-primary/10 transition">
+                                &gt;
+                            </a>
+                        {% else %}
+                            <span class="w-12 h-12 flex items-center justify-center rounded-button 
+                                        border border-border-soft/40 text-gray-600 cursor-not-allowed">
+                                &gt;
+                            </span>
+                        {% endif %}
 
-            </nav>
-            {% endif %}
+                    </nav>
+                    {% endif %}
+
+
+
 
         </div>
 

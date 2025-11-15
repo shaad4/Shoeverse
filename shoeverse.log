@@ -187,3 +187,43 @@
 [INFO] 2025-11-13 14:00:05,563 users: Admin logged in: admin@shoeverse.com
 [INFO] 2025-11-14 11:48:26,802 users: Admin login attempt: admin@shoeverse.com
 [INFO] 2025-11-14 11:48:27,434 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-14 17:33:32,004 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-14 17:33:34,230 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-14 17:33:54,609 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-14 17:33:56,826 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-15 04:06:15,842 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-15 04:06:16,538 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-15 04:49:09,957 users: Login attempt for email: arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-15 04:49:10,598 users: User logged in successfully: arshad.kannankuziyil@gmail.com
+[INFO] 2025-11-15 05:52:41,901 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-15 05:52:42,581 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-15 05:54:30,219 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-15 05:54:30,876 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-15 05:54:54,219 users: Login attempt for email: asd@WD.COM
+[WARNING] 2025-11-15 05:54:55,456 users: Login failed for email: asd@WD.COM
+[INFO] 2025-11-15 05:55:58,643 users: Password reset link email sent successfully to logonxavi77@gmail.com
+[INFO] 2025-11-15 05:55:58,644 users: reset email sent to logonxavi77@gmail.com
+[INFO] 2025-11-15 05:56:41,249 users: Login attempt for email: logonxavi77@gmail.com
+[INFO] 2025-11-15 05:56:41,904 users: User logged in successfully: logonxavi77@gmail.com
+[INFO] 2025-11-15 06:12:37,336 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-15 06:12:37,967 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-15 08:46:04,505 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-15 08:46:05,573 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-15 08:50:48,170 users: Admin login attempt: mohammedshaadn@gmail.com
+[WARNING] 2025-11-15 08:50:49,069 users: Admin login failed: invalid credentials mohammedshaadn@gmail.com
+[INFO] 2025-11-15 08:50:49,625 users: Admin login attempt: 
+[INFO] 2025-11-15 08:50:49,779 users: Admin login attempt: 
+[WARNING] 2025-11-15 08:50:50,587 users: Admin login failed: invalid credentials 
+[WARNING] 2025-11-15 08:50:50,731 users: Admin login failed: invalid credentials 
+[INFO] 2025-11-15 08:50:56,065 users: Admin login attempt: mohammedshaadn@gmail.com
+[WARNING] 2025-11-15 08:50:57,764 users: Admin login failed: invalid credentials mohammedshaadn@gmail.com
+[INFO] 2025-11-15 08:51:06,686 users: Admin login attempt: mohammedshaadn@gmail.com
+[WARNING] 2025-11-15 08:51:08,476 users: Admin login failed: invalid credentials mohammedshaadn@gmail.com
+[INFO] 2025-11-15 08:51:15,892 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-15 08:51:16,780 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-15 08:55:12,011 users: Admin login attempt: ijowi@fgsd.com
+[WARNING] 2025-11-15 08:55:13,812 users: Admin login failed: invalid credentials ijowi@fgsd.com
+[INFO] 2025-11-15 10:43:50,508 users: Admin login attempt: admin2@shoeverse.com
+[WARNING] 2025-11-15 10:43:51,763 users: Admin login failed: invalid credentials admin2@shoeverse.com
+[INFO] 2025-11-15 14:20:14,830 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-15 14:20:17,135 users: User logged in successfully: noushidhk@gmail.com

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, ProductVariant, ProductImage
+from .models import Product, ProductVariant, ProductImage, SubCategory
 
 # Register your models here.
 
@@ -44,3 +44,5 @@ class ProductVariantAdmin(admin.ModelAdmin):
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ("product", "is_primary", "created_at")
     list_filter = ("is_primary",)
+
+admin.site.register(SubCategory)

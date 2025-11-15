@@ -1,0 +1,60 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Edit Subcategory{% endblock %}
+
+{% block content %}
+
+{% include 'adminpanel/partials/breadcrumb.html' %}
+
+<div class="p-6 max-w-xl">
+
+    <h1 class="text-2xl font-semibold text-white mb-6">Edit Subcategory</h1>
+
+    <form method="POST" class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Category -->
+        <div>
+            <label class="block text-sm text-gray-400 mb-1">Category</label>
+            <select name="category"
+                    class="bg-[#1F1F1F] border border-border text-white rounded-md px-4 py-3 w-full">
+
+                <option value="MEN" {% if subcategory.category == "MEN" %}selected{% endif %}>Men</option>
+                <option value="WOMEN" {% if subcategory.category == "WOMEN" %}selected{% endif %}>Women</option>
+                <option value="KIDS" {% if subcategory.category == "KIDS" %}selected{% endif %}>Kids</option>
+
+            </select>
+        </div>
+
+        <!-- Subcategory Name -->
+        <div>
+            <label class="block text-sm text-gray-400 mb-1">Subcategory Name</label>
+            <input type="text" name="name"
+                   value="{{ subcategory.name }}"
+                   class="w-full p-3 rounded-md bg-[#1F1F1F] text-white border border-border"
+                   required>
+        </div>
+
+        <!-- Active -->
+        <div class="flex items-center gap-2">
+            <input type="checkbox" name="is_active" {% if subcategory.is_active %}checked{% endif %}>
+            <label class="text-sm text-gray-400">Active</label>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-3 pt-3">
+            <a href="{% url 'admin_category_list' %}"
+               class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">
+                Update
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

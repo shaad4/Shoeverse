@@ -125,6 +125,7 @@
                 <form method="GET" action="{% url 'shop_search' %}" class="hidden md:block">
                     <input type="text" name="q"
                         placeholder="Search shoes..."
+                        value="{{ request.GET.q }}"
                         class="bg-dark-green/60 border border-border-light px-4 py-2 h-10 rounded-button text-white text-small focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                 </form>

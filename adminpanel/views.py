@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
-from products.models import Product, ProductVariant, ProductImage
+from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
 
 logger = logging.getLogger("users")
@@ -443,3 +443,74 @@ def admin_logout_view(request):
     logout(request)
     messages.success(request, "Logged out successfully!")
     return redirect("admin_login")
+
+
+def admin_category_list(request):
+    subcategories = SubCategory.objects.all().order_by("category","name")
+
+    context = {
+        "subcategories" : subcategories,
+        "active_page" : "categories",
+        "breadcrumbs" :[
+            {"label": "Dashboard", "url": "admin_dashboard"},
+            {"label": "Category Management", "url": "admin_category_list"},
+        ]
+    }
+    
+    return render(request, "adminpanel/category/admin_category_list.html", context)
+
+
+def admin_category_add(request):
+    if request.method == "POST":
+        name = request.POST.get("name").strip()
+        category = request.POST.get("category")
+        is_active = request.POST.get("is_active") == "on"
+
+        if SubCategory.objects.filter(category=category,name__iexact=name).exists():
+                messages.error(request, "Subcategory with this name already exists.")
+                return redirect("admin_category_list")
+        
+        SubCategory.objects.create(
+                name=name,
+                category=category,
+                is_active=is_active
+            )
+        
+        messages.success(request, f"Subcategory '{name}' created successfully.")
+        return redirect("admin_category_list")
+    
+    return redirect("admin_category_list")
+
+
+def admin_category_edit(request , id):
+    subcategory = get_object_or_404(SubCategory, id=id)
+
+    if request.method == "POST":
+        subcategory.name = request.POST.get("name").strip()
+        subcategory.category = request.POST.get("category")
+        subcategory.is_active = request.POST.get("is_active") == "on"
+        subcategory.save()
+
+        messages.success(request, f"Subcategory '{subcategory.name}' updated successfully.")
+        return redirect("admin_category_list")
+    
+    context = {
+        "subcategory": subcategory,
+        "active_page": "categories",
+        "breadcrumbs": [
+            {"label": "Dashboard", "url": "admin_dashboard"},
+            {"label": "Category Management", "url": "admin_category_list"},
+            {"label": "Edit Subcategory", "url": ""},
+        ],
+    }
+
+    return render(request, "adminpanel/category/admin_category_edit.html", context)
+
+
+def admin_category_delete(request, id):
+    subcategory = get_object_or_404(SubCategory, id=id)
+
+    subcategory.delete()
+    messages.success(request, f"Subcategory '{subcategory.name}' deleted successfully.")
+
+    return redirect("admin_category_list")
