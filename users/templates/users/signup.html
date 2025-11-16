@@ -16,20 +16,6 @@
                 </h1>
             </div>
 
-            <!-- Django Messages -->
-            {% if messages %}
-                <div class="w-full max-w-[480px] mb-4 px-4">
-                    {% for message in messages %}
-                        <div class="p-3 rounded-card 
-                            {% if message.tags == 'error' %} bg-red-500 text-white
-                            {% elif message.tags == 'success' %} bg-green-600 text-white
-                            {% else %} bg-dark-green text-white
-                            {% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
 
             <!-- FORM START -->
             <form method="POST" id="signupForm" class="w-full max-w-[480px] flex flex-col items-stretch px-4">

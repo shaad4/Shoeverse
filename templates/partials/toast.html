@@ -1,0 +1,20 @@
+{% if messages %}
+    {% for message in messages %}
+        <div id="global-toast-{{ forloop.counter }}"
+             class="fixed top-24 right-6 z-[9999] px-4 py-3 rounded-card shadow-lg text-white
+             opacity-0 transition-opacity duration-500
+             {% if 'error' in message.tags %} bg-red-600
+             {% elif 'success' in message.tags %} bg-green-600
+             {% else %} bg-dark-green {% endif %}">
+            {{ message }}
+        </div>
+
+        <script>
+            const toast{{ forloop.counter }} = document.getElementById("global-toast-{{ forloop.counter }}");
+            if (toast{{ forloop.counter }}) {
+                setTimeout(() => { toast{{ forloop.counter }}.style.opacity = 1; }, 150);
+                setTimeout(() => { toast{{ forloop.counter }}.style.opacity = 0; }, 3000);
+            }
+        </script>
+    {% endfor %}
+{% endif %}

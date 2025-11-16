@@ -8,35 +8,86 @@
 
 <div x-data="{ openAddModal: false }">
 <!-- Header -->
-<div class="flex justify-between items-center mb-6">
+
     <h1 class="text-2xl font-semibold text-white">Product Management</h1>
 
-    <div class="flex items-center space-x-3">
-        <!-- Search -->
-        <form method="get" class="flex space-x-2">
-            <input
-                type="text"
-                name="q"
-                value="{{ query }}"
-                placeholder="Search product..."
-                class="px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border focus:ring focus:ring-blue-500"
-            />
-            <button
-                type="submit"
-                class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700"
-            >
-                Search
-            </button>
-        </form>
+    <!-- TOP BAR: Search + Add Product -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
-        <!-- Add Product -->
-        <button @click="openAddModal = true"
-                class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md shadow">
-            + Add Product
-        </button>
+                <!-- SEARCH -->
+                <form method="get" class="flex items-center gap-2 flex-1 max-w-lg">
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        placeholder="Search product..."
+                        class="w-full px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border focus:ring focus:ring-blue-500"
+                    />
+                    <button
+                        type="submit"
+                        class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 whitespace-nowrap">
+                        Search
+                    </button>
+                </form>
 
-    </div>
-</div>
+                <!-- ADD PRODUCT BUTTON -->
+                <button @click="openAddModal = true"
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-md shadow whitespace-nowrap">
+                    + Add Product
+                </button>
+
+            </div>
+
+
+            <!-- FILTER BAR -->
+            <form method="get" id="sortForm" 
+                class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+                <!-- Preserve Search -->
+                <input type="hidden" name="q" value="{{ query }}">
+
+                <!-- CATEGORY FILTER -->
+                <select name="category"
+                        onchange="this.form.submit()"
+                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+                    <option value="">All Categories</option>
+                    <option value="MEN"   {% if category_filter == 'MEN' %}selected{% endif %}>Men</option>
+                    <option value="WOMEN" {% if category_filter == 'WOMEN' %}selected{% endif %}>Women</option>
+                    <option value="KIDS"  {% if category_filter == 'KIDS' %}selected{% endif %}>Kids</option>
+                </select>
+
+                <!-- STATUS FILTER -->
+                <select name="status"
+                        onchange="this.form.submit()"
+                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+                    <option value="">All Status</option>
+                    <option value="listed"   {% if status_filter == "listed" %}selected{% endif %}>Listed</option>
+                    <option value="unlisted" {% if status_filter == "unlisted" %}selected{% endif %}>Unlisted</option>
+                </select>
+
+                <!-- SORT FILTER -->
+                <select name="sort"
+                        onchange="document.getElementById('sortForm').submit()"
+                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+                    <option value="">Sort By</option>
+
+                    <option value="nameAsc"   {% if sort == 'nameAsc' %}selected{% endif %}>Name A → Z</option>
+                    <option value="nameDesc"  {% if sort == 'nameDesc' %}selected{% endif %}>Name Z → A</option>
+                    <option value="priceLow"  {% if sort == 'priceLow' %}selected{% endif %}>Price Low → High</option>
+                    <option value="priceHigh" {% if sort == 'priceHigh' %}selected{% endif %}>Price High → Low</option>
+                    <option value="stockHigh" {% if sort == 'stockHigh' %}selected{% endif %}>Stock High → Low</option>
+                    <option value="stockLow"  {% if sort == 'stockLow' %}selected{% endif %}>Stock Low → High</option>
+                    <option value="newest"    {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="oldest"    {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+                </select>
+            </form>
+
+
+
+
+
+
+
 
 <!-- Product Table -->
 <div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
@@ -211,6 +262,12 @@
                         {{ form.category }}
                     </div>
                 </div>
+                <!-- Subcategory -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Subcategory</label>
+                    {{ form.subcategory }}
+                </div>
+
 
                 <!-- NEW: Highlights -->
                 <div>

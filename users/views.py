@@ -42,34 +42,34 @@ def signup_view(request):
 
         if not email or not fullName or not password or not confirm_password:
             logger.warning("Signup failed: Missing required fields")
-            messages.error(request, "All fields must be filled.")
+            messages.error(request, "All fields must be filled.", extra_tags="signup")
             return redirect("signup")
         
         try:
             validate_email(email)
         except ValidationError:
             logger.warning(f"Signup failed: Invalid email ({email})")
-            messages.error(request, "Enter a valid email.")
+            messages.error(request, "Enter a valid email." , extra_tags="signup")
             return redirect("signup")
         
         if User.objects.filter(email=email).exists():
             logger.warning(f"Signup failed: Email already exists ({email})")
-            messages.error(request, "Email already registered.")
+            messages.error(request, "Email already registered.", extra_tags="signup")
             return redirect("signup")
         
         if len(password) < 6:
             logger.warning(f"Signup failed: Weak password for {email}")
-            messages.error(request, "Password must be at least 6 characters.")
+            messages.error(request, "Password must be at least 6 characters.", extra_tags="signup")
             return redirect("signup")
 
         if password.isnumeric():
             logger.warning(f"Signup failed: Numeric-only password ({email})")
-            messages.error(request, "Password cannot be numeric only.")
+            messages.error(request, "Password cannot be numeric only.", extra_tags="signup")
             return redirect("signup")
 
         if password != confirm_password:
             logger.warning(f"Signup failed: Password mismatch ({email})")
-            messages.error(request, "Passwords do not match.")
+            messages.error(request, "Passwords do not match.", extra_tags="signup")
             return redirect("signup")
         
         referredBy = None
@@ -79,7 +79,7 @@ def signup_view(request):
                 logger.info(f"User {email} was referred by {referredBy.email}")
             except User.DoesNotExist:
                 logger.warning(f"Invalid referral code used: {referral}")
-                messages.error(request, "Invalid referral code.")
+                messages.error(request, "Invalid referral code.", extra_tags="signup")
                 return redirect("signup")
         #user created - not verified  
         user = User.objects.create_user(
@@ -114,7 +114,7 @@ def signup_view(request):
             logger.info(f"OTP email sent to {email}")
         except Exception as e:
             logger.error(f"Email sending failed for {email}: {e}")
-            messages.error(request, "Unable to send OTP right now. Please try again.")
+            messages.error(request, "Unable to send OTP right now. Please try again.", extra_tags="signup")
             user.delete()  # rollback user creation
             return redirect("signup")
         
@@ -123,7 +123,7 @@ def signup_view(request):
 
         messages.success(
             request,
-            "OTP sent to your email. Please verify to continue."
+            "OTP sent to your email. Please verify to continue.", extra_tags="signup"
         )
 
         return redirect("verify_otp")
@@ -362,5 +362,6 @@ def home_view(request):
 
 def logout_view(request):
     logout(request)
+    messages.success(request,"logout of successfully")
     
     return redirect("home")  # Change to your landing page

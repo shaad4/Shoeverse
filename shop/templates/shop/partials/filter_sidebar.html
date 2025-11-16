@@ -47,6 +47,26 @@
                 </div>
             </fieldset>
 
+            <!-- Subcategory Filter -->
+            <div class="mb-4">
+                <h3 class="text-white font-medium mb-2">Subcategory</h3>
+
+                <select name="subcategory"
+                        class="w-full p-2 rounded-md bg-dark-green text-white border border-border"
+                        onchange="this.form.submit()">
+                    
+                    <option value="">All Subcategories</option>
+
+                    {% for sub in subcategories %}
+                        <option value="{{ sub.id }}" 
+                            {% if active_subcategory|add:'' == sub.id|stringformat:'s' %} selected {% endif %}>
+                            {{ sub.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
             <!-- SIZE FILTER -->
             <fieldset class="space-y-4">
                 <legend class="text-subheading font-semibold">Size</legend>

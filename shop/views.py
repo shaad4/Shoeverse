@@ -1,5 +1,5 @@
 from django.shortcuts import render,  get_object_or_404, redirect
-from products.models import Product
+from products.models import Product, SubCategory
 from django.core.paginator import Paginator
 # Create your views here.
 
@@ -63,7 +63,19 @@ def product_list_view(request, category=None):
     if active_color:
         products = products.filter(color__icontains=active_color)
 
+    #subcategory 
+    active_subcategory = request.GET.get("subcategory","")
 
+    if active_subcategory:
+        products = products.filter(subcategory_id= active_subcategory)
+
+    if category:
+        subcategories = SubCategory.objects.filter(
+            category = category.upper(),
+            is_active = True
+        )
+    else:
+        subcategories = SubCategory.objects.none()
 
     filters = request.GET.copy()
     if 'page' in filters:
@@ -100,6 +112,8 @@ def product_list_view(request, category=None):
         "sizes":sizes,
         "categories":categories,
         "page_query" : querystring,
+        "subcategories":subcategories,
+        "active_subcategory":active_subcategory,
     }
 
     return render(request, "shop/product_list.html", context)

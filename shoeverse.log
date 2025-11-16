@@ -227,3 +227,60 @@
 [WARNING] 2025-11-15 10:43:51,763 users: Admin login failed: invalid credentials admin2@shoeverse.com
 [INFO] 2025-11-15 14:20:14,830 users: Login attempt for email: noushidhk@gmail.com
 [INFO] 2025-11-15 14:20:17,135 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-16 03:06:25,919 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 03:06:28,126 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-16 05:01:19,387 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 05:01:20,402 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-16 05:43:11,218 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 05:43:11,853 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-16 06:20:20,222 users: Signup attempt: email=mohammedshaadn@gmail.com, referral=
+[WARNING] 2025-11-16 06:20:20,280 users: Signup failed: Email already exists (mohammedshaadn@gmail.com)
+[INFO] 2025-11-16 06:21:15,246 users: Signup attempt: email=mohammedshaadn@gmail.com, referral=
+[WARNING] 2025-11-16 06:21:15,277 users: Signup failed: Email already exists (mohammedshaadn@gmail.com)
+[INFO] 2025-11-16 06:29:04,420 users: Signup attempt: email=mohammedshaadn@gmail.com, referral=
+[WARNING] 2025-11-16 06:29:04,444 users: Signup failed: Email already exists (mohammedshaadn@gmail.com)
+[INFO] 2025-11-16 06:29:53,932 users: Signup attempt: email=mohammedshaadn@gmail.com, referral=
+[WARNING] 2025-11-16 06:29:53,967 users: Signup failed: Email already exists (mohammedshaadn@gmail.com)
+[INFO] 2025-11-16 06:34:10,670 users: Signup attempt: email=joedoe@yopmail.com, referral=
+[INFO] 2025-11-16 06:34:11,363 users: User created (not verified): joedoe@yopmail.com
+[INFO] 2025-11-16 06:34:11,368 users: OTP generated for joedoe@yopmail.com: 680451
+[INFO] 2025-11-16 06:34:15,097 users: OTP email sent successfully to joedoe@yopmail.com
+[INFO] 2025-11-16 06:34:15,098 users: OTP email sent to joedoe@yopmail.com
+[INFO] 2025-11-16 06:34:15,179 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 06:36:16,903 users: Resend OTP requested by: joedoe@yopmail.com
+[INFO] 2025-11-16 06:36:16,906 users: New OTP generated for joedoe@yopmail.com: 425158
+[INFO] 2025-11-16 06:36:20,563 users: OTP email sent successfully to joedoe@yopmail.com
+[INFO] 2025-11-16 06:36:20,563 users: Resent OTP to joedoe@yopmail.com
+[INFO] 2025-11-16 06:36:20,598 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 06:39:08,035 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 06:39:16,246 users: OTP verification for user: joedoe@yopmail.com
+[WARNING] 2025-11-16 06:39:16,248 users: Incorrect OTP attempt for joedoe@yopmail.com. Entered: 78900
+[INFO] 2025-11-16 06:39:16,290 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 06:41:19,510 users: Resend OTP requested by: joedoe@yopmail.com
+[INFO] 2025-11-16 06:41:19,512 users: New OTP generated for joedoe@yopmail.com: 280662
+[INFO] 2025-11-16 06:41:23,338 users: OTP email sent successfully to joedoe@yopmail.com
+[INFO] 2025-11-16 06:41:23,338 users: Resent OTP to joedoe@yopmail.com
+[INFO] 2025-11-16 06:41:23,371 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 06:49:36,704 users: Resend OTP requested by: joedoe@yopmail.com
+[INFO] 2025-11-16 06:49:36,716 users: New OTP generated for joedoe@yopmail.com: 114590
+[INFO] 2025-11-16 06:49:40,599 users: OTP email sent successfully to joedoe@yopmail.com
+[INFO] 2025-11-16 06:49:40,600 users: Resent OTP to joedoe@yopmail.com
+[INFO] 2025-11-16 06:49:40,632 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 07:10:24,496 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 07:10:28,486 users: OTP verification for user: joedoe@yopmail.com
+[INFO] 2025-11-16 07:10:37,070 users: OTP verification for user: joedoe@yopmail.com
+[WARNING] 2025-11-16 07:10:37,073 users: OTP expired for joedoe@yopmail.com. Deleting account.
+[INFO] 2025-11-16 07:14:43,691 users: Signup attempt: email=petershoe@yopmail.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-16 07:14:43,753 users: User petershoe@yopmail.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-16 07:14:44,650 users: User created (not verified): petershoe@yopmail.com
+[INFO] 2025-11-16 07:14:44,654 users: OTP generated for petershoe@yopmail.com: 181157
+[INFO] 2025-11-16 07:14:48,387 users: OTP email sent successfully to petershoe@yopmail.com
+[INFO] 2025-11-16 07:14:48,389 users: OTP email sent to petershoe@yopmail.com
+[INFO] 2025-11-16 07:14:48,467 users: OTP verification for user: petershoe@yopmail.com
+[INFO] 2025-11-16 07:15:08,939 users: OTP verification for user: petershoe@yopmail.com
+[INFO] 2025-11-16 07:15:08,958 users: OTP verified successfully for petershoe@yopmail.com
+[INFO] 2025-11-16 07:15:08,979 users: User logged in after OTP verification: petershoe@yopmail.com
+[INFO] 2025-11-16 07:21:53,474 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 07:21:54,419 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-16 09:43:42,027 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 09:43:42,699 users: Admin logged in: admin@shoeverse.com

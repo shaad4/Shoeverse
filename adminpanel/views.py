@@ -11,6 +11,8 @@ from django.views.decorators.http import require_http_methods
 from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
 
+from .decorator import admin_required
+
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -58,18 +60,27 @@ def admin_login_view(request):
 
 
 
-@login_required(login_url="admin_login")
+@admin_required
 def admin_dashboard(request):
+
+    product_count = Product.objects.count()
+    user_count = User.objects.count()
+
+    recent_customers = User.objects.filter(role="user").order_by("-date_joined")[:4]
+
     breadcrumbs = [
         {"label": "Dashboard", "url": "/adminpanel/dashboard/"},
     ]
     return render(request, "adminpanel/dashboard.html", {
         "breadcrumbs": breadcrumbs,
-        "active_page": "dashboard"
+        "active_page": "dashboard",
+        "product_count": product_count,
+        "user_count" : user_count,
+        "recent_customers":recent_customers,
     })
 
 
-
+@admin_required
 def user_list(request):
 
     breadcrumbs = [
@@ -122,7 +133,7 @@ def user_list(request):
 
     return render(request, "adminpanel/user_list.html", context)
 
-
+@admin_required
 @require_http_methods(["POST"])
 def block_user(request, user_id):
     
@@ -144,6 +155,8 @@ def block_user(request, user_id):
     messages.success(request, f"{user.fullName} has been blocked")
     return redirect("admin_user_list")
 
+
+@admin_required
 def unblock_user(request, user_id):
     user = get_object_or_404(User , id=user_id)
 
@@ -153,7 +166,7 @@ def unblock_user(request, user_id):
     messages.success(request, f"{user.fullName} has been unblocked")
     return redirect("admin_user_list")
 
-
+@admin_required
 def admin_add_user(request):
     if  request.method == "POST":
         fullName = clean_input(request.POST.get("fullName"))
@@ -191,8 +204,7 @@ def admin_add_user(request):
     
     return redirect("admin_user_list")
 
-
-
+@admin_required
 def admin_edit_user(request, user_id):
 
     user = get_object_or_404(User, id=user_id)
@@ -220,10 +232,25 @@ def admin_edit_user(request, user_id):
     
     
 
-
+@admin_required
 def product_list_view(request):
     query = request.GET.get("q","")
     products = Product.objects.order_by("-created_at").prefetch_related("images")
+
+
+    
+    category_filter = request.GET.get("category", "")
+    if category_filter:
+        products = products.filter(category=category_filter)
+
+    status_filter = request.GET.get("status", "")
+
+    if status_filter == "listed":
+        products = products.filter(is_active=True)
+
+    elif status_filter == "unlisted":
+        products = products.filter(is_active=False)
+
 
     if query:
         products = products.filter(
@@ -231,6 +258,29 @@ def product_list_view(request):
             Q(color__icontains=query) |
             Q(category__icontains=query)
         )
+
+
+    sort_by = request.GET.get("sort","")
+
+    if sort_by == "nameAsc":
+        products = products.order_by("name")
+    elif sort_by == "nameDesc":
+        products = products.order_by("-name")
+    elif sort_by == "priceLow":
+        products = products.order_by("price")
+    elif sort_by == "priceHigh":
+        products = products.order_by("-price")
+    elif sort_by == "stockLow":
+        products = sorted(products, key=lambda p : p.total_stock())
+    elif sort_by == "stockHigh":
+        products = sorted(products, key=lambda p : p.total_stock(), reverse=True)
+    elif sort_by == "newest":
+        products = products.order_by("-created_at")
+    elif sort_by == "oldest":
+        products = products.order_by("created_at")
+    else:
+        products = products.order_by("-id")
+
 
     paginator = Paginator(products, 10)
     page_number = request.GET.get("page")
@@ -258,13 +308,16 @@ def product_list_view(request):
         ],
         "active_page": "products",
         "form": form,
+        "sort":sort_by,
+        "category_filter":category_filter,
+        "status_filter" : status_filter,
     }
 
     
     return  render(request, "adminpanel/products/product_list.html", context)
     
 
-
+@admin_required
 def product_add_view(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
@@ -286,23 +339,14 @@ def product_add_view(request):
  
     return redirect("admin_product_list")
     
-
+@admin_required
 def product_variant_list_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.all().order_by("size")
 
     form = ProductVarientForm()
 
-    # context = {
-    #     "product" : product,
-    #     "variants":  variants,
-    #     "form" : form,
-    #     "breadcrumbs" : [
-    #         {"name":"Dashboard", "url":"admin_dashboard"},
-    #         {"name":"Products", "url" :"admin_product_list"},
-    #         {"name":f"Variants of {product.name}", "url":"admin_product_variants"},
-    #     ],
-    # }
+    
     context = {
         "product": product,
         "variants": variants,
@@ -318,7 +362,7 @@ def product_variant_list_view(request, product_id):
 
     return render(request, "adminpanel/products/product_variant_list.html", context)
 
-
+@admin_required
 def product_variant_add_view(request,  product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method  == "POST":
@@ -333,7 +377,7 @@ def product_variant_add_view(request,  product_id):
             messages.error(request, "Please fix the errors below")
     return redirect("admin_product_variants", product_id=product.id)
 
-
+@admin_required
 def product_edit_view(request, product_id):
     product  = get_object_or_404(Product, id=product_id)
     existing_images = product.images.all()
@@ -399,7 +443,7 @@ def product_edit_view(request, product_id):
     return render(request, "adminpanel/products/product_edit.html",  context)
 
 
-
+@admin_required
 def product_toggle_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -413,7 +457,7 @@ def product_toggle_view(request, product_id):
 
     return redirect("admin_product_list")
 
-
+@admin_required
 def product_variant_edit_view(request, product_id, variant_id):
     product = get_object_or_404(Product, id=product_id)
     variant = get_object_or_404(ProductVariant, id=variant_id)
@@ -428,6 +472,7 @@ def product_variant_edit_view(request, product_id, variant_id):
             messages.error(request, "Please fix the errors below.")
     return redirect("admin_product_variants", product_id=product.id)
 
+@admin_required
 def product_variant_delete_view(request, product_id, variant_id):
     product = get_object_or_404(Product, id=product_id)
     variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
@@ -439,12 +484,14 @@ def product_variant_delete_view(request, product_id, variant_id):
     return redirect("admin_product_variants", product_id=product.id)
 
 
+@admin_required
 def admin_logout_view(request):
     logout(request)
     messages.success(request, "Logged out successfully!")
     return redirect("admin_login")
 
 
+@admin_required
 def admin_category_list(request):
     subcategories = SubCategory.objects.all().order_by("category","name")
 
@@ -459,7 +506,7 @@ def admin_category_list(request):
     
     return render(request, "adminpanel/category/admin_category_list.html", context)
 
-
+@admin_required
 def admin_category_add(request):
     if request.method == "POST":
         name = request.POST.get("name").strip()
@@ -481,7 +528,7 @@ def admin_category_add(request):
     
     return redirect("admin_category_list")
 
-
+@admin_required
 def admin_category_edit(request , id):
     subcategory = get_object_or_404(SubCategory, id=id)
 
@@ -506,7 +553,7 @@ def admin_category_edit(request , id):
 
     return render(request, "adminpanel/category/admin_category_edit.html", context)
 
-
+@admin_required
 def admin_category_delete(request, id):
     subcategory = get_object_or_404(SubCategory, id=id)
 

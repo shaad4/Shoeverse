@@ -139,10 +139,20 @@
                 <p class="uppercase tracking-widest text-small text-muted">Size</p>
 
                 <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                    {% for size in variants %}
-                    <button class="rounded-button py-3 bg-panel border border-border-soft text-small hover:border-primary transition">
-                        UK {{ size }}
-                    </button>
+                    {% for variant in variants %}
+                        {%if variant.stock > 0%}
+                            <button class="rounded-button py-3 bg-panel border border-border-soft text-small hover:border-primary transition">
+                                {{ variant.size }}
+                            </button>
+                        {% else %}
+                            <button class="rounded-button py-3 bg-panel border border-red-500 text-red-400 
+                                text-small opacity-50 cursor-not-allowed"
+                                disabled>
+                                {{variant.size}}
+                            </button>
+                        {% endif %}
+                
+
                     {% endfor %}
                 </div>
             </div>
@@ -197,7 +207,7 @@
                     <h2 class="text-heading font-semibold mb-4">Specifications</h2>
                     {% if product.specifications %}
                     <div>
-                        <h2 class="text-heading font-semibold mb-4">Specifications</h2>
+        
 
                         <pre class="whitespace-pre-line text-small text-muted">
                     {{ product.specifications }}
