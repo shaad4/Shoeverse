@@ -195,7 +195,7 @@ def verify_otp_view(request):
         login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
 
 
-        # ✅ Remove session
+        #Remove session
         request.session.pop("pending_user_id", None)
 
         messages.success(request, "Email verified successfully!")
@@ -268,7 +268,20 @@ def login_view(request):
             messages.error(request, "Please enter both email and password.")
             return redirect('login')
         
+        try:
+            user_obj = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "Invalid email or password.")
+            return redirect("login")
+        
+        if not user_obj.is_active:
+            messages.error(request, "Your account is blocked. For more info, conatct support.")
+            return redirect("login")
+        
+        
         user = authenticate(request, email=email, password=password)
+
+       
 
         if user is None:
             logger.warning(f"Login failed for email: {email}")

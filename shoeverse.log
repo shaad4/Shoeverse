@@ -284,3 +284,47 @@
 [INFO] 2025-11-16 07:21:54,419 users: Admin logged in: admin@shoeverse.com
 [INFO] 2025-11-16 09:43:42,027 users: Admin login attempt: admin@shoeverse.com
 [INFO] 2025-11-16 09:43:42,699 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-16 13:10:06,330 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-16 13:10:07,031 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 03:38:25,127 users: Signup attempt: email=lexebos768@fermiro.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-17 03:38:25,362 users: User lexebos768@fermiro.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-17 03:38:27,638 users: User created (not verified): lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:27,648 users: OTP generated for lexebos768@fermiro.com: 829641
+[INFO] 2025-11-17 03:38:33,396 users: OTP email sent successfully to lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:33,397 users: OTP email sent to lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:33,544 users: OTP verification for user: lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:55,264 users: OTP verification for user: lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:55,275 users: OTP verified successfully for lexebos768@fermiro.com
+[INFO] 2025-11-17 03:38:55,307 users: User logged in after OTP verification: lexebos768@fermiro.com
+[INFO] 2025-11-17 03:40:40,133 users: Password reset link email sent successfully to lexebos768@fermiro.com
+[INFO] 2025-11-17 03:40:40,134 users: reset email sent to lexebos768@fermiro.com
+[INFO] 2025-11-17 03:42:23,159 users: Login attempt for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 03:42:25,314 users: User logged in successfully: lexebos768@fermiro.com
+[INFO] 2025-11-17 03:46:44,585 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-17 03:46:46,599 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 04:39:30,165 users: Login attempt for email: mohammedswwhaadn@gmail.com
+[WARNING] 2025-11-17 04:39:34,734 users: Login failed for email: mohammedswwhaadn@gmail.com
+[INFO] 2025-11-17 05:54:50,391 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-17 05:54:51,067 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 08:27:19,041 users: Admin login attempt: Admin@shoeverse.com
+[INFO] 2025-11-17 08:27:20,291 users: Admin logged in: Admin@shoeverse.com
+[INFO] 2025-11-17 08:28:26,197 users: Login attempt for email: lexebos768@fermiro.com
+[WARNING] 2025-11-17 08:28:27,422 users: Login failed for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:28:46,621 users: Login attempt for email: lexebos768@fermiro.com
+[WARNING] 2025-11-17 08:28:47,855 users: Login failed for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:29:03,067 users: Login attempt for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:29:03,726 users: User logged in successfully: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:29:21,129 users: Login attempt for email: lexebos768@fermiro.com
+[WARNING] 2025-11-17 08:29:22,350 users: Login failed for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:34:08,039 users: Login attempt for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:37:36,542 users: Login attempt for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:38:18,883 users: Login attempt for email: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:38:19,546 users: User logged in successfully: lexebos768@fermiro.com
+[INFO] 2025-11-17 08:59:08,951 users: Password reset link email sent successfully to nalege8027@fermiro.com
+[INFO] 2025-11-17 08:59:08,952 users: reset email sent to nalege8027@fermiro.com
+[INFO] 2025-11-17 08:59:38,507 users: Login attempt for email: nalege8027@fermiro.com
+[INFO] 2025-11-17 08:59:39,126 users: User logged in successfully: nalege8027@fermiro.com
+[INFO] 2025-11-17 09:07:10,688 users: Login attempt for email: noushidhk@gmail.com
+[WARNING] 2025-11-17 09:07:11,929 users: Login failed for email: noushidhk@gmail.com
+[INFO] 2025-11-17 09:07:37,740 users: Password reset link email sent successfully to noushidhk@gmail.com
+[INFO] 2025-11-17 09:07:37,741 users: reset email sent to noushidhk@gmail.com

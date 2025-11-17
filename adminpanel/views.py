@@ -172,7 +172,7 @@ def admin_add_user(request):
         fullName = clean_input(request.POST.get("fullName"))
         email = clean_input(request.POST.get("email"))
         phone = clean_input(request.POST.get("phoneNumber"))
-        dob = clean_input(request.POST.get("dateOfBirth"))
+        dob = clean_input(request.POST.get("dateOfBirth")) or None
         gender = clean_input(request.POST.get("gender"))
         role  = clean_input(request.POST.get("role"))
         profileImage = request.FILES.get("profileImage")
@@ -368,9 +368,9 @@ def product_variant_add_view(request,  product_id):
     if request.method  == "POST":
         form = ProductVarientForm(request.POST)
         if form.is_valid():
-            variant = form.save(commit=False)
-            variant.product = product
-            variant.save()
+            variant = form.save(commit=False) #not saving to DB
+            variant.product = product #adding the product id
+            variant.save() #now saving to db
             messages.success(request, f"Variant '{variant.size}' added successfully!")
             return redirect("admin_product_variants", product_id = product.id)
         else:
@@ -394,13 +394,13 @@ def product_edit_view(request, product_id):
             
             for img_id in remove_images:
                 try:
-                    img = ProductImage.objects.get(id=img_id, product=product)
-                    img.image.delete(save=False)
-                    img.delete()
+                    img = ProductImage.objects.get(id=img_id, product=product) #image takes from perticular id
+                    img.image.delete(save=False) # delete from media
+                    img.delete() # delete url from db
                 except ProductImage.DoesNotExist:
                     pass
 
-            remaining = 3 - product.images.count()
+            remaining = 3 - product.images.count() #take total number of images for a perticular product
             for index, img in enumerate(new_images[:remaining]):
                 ProductImage.objects.create(
                     product=product,
@@ -415,18 +415,7 @@ def product_edit_view(request, product_id):
     else:
         form = ProductForm(instance=product)
 
-    # context = {
-    #     "form" : form,
-    #     "product" : product,
-    #     "existing_images":existing_images,
-    #     "breadcrumbs": [
-    #         {"name": "Dashboard", "url": "admin_dashboard"},
-    #         {"name": "Product Management", "url": "admin_product_list"},
-    #         {"name": f"Edit {product.name}", "url": "admin_product_edit"},
-    #     ],
-    #     "active_page":"products",
-    # }
-
+    
     context = {
         "form": form,
         "product": product,
@@ -447,7 +436,7 @@ def product_edit_view(request, product_id):
 def product_toggle_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    product.is_active = not product.is_active
+    product.is_active = not product.is_active # toggle the is_active
     product.save()
 
     if product.is_active:

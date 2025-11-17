@@ -1,12 +1,18 @@
 from django.shortcuts import render,  get_object_or_404, redirect
 from products.models import Product, SubCategory
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
+
 # Create your views here.
 
 
 
 def product_list_view(request, category=None):
-    products = Product.objects.filter(is_active=True).prefetch_related("images")
+    products = (
+        Product.objects.filter(is_active=True)
+        .prefetch_related("images")
+        .annotate(in_stock_count=Count('variants', filter=Q(variants__stock__gt=0)))
+    )
 
     category_param = request.GET.get("category")
 
@@ -20,6 +26,9 @@ def product_list_view(request, category=None):
 
     active_category = category  # keep lowercase for UI
 
+    
+
+    
 
 
     q = request.GET.get("q","")
@@ -91,7 +100,7 @@ def product_list_view(request, category=None):
     # Dynamic sizes based on category
     if category == "kids":
         sizes = ["1", "2", "3", "4", "5"]
-    else:  # men (default)
+    else:  # (default)
         sizes = ["6", "7", "8", "9", "10", "11"]
 
 

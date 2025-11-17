@@ -173,9 +173,17 @@
                 </div>
 
                 <!-- ADD TO CART -->
-                <button class="flex-1 h-12 bg-primary text-dark font-semibold rounded-button hover:opacity-90 transition w-full sm:w-auto">
-                    Add to Cart
-                </button>
+                {% if is_out_of_stock %}
+                    <button class="flex-1 h-12 bg-gray-700 text-gray-400 font-semibold rounded-button opacity-50 cursor-not-allowed"
+                            disabled>
+                        Out of Stock
+                    </button>
+                {% else %}
+                    <button class="flex-1 h-12 bg-primary text-dark font-semibold rounded-button hover:opacity-90 transition w-full sm:w-auto">
+                        Add to Cart
+                    </button>
+                {% endif %}
+
 
                 <!-- WISHLIST -->
                 <button class="h-12 w-12 flex items-center justify-center rounded-button border border-border-soft hover:border-primary hover:bg-primary/10 transition">

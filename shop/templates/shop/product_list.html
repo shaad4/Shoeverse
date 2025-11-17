@@ -133,12 +133,19 @@
                         </a>
 
                         <!-- Add to Cart Button -->
-                        <button 
-                            class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
-                                bg-primary text-dark font-semibold hover:opacity-90 transition">
-                            <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
-                            Add to Cart
-                        </button>
+                        {% if product.in_stock_count == 0 %}
+                            <button class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
+                                bg-red-600 text-white font-semibold opacity-70 cursor-not-allowed" disabled>
+                                Out of stock
+                            </button>
+                        {% else %}
+                            <button 
+                                class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
+                                    bg-primary text-dark font-semibold hover:opacity-90 transition">
+                                <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
+                                Add to Cart
+                            </button>
+                        {% endif %}
 
                     </div>
 
@@ -192,9 +199,6 @@
 
                     </nav>
                     {% endif %}
-
-
-
 
         </div>
 
