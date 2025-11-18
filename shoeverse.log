@@ -328,3 +328,36 @@
 [WARNING] 2025-11-17 09:07:11,929 users: Login failed for email: noushidhk@gmail.com
 [INFO] 2025-11-17 09:07:37,740 users: Password reset link email sent successfully to noushidhk@gmail.com
 [INFO] 2025-11-17 09:07:37,741 users: reset email sent to noushidhk@gmail.com
+[INFO] 2025-11-17 09:51:04,954 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-17 09:51:05,586 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 09:54:36,045 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-17 09:54:36,706 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-17 09:59:13,177 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-17 09:59:13,811 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 10:43:10,574 users: Signup attempt: email=lakavar948@etramay.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-17 10:43:10,629 users: User lakavar948@etramay.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-17 10:43:11,630 users: User created (not verified): lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:11,645 users: OTP generated for lakavar948@etramay.com: 385169
+[INFO] 2025-11-17 10:43:16,555 users: OTP email sent successfully to lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:16,558 users: OTP email sent to lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:16,658 users: OTP verification for user: lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:41,882 users: OTP verification for user: lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:41,902 users: OTP verified successfully for lakavar948@etramay.com
+[INFO] 2025-11-17 10:43:41,932 users: User logged in after OTP verification: lakavar948@etramay.com
+[INFO] 2025-11-17 10:46:10,604 users: Password reset link email sent successfully to lakavar948@etramay.com
+[INFO] 2025-11-17 10:46:10,608 users: reset email sent to lakavar948@etramay.com
+[INFO] 2025-11-17 10:47:05,584 users: Login attempt for email: lakavar948@etramay.com
+[INFO] 2025-11-17 10:47:06,620 users: User logged in successfully: lakavar948@etramay.com
+[INFO] 2025-11-17 10:50:54,493 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-17 10:50:55,598 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-17 11:02:22,625 users: Login attempt for email: lakavar948@etramay.com
+[INFO] 2025-11-18 04:16:55,435 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-18 04:16:56,477 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-18 05:34:32,589 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-18 05:34:33,202 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-18 06:24:45,993 users: Login attempt for email: mohammedshaadn@gmail.com
+[WARNING] 2025-11-18 06:24:47,234 users: Login failed for email: mohammedshaadn@gmail.com
+[INFO] 2025-11-18 06:24:52,806 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-18 06:24:53,452 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-18 08:56:43,182 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-18 08:56:43,835 users: User logged in successfully: noushidhk@gmail.com

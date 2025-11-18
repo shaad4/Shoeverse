@@ -14,6 +14,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 
 
+
+
 from products.models import Product
 
 import logging
@@ -378,3 +380,41 @@ def logout_view(request):
     messages.success(request,"logout of successfully")
     
     return redirect("home")  # Change to your landing page
+
+#profile  
+
+
+def profile_view(request):
+
+    user = request.user
+
+    context = {
+        "user" : user,
+    }
+
+    return render(request, "users/profile_view.html", context)
+
+def profile_edit_view(request):
+    user = request.user
+
+    if request.method == "POST":
+
+        if request.POST.get("remove_image") == "1" and user.profileImage:
+            user.profileImage.delete(save=False)
+            user.profileImage = None
+
+
+        user.fullName = request.POST.get("fullName")
+        user.phoneNumber = request.POST.get("phoneNumber")
+        user.gender = request.POST.get("gender")
+        date_of_birth = request.POST.get("dateOfBirth")
+        user.dateOfBirth = date_of_birth if date_of_birth else None
+
+        if request.FILES.get("profileImage"):
+            user.profileImage = request.FILES.get("profileImage")
+
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect("profile")
+    
+    return render(request, "users/profile_edit.html", {"user":user})
