@@ -7,7 +7,9 @@ from products.models import Product, ProductVariant
 from django.contrib import messages
 from .models import CartItem
 from decimal import Decimal
-
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import json
 # Create your views here.
 
 
@@ -181,41 +183,53 @@ def  product_detail_view(request, product_id):
 
 #cart
 
-def add_to_cart(request, variant_id):
+def add_to_cart(request, variant_id=None):
     if not request.user.is_authenticated:
         messages.error(request, "Please log in to add items to cart.")
         return redirect("login")
+    
+    if request.method == "POST":
+        variant_id = variant_id or request.POST.get("variant_id")
+
+    if not variant_id:
+        messages.error(request, "Invalid product selection")
+        return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
     
     variant = get_object_or_404(ProductVariant, id = variant_id)
 
     if not variant.product.is_active  or not variant.is_active:
         messages.error(request, "This product is not available")
-        return redirect("product_detail", product_id=variant.product.id)
+        return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
     if variant.stock <= 0:
         messages.error(request, "This product is out of stock")
-        return redirect("product_detail", product_id = variant.product.id)
+        return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
+    
+    quantity = int(request.POST.get('quantity',1))
+    quantity = max(1, min(quantity, min(variant.stock, 4)))
     
     cart_item, created = CartItem.objects.get_or_create(
         user = request.user,
         variant=variant,
     )
 
-    if not created:
+    if created:
+        cart_item.quantity = quantity     # FIXED
+        cart_item.save()
+        messages.success(request, "Item added to cart successfully!")
+    else:
         if cart_item.quantity < min(variant.stock, 4):
             cart_item.quantity += 1
             cart_item.save()
             messages.success(request, "Quantity updated in cart")
         else:
             messages.warning(request, "Maximum quantity reached for this product")
-    else:
-        messages.success(request, "Item added to cart successfully")
 
     ####  Delete from  wishlist
     # from .models import Wishlist
     # Wishlist.objects.filter(user=request.user, variant=variant).delete()
 
-    return redirect("cart")
+    return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
 
 def cart_view(request):
@@ -271,3 +285,75 @@ def remove_cart_item(request, item_id):
     item.delete()
     messages.success(request, "Item removed form cart")
     return redirect("cart")
+
+
+@require_POST
+def update_size(request, item_id):
+    try:
+        data = json.loads(request.body)
+        variant_id = data.get("variant_id")
+
+        cart_item = CartItem.objects.get(id = item_id, user=request.user)
+        new_variant = ProductVariant.objects.get(id=variant_id)
+
+        if new_variant.product != cart_item.variant.product:
+            return JsonResponse({"error": "Invalid size selection"}, status=400)
+        
+        cart_item.variant = new_variant
+        cart_item.save()
+
+        return JsonResponse({"success": True})
+
+    except CartItem.DoesNotExist:
+        return JsonResponse({"error": "cart item not found"}, status=404)
+    
+    except ProductVariant.DoesNotExist:
+        return JsonResponse({"error": "Variant not found"}, status=404)
+
+
+
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import json
+from decimal import Decimal
+from .models import CartItem
+
+@require_POST
+def update_cart_quantity(request, item_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "error": "Login required"}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        new_qty = int(data.get("quantity", 1))
+
+        cart_item = CartItem.objects.get(id=item_id, user=request.user)
+
+        # Max quantity limit: min(stock, 4)
+        max_allowed = min(cart_item.variant.stock, 4)
+
+        if new_qty < 1:
+            cart_item.delete()
+            return JsonResponse({"success": True, "removed": True})
+
+        if new_qty > max_allowed:
+            return JsonResponse({
+                "success": False,
+                "error": f"Max quantity allowed is {max_allowed}"
+            }, status=400)
+
+        cart_item.quantity = new_qty
+        cart_item.save()
+
+        return JsonResponse({
+            "success": True,
+            "quantity": cart_item.quantity,
+            "total_price": float(cart_item.total_price)
+        })
+
+    except CartItem.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Item not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)

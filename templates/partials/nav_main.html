@@ -132,10 +132,20 @@
                 {% endif %}
 
                 <!-- CART ALWAYS VISIBLE -->
-                <a href="#"
-                   class="bg-dark-green text-white p-2.5 h-10 w-10 rounded-button hover:opacity-90 transition">
-                    <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5"/>
-                </a>
+               <div class="relative">
+                    <a href="{% url 'cart' %}"
+                    class="bg-dark-green text-white p-2.5 h-10 w-10 rounded-button hover:opacity-90 transition flex items-center justify-center">
+                        <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5"/>
+
+                        {% if cart_item_count > 0 %}
+                            <span class="absolute -top-1 -right-1 bg-primary text-dark text-xs font-semibold
+                                        w-5 h-5 flex items-center justify-center rounded-full shadow-lg">
+                                {{ cart_item_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </div>
+
 
                 <!-- BEFORE LOGIN → SHOW LOGIN BUTTON -->
                 {% if not request.user.is_authenticated %}

@@ -133,27 +133,20 @@
                         </a>
 
                         <!-- Add to Cart Button -->
-                        {% if product.in_stock_count == 0 %}
-                            <button class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
-                                bg-red-600 text-white font-semibold opacity-70 cursor-not-allowed" disabled>
+                        {% if product.get_first_available_variant %}
+                            <form action="{% url 'add_to_cart' product.get_first_available_variant.id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="mt-4 flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-primary text-dark font-semibold hover:opacity-90 transition">
+                                    <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
+                                    Add to Cart
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button bg-red-600 text-white font-semibold opacity-70 cursor-not-allowed" disabled>
                                 Out of stock
                             </button>
-                        {% else %}
-                           {% if product.variants.first %}
-                                <form action="{% url 'add_to_cart' product.variants.first.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <button 
-                                        class="mt-4 flex items-center justify-center gap-2 
-                                            w-full h-11 rounded-lg 
-                                            bg-primary text-dark font-semibold 
-                                            hover:opacity-90 transition">
-                                        <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
-                                        Add to Cart
-                                    </button>
-                                </form>
-                            {% endif %}
-
                         {% endif %}
+
 
                     </div>
 

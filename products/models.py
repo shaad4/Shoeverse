@@ -32,6 +32,10 @@ class Product(models.Model):
     def total_stock(self):
         return sum(variant.stock for variant in self.variants.all())
     
+    def get_first_available_variant(self):
+        """Returns the first active variant with stock > 0"""
+        return self.variants.filter(stock__gt=0, is_active=True).first()
+    
 
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")

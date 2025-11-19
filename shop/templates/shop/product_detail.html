@@ -135,27 +135,34 @@
 
 
             <!-- SIZE OPTIONS -->
-            <div class="space-y-3">
-                <p class="uppercase tracking-widest text-small text-muted">Size</p>
+            <form method="POST" action="{% url 'add_to_cart' 0 %}">
+                {% csrf_token %}
 
-                <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                    {% for variant in variants %}
-                        {%if variant.stock > 0%}
-                            <button class="rounded-button py-3 bg-panel border border-border-soft text-small hover:border-primary transition">
-                                {{ variant.size }}
-                            </button>
-                        {% else %}
-                            <button class="rounded-button py-3 bg-panel border border-red-500 text-red-400 
-                                text-small opacity-50 cursor-not-allowed"
-                                disabled>
-                                {{variant.size}}
-                            </button>
-                        {% endif %}
-                
+                <div class="space-y-3">
+                    <p class="uppercase tracking-widest text-small text-muted">Size</p>
 
-                    {% endfor %}
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                        {% for variant in variants %}
+                            <label class="relative cursor-pointer block">
+                                <input type="radio" 
+                                    name="variant_id" 
+                                    value="{{ variant.id }}" 
+                                    {% if variant.stock <= 0 %}disabled{% endif %}
+                                    class="peer hidden">
+
+                                <span class="rounded-button py-3 block text-center border 
+                                            {% if variant.stock <= 0 %}
+                                                border-red-500 text-red-400 opacity-50 cursor-not-allowed
+                                            {% else %}
+                                                border-border-soft bg-panel text-white peer-checked:bg-primary peer-checked:text-dark
+                                            {% endif %}">
+                                    {{ variant.size }}
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+
 
 
 
@@ -165,12 +172,19 @@
                 <!-- QUANTITY BOX -->
                 <div>
                     <p class="uppercase text-small tracking-widest text-muted mb-2">Quantity</p>
-                    <div class="h-12 flex items-center justify-between bg-panel border border-border-soft rounded-button px-4 w-36">
-                        <button class="text-white text-xl">−</button>
-                        <span>1</span>
-                        <button class="text-primary text-xl font-bold">+</button>
+                    <div class="h-12 flex items-center justify-between bg-panel border border-border-soft rounded-button px-4 w-40">
+                        
+                        <button type="button" onclick="changeQty(-1)" 
+                            class="text-white text-xl hover:text-primary">−</button>
+
+                        <input type="text" id="qty-input" name="quantity" value="1" 
+                            class="w-8 text-center bg-transparent text-white" readonly>
+
+                        <button type="button" onclick="changeQty(1)" 
+                            class="text-primary text-xl font-bold hover:text-white">+</button>
                     </div>
                 </div>
+
 
                 <!-- ADD TO CART -->
                 {% if is_out_of_stock %}
@@ -179,10 +193,14 @@
                         Out of Stock
                     </button>
                 {% else %}
-                    <button class="flex-1 h-12 bg-primary text-dark font-semibold rounded-button hover:opacity-90 transition w-full sm:w-auto">
+                    <button type="submit" 
+                        class="flex-1 h-12 bg-primary text-dark font-semibold rounded-button
+                            hover:opacity-90 transition w-full sm:w-auto">
                         Add to Cart
                     </button>
+
                 {% endif %}
+            </form>
 
 
                 <!-- WISHLIST -->
@@ -356,6 +374,15 @@
     zoomModal.addEventListener("click", () => {
         zoomModal.classList.add("hidden");
     });
+
+    function changeQty(amount) {
+    let qtyInput = document.getElementById("qty-input");
+    let qty = parseInt(qtyInput.value) + amount;
+    if (qty < 1) qty = 1;
+    if (qty > 4) qty = 4; // limit like cart
+    qtyInput.value = qty;
+}
+
 </script>
 
 
