@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Shoeverse | Cart{% endblock %}
+
+{% block content %}
+
+<main class="max-w-container mx-auto px-5 md:px-8 py-10 space-y-8">
+
+    <!-- Page title / steps -->
+    <section class="space-y-4">
+        <p class="text-sm uppercase tracking-[0.3em] text-muted">Cart</p>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-semibold tracking-tight">Review your picks</h1>
+                <p class="text-white/70 mt-1">Make sure the sizing and delivery look good before checkout.</p>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold">1</span>
+                    <span>Cart</span>
+                </div>
+                <span class="text-white/40">―――</span>
+                <div class="flex items-center gap-2 text-white/40">
+                    <span class="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center font-semibold">2</span>
+                    <span>Address</span>
+                </div>
+                <span class="text-white/40">―――</span>
+                <div class="flex items-center gap-2 text-white/40">
+                    <span class="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center font-semibold">3</span>
+                    <span>Payment</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid lg:grid-cols-3 gap-8">
+
+        <!-- Cart list -->
+        <div class="lg:col-span-2 space-y-6">
+
+            {% for item in cart_items %}
+            <article class="glass rounded-card border border-white/5 p-4 md:p-6">
+                <div class="flex items-start gap-4">
+
+                    <!-- Product image -->
+                    <div class="w-24 h-24 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+                        {% if item.variant.product.images.first %}
+                            <img src="{{ item.variant.product.images.first.image.url }}" class="w-24 h-24 object-contain">
+                        {% endif %}
+                    </div>
+
+                    <div class="flex-1 space-y-4">
+
+                        <!-- Product title and remove -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-center justify-between gap-4">
+                                <h2 class="font-semibold text-lg">{{ item.variant.product.name }}</h2>
+                                <a href="{% url 'remove_cart_item' item.id %}"
+                                   class="text-white/50 hover:text-primary transition text-sm">Remove</a>
+                            </div>
+                            <p class="text-sm text-white/70">
+                                {{ item.variant.product.category }} • Size: {{ item.variant.size }}
+                            </p>
+                        </div>
+
+                        <!-- Size and Quantity Section -->
+                        <div class="flex flex-wrap gap-4 items-center text-sm">
+
+                            <!-- Size Selector -->
+                            <label class="flex items-center gap-2 border border-white/15 rounded-full px-4 py-1">
+                                Size
+                                <select class="bg-transparent focus:outline-none text-white"
+                                        onchange="updateSize('{{ item.id }}', this.value)">
+                                    {% for variant in item.variant.product.variants.all %}
+                                        {% if variant.stock > 0 %}
+                                            <option value="{{ variant.id }}"
+                                                {% if variant.id == item.variant.id %}selected{% endif %}>
+                                                {{ variant.size }}
+                                            </option>
+                                        {% else %}
+                                            <option value="{{ variant.id }}" disabled>
+                                                {{ variant.size }} (Out of stock)
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </label>
+
+                            <!-- Quantity Counter -->
+                            <div class="flex items-center gap-2">
+                                <button class="w-8 h-8 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20"
+                                    onclick="updateQuantity('{{ item.id }}', {{ item.quantity|add:'-1' }})"
+                                    {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+
+                                <input type="text" class="w-10 text-center bg-transparent text-white" 
+                                    value="{{ item.quantity }}" readonly>
+
+                                <button class="w-8 h-8 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20"
+                                    onclick="updateQuantity('{{ item.id }}', {{ item.quantity|add:'1' }})"
+                                    {% if item.quantity >= item.variant.stock or item.quantity >= 4 %}disabled{% endif %}>+</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Price -->
+                    <p class="font-semibold text-lg whitespace-nowrap">₹{{ item.total_price }}</p>
+                </div>
+            </article>
+            {% empty %}
+            <p class="text-center text-white/70 py-10">Your cart is empty.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Summary card -->
+        <aside class="space-y-6">
+            <div class="glass rounded-card border border-white/5 p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Order summary</h2>
+                    <span class="text-sm text-white/50">{{ total_items }} items</span>
+                </div>
+
+                <div class="space-y-4 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Subtotal</span>
+                        <span>₹{{ subtotal }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">GST (18%)</span>
+                        <span>₹{{ gst }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Delivery Charges</span>
+                        {% if delivery_charge == 0 %}
+                            <span class="text-primary">Free</span>
+                        {% else %}
+                            <span>₹{{ delivery_charge }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-4 flex items-center justify-between">
+                    <span class="text-sm text-white/70">Total</span>
+                    <span class="text-2xl font-semibold">₹{{ grand_total }}</span>
+                </div>
+
+                <div class="space-y-3">
+                    <button class="w-full rounded-button-lg bg-primary text-dark font-semibold py-3 text-lg hover:opacity-90 transition">
+                        Proceed to checkout
+                    </button>
+                    <p class="text-xs text-white/60 text-center">
+                        By continuing you agree to the Shoeverse terms and privacy policy.
+                    </p>
+                </div>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<script>
+function updateQuantity(itemId, qty) {
+    fetch(`/cart/update/${itemId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ quantity: qty }),
+    }).then(() => location.reload());
+}
+
+function updateSize(itemId, newVariantId) {
+    fetch(`/cart/update-size/${itemId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ variant_id: newVariantId }),
+    }).then(() => location.reload());
+}
+</script>
+
+{% endblock %}

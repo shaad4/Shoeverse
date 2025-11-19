@@ -1,34 +1,23 @@
-# from django import forms
-# from .models import User
 
-# class ProfileForm(forms.ModelForm):
-#     class Meta:
-#         model = User
-#         fields = ['fullName', 'phoneNumber', 'profileImage', 'dateOfBirth', 'gender']
+from django import forms
+from .models import Address
 
-#         widgets = {
-#             'fullName': forms.TextInput(attrs={
-#                 'class': 'w-full bg-input-bg border border-input-border p-2 rounded-lg text-gray-200 focus:ring-2 focus:ring-primary',
-#                 'placeholder': 'Full Name'
-#             }),
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = [
+            'full_name', 'phone_number', 'email', 'address_line1', 'address_line2',
+            'city', 'state', 'pincode', 'address_type'
+        ]
 
-#             'phoneNumber': forms.TextInput(attrs={
-#                 'class': 'w-full bg-input-bg border border-input-border p-2 rounded-lg text-gray-200 focus:ring-2 focus:ring-primary',
-#                 'placeholder': 'Phone Number'
-#             }),
-
-#             # 👉 Hide file input completely (we will click the image instead)
-#             'profileImage': forms.ClearableFileInput(attrs={
-#                 'class': 'hidden',
-#                 'accept': 'image/*'
-#             }),
-
-#             'dateOfBirth': forms.DateInput(attrs={
-#                 'class': 'w-full bg-input-bg border border-input-border p-2 rounded-lg text-gray-200 focus:ring-2 focus:ring-primary',
-#                 'type': 'date',
-#             }),
-
-#             'gender': forms.Select(attrs={
-#                 'class': 'w-full bg-input-bg border border-input-border p-2 rounded-lg text-gray-200 focus:ring-2 focus:ring-primary'
-#             }),
-#         }
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'Enter your full name'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email address (Optional)'}),
+            'address_line1': forms.TextInput(attrs={'placeholder': 'Enter your address line 1'}),
+            'address_line2': forms.TextInput(attrs={'placeholder': 'Enter your address line 2 (Optional)'}),
+            'city': forms.TextInput(attrs={'placeholder': 'Enter your city'}),
+            'state': forms.TextInput(attrs={'placeholder': 'Enter your state'}),
+            'pincode': forms.TextInput(attrs={'placeholder': 'Enter zip code'}),
+            'address_type': forms.Select(attrs={'class': 'input-field'}),
+        }

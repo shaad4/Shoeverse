@@ -3,6 +3,11 @@ from products.models import Product, SubCategory
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 
+from products.models import Product, ProductVariant
+from django.contrib import messages
+from .models import CartItem
+from decimal import Decimal
+
 # Create your views here.
 
 
@@ -171,3 +176,98 @@ def  product_detail_view(request, product_id):
     }
 
     return render(request, "shop/product_detail.html", context)
+
+
+
+#cart
+
+def add_to_cart(request, variant_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to add items to cart.")
+        return redirect("login")
+    
+    variant = get_object_or_404(ProductVariant, id = variant_id)
+
+    if not variant.product.is_active  or not variant.is_active:
+        messages.error(request, "This product is not available")
+        return redirect("product_detail", product_id=variant.product.id)
+
+    if variant.stock <= 0:
+        messages.error(request, "This product is out of stock")
+        return redirect("product_detail", product_id = variant.product.id)
+    
+    cart_item, created = CartItem.objects.get_or_create(
+        user = request.user,
+        variant=variant,
+    )
+
+    if not created:
+        if cart_item.quantity < min(variant.stock, 4):
+            cart_item.quantity += 1
+            cart_item.save()
+            messages.success(request, "Quantity updated in cart")
+        else:
+            messages.warning(request, "Maximum quantity reached for this product")
+    else:
+        messages.success(request, "Item added to cart successfully")
+
+    ####  Delete from  wishlist
+    # from .models import Wishlist
+    # Wishlist.objects.filter(user=request.user, variant=variant).delete()
+
+    return redirect("cart")
+
+
+def cart_view(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to view your cart.")
+        return redirect("login")
+    
+
+    cart_items = CartItem.objects.filter(user=request.user).select_related("variant", "variant__product")
+
+    valid_items = cart_items.filter(
+        variant__is_active=True,
+        variant__product__is_active=True
+    )
+
+    if not valid_items.exists():
+        context = {
+            "cart_items": [],
+            "subtotal": Decimal('0'),
+            "gst": Decimal('0'),
+            "delivery_charge": Decimal('0'),
+            "grand_total": Decimal('0'),
+            "total_items": 0,
+        }
+        return render(request, "shop/cart.html", context)
+
+    
+    subtotal = sum(item.total_price for item in valid_items)
+
+    gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+
+    delivery_charge = Decimal('0') if subtotal >= Decimal('500') else Decimal('100')
+
+    grand_total  = subtotal + gst + delivery_charge
+
+    total_items = sum(item.quantity for item in valid_items)
+
+    context = {
+        "cart_items" : valid_items,
+        "subtotal" : subtotal,
+        "gst" :  gst,
+        "delivery_charge" : delivery_charge,
+        "grand_total" : grand_total,
+        "total_items" : total_items,
+
+    }
+
+    return render(request,  "shop/cart.html", context)
+
+
+def remove_cart_item(request, item_id):
+    item = get_object_or_404(CartItem, id = item_id, user = request.user)
+    item.delete()
+    messages.success(request, "Item removed form cart")
+    return redirect("cart")

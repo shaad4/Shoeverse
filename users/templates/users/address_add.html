@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Add New Address - Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex">
+
+    {% include "users/profile_sidebar.html" %}
+
+    <main class="flex-1 p-10 text-white">
+        <div class="max-w-3xl mx-auto">
+
+            <h1 class="text-heading font-bold mb-6">Add New Address</h1>
+
+            <div class="bg-[#122117]/90 backdrop-blur-sm rounded-2xl p-10 
+                        shadow-[0_8px_25px_rgba(0,0,0,0.5)] border border-[#264533]">
+
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-2 gap-6 text-sm">
+
+                        <!-- Full Name -->
+                        <div>
+                            <label class="block mb-1 font-medium">Full Name</label>
+                            <input type="text" name="full_name"
+                                value="{{ form.full_name.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter your full name">
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div>
+                            <label class="block mb-1 font-medium">Phone Number</label>
+                            <input type="text" name="phone_number"
+                                value="{{ form.phone_number.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter your phone number">
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label class="block mb-1 font-medium">Email (Optional)</label>
+                            <input type="email" name="email"
+                                value="{{ form.email.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter email address">
+                        </div>
+
+                        <!-- Address Type -->
+                        <div>
+                            <label class="block mb-1 font-medium">Address Type</label>
+                            <select name="address_type"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
+                                <option value="" disabled selected>Select Address Type</option>
+                                <option value="home">Home</option>
+                                <option value="work">Work</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Address Line 1 -->
+                        <div class="col-span-2">
+                            <label class="block mb-1 font-medium">Address Line 1</label>
+                            <input type="text" name="address_line1"
+                                value="{{ form.address_line1.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter your address line 1">
+                        </div>
+
+                        <!-- Address Line 2 -->
+                        <div class="col-span-2">
+                            <label class="block mb-1 font-medium">Address Line 2 (Optional)</label>
+                            <input type="text" name="address_line2"
+                                value="{{ form.address_line2.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter your address line 2">
+                        </div>
+
+                        <!-- City -->
+                        <div>
+                            <label class="block mb-1 font-medium">City</label>
+                            <input type="text" name="city"
+                                value="{{ form.city.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter city">
+                        </div>
+
+                        <!-- State -->
+                        <div>
+                            <label class="block mb-1 font-medium">State</label>
+                            <input type="text" name="state"
+                                value="{{ form.state.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter state">
+                        </div>
+
+                        <!-- ZIP -->
+                        <div>
+                            <label class="block mb-1 font-medium">ZIP / Postal Code</label>
+                            <input type="text" name="pincode"
+                                value="{{ form.pincode.value|default:'' }}"
+                                class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 
+                                       rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]"
+                                placeholder="Enter postal code">
+                        </div>
+
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-center mt-6 space-x-4">
+                        <button type="submit"
+                            class="bg-[#24E06B] hover:bg-[#2ECC71] text-black font-semibold 
+                                   py-2 px-8 rounded-lg shadow-lg transition">
+                            Save Address
+                        </button>
+
+                        <a href="{% url 'address' %}" 
+                            class="py-2 px-8 border border-gray-500 rounded-lg text-gray-300 
+                                   hover:bg-gray-700 transition">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

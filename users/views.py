@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib import messages
 from django.core.validators import validate_email
@@ -14,9 +14,10 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 
 
+from .forms import AddressForm
 
-
-from products.models import Product
+from products.models import Product, ProductVariant
+from .models import Address
 
 import logging
 
@@ -418,3 +419,78 @@ def profile_edit_view(request):
         return redirect("profile")
     
     return render(request, "users/profile_edit.html", {"user":user})
+
+def change_password_request(request):
+    user = request.user 
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    reset_link = request.build_absolute_uri(
+        f"/reset-password/{uid}/{token}/"
+    )
+
+    try:
+        password_reset_email(reset_link , user.email)
+        messages.success(request, f"password reset link sent to your email {user.email}")
+        logger.info(f"Password reset link sent to {user.email}")
+    except Exception as e:
+        messages.error(request, "Something went wrong. Please try again later.")
+        logger.error(f"Password reset failed for {user.email}: {e}")
+
+    return redirect("profile_edit")
+
+
+#address
+
+def address_list(request):
+    addresses = Address.objects.filter(user=request.user)
+    return render(request, 'users/address_list.html', {'addresses': addresses})
+
+def address_add_view(request):
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            address.save()
+            messages.success(request, "Address saved successfully!")
+            return redirect("address")
+    else:
+        form = AddressForm()
+
+    return render(request, 'users/address_add.html', {"form":form}) 
+    
+
+def address_edit_view(request, pk):
+    address = get_object_or_404(Address, id=pk, user=request.user)
+
+    if request.method == "POST":
+
+        address.full_name = request.POST.get("full_name")
+        address.phone_number = request.POST.get("phone_number")
+        address.email = request.POST.get("email")
+        address.address_type = request.POST.get("address_type")
+        address.address_line1 = request.POST.get("address_line1")
+        address.address_line2 = request.POST.get("address_line2")
+        address.city = request.POST.get("city")
+        address.state = request.POST.get("state")
+        address.pincode = request.POST.get("pincode")
+        address.save()
+
+        messages.success(request, "Address updated successfully!")
+        return redirect("address")
+    
+    return render(request,  "users/address_edit.html", {"address":address})
+
+
+def address_delete_view(request, pk):
+    address = get_object_or_404(Address, id = pk , user = request.user)
+
+    if request.method == "POST":
+        address.delete()
+        messages.success(request, "Address deleted successfully")
+        return redirect("address")
+    
+    
+

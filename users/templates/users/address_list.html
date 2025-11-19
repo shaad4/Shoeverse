@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}My Addresses - Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    {% include "users/profile_sidebar.html" %}
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 text-white bg-dark">
+        <div class="max-w-4xl mx-auto">
+
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-heading font-bold mb-2">My Addresses</h1>
+                <p class="text-small text-muted-light">Manage your delivery locations easily.</p>
+            </div>
+
+            <!-- Address Table -->
+            <div class="bg-sidebar-bg rounded-button border border-input-border overflow-hidden mb-6">
+
+                <!-- Table Header -->
+                <div class="bg-table-header-bg border-b border-input-border">
+                    <div class="flex text-small font-medium text-white">
+                        <div class="w-[200px] px-4 py-3">Full Name</div>
+                        <div class="w-[180px] px-4 py-3">Phone</div>
+                        <div class="w-[240px] px-4 py-3">Address</div>
+                        <div class="w-[130px] px-4 py-3">Type</div>
+                        <div class="flex-1 px-4 py-3 text-center">Actions</div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Address Rows -->
+                {% for address in addresses %}
+                <div class="flex border-t border-input-border text-small">
+                    <div class="w-[200px] px-4 py-4 flex items-center">{{ address.full_name }}</div>
+                    <div class="w-[180px] px-4 py-4 flex items-center text-muted-light">{{ address.phone_number }}</div>
+                    <div class="w-[240px] px-4 py-4 flex items-center text-muted-light">
+                        {{ address.address_line1 }}, {{ address.city }}, {{ address.state }} - {{ address.pincode }}
+                    </div>
+                    <div class="w-[130px] px-4 py-4 flex items-center justify-center">
+                        <span class="px-4 py-1.5 bg-sidebar-active rounded-button text-small text-white">{{ address.get_address_type_display }}</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex-1 px-4 py-4 flex items-center justify-center space-x-5">
+
+                        <!-- Edit Button -->
+                        <a href="{% url 'edit_address' address.id %}" 
+                           class="text-blue-300 hover:text-blue-400 transition">
+                            ✏️ Edit
+                        </a>
+
+                        <!-- Delete Button -->
+                        <button onclick="openDeleteModal('{{ address.id }}')" 
+                                class="text-red-400 hover:text-red-500 transition">
+                            🗑 Delete
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-6 text-muted-light">
+                    No addresses added yet.
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Add New Address Button -->
+            <div class="flex justify-start mt-6">
+                <a href="{% url 'add_address' %}" 
+                class="inline-block px-5 py-2 rounded-button
+                        bg-[#38E078] text-white font-semibold text-sm
+                        shadow-lg hover:bg-[#2ECC71] hover:shadow-xl
+                        transition duration-200 border border-[#4AFF9C]">
+                    + Add New Address
+                </a>
+            </div>
+
+
+
+        </div>
+    </main>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" 
+     class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
+
+    <div class="bg-[#122117] border border-gray-600 p-8 rounded-xl shadow-2xl 
+                max-w-sm w-full text-center">
+        
+        <h2 class="text-xl font-semibold text-white mb-4">Confirm Delete</h2>
+        <p class="text-gray-300 mb-6">Are you sure you want to delete this address?</p>
+
+        <form id="deleteForm" method="POST">
+            {% csrf_token %}
+            <div class="flex justify-center space-x-4">
+                <button type="submit"
+                    class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg transition">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                    class="px-5 py-2 border border-gray-400 rounded-lg text-gray-300 hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Modal JS -->
+<script>
+function openDeleteModal(addressId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/address/delete/${addressId}/`;
+    modal.classList.remove("hidden");
+}
+
+function closeDeleteModal() {
+    document.getElementById("deleteModal").classList.add("hidden");
+}
+</script>
+
+{% endblock %}

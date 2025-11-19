@@ -139,12 +139,20 @@
                                 Out of stock
                             </button>
                         {% else %}
-                            <button 
-                                class="mt-4 flex items-center justify-center gap-2 h-11 rounded-button 
-                                    bg-primary text-dark font-semibold hover:opacity-90 transition">
-                                <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
-                                Add to Cart
-                            </button>
+                           {% if product.variants.first %}
+                                <form action="{% url 'add_to_cart' product.variants.first.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button 
+                                        class="mt-4 flex items-center justify-center gap-2 
+                                            w-full h-11 rounded-lg 
+                                            bg-primary text-dark font-semibold 
+                                            hover:opacity-90 transition">
+                                        <img src="{% static 'images/icon-cart.svg' %}" class="w-5 h-5" alt="Cart icon">
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            {% endif %}
+
                         {% endif %}
 
                     </div>
