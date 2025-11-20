@@ -5,7 +5,7 @@ from django.db.models import Count, Q
 
 from products.models import Product, ProductVariant
 from django.contrib import messages
-from .models import CartItem
+from .models import CartItem, Wishlist
 from decimal import Decimal
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -169,12 +169,18 @@ def  product_detail_view(request, product_id):
             return redirect("shop_products")
         ##cart logics later##
 
+    is_in_wishlist = False
+    if request.user.is_authenticated:
+        is_in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
+
+
     context = {
         "product" : product,
         "variants" : variants,
         "images" : images,
         "related_products" : related_products,
         "is_out_of_stock" : is_out_of_stock,
+        "is_in_wishlist": is_in_wishlist,
     }
 
     return render(request, "shop/product_detail.html", context)
@@ -242,8 +248,11 @@ def cart_view(request):
 
     valid_items = cart_items.filter(
         variant__is_active=True,
-        variant__product__is_active=True
+        variant__product__is_active=True,
     )
+
+    out_of_stock_items = valid_items.filter(variant__stock__lte=0)
+    in_stock_items = valid_items.filter(variant__stock__gt=0)
 
     if not valid_items.exists():
         context = {
@@ -253,27 +262,33 @@ def cart_view(request):
             "delivery_charge": Decimal('0'),
             "grand_total": Decimal('0'),
             "total_items": 0,
+            
         }
         return render(request, "shop/cart.html", context)
 
-    
-    subtotal = sum(item.total_price for item in valid_items)
-
+    if in_stock_items.exists():
+        subtotal = sum(item.total_price for item in in_stock_items)
+        total_items = sum(item.quantity for item in in_stock_items)
+    else:
+        subtotal = Decimal('0')
+        total_items = 0
+        
     gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
 
     delivery_charge = Decimal('0') if subtotal >= Decimal('500') else Decimal('100')
 
     grand_total  = subtotal + gst + delivery_charge
 
-    total_items = sum(item.quantity for item in valid_items)
+   
 
     context = {
-        "cart_items" : valid_items,
+        "cart_items" : in_stock_items,
         "subtotal" : subtotal,
         "gst" :  gst,
         "delivery_charge" : delivery_charge,
         "grand_total" : grand_total,
         "total_items" : total_items,
+        "out_of_stock_items": out_of_stock_items,
 
     }
 
@@ -357,3 +372,91 @@ def update_cart_quantity(request, item_id):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+#wishlist
+
+def add_to_wishlist(request,  product_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to save items")
+        return redirect("login")
+    
+    product = get_object_or_404(Product, id=product_id)
+
+    wishlist_item,  created = Wishlist.objects.get_or_create(
+        user=request.user,
+          product=product
+    )
+    if created:
+        messages.success(request,  "Added to wishlist")
+    else:
+        messages.warning(request, "This product is already in your wishlist")
+
+    return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
+
+
+def wishlist_view(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+    
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
+
+    wishlist_total = sum(item.product.price for item in  wishlist_items)
+
+    return render(request, "shop/wishlist.html", {"wishlist_items":wishlist_items, "wishlist_total":wishlist_total})
+
+def remove_wishlist_item(request, item_id):
+    item = get_object_or_404(Wishlist, id=item_id, user=request.user)
+    item.delete()
+    messages.success(request, "Removed from wishlist")
+    return redirect('wishlist')
+
+
+def move_to_cart(request, item_id):
+    wishlist_item = get_object_or_404(Wishlist, id=item_id, user=request.user)
+    
+    variant = wishlist_item.product.variants.filter(is_active=True, stock__gt=0).first()
+
+    if not variant:
+        messages.error(request, "No valid variant available")
+        return redirect("wishlist")
+    
+    CartItem.objects.get_or_create(user=request.user, variant=variant)
+    wishlist_item.delete()
+    messages.success(request, "Moved to cart")
+
+    return redirect("cart")
+    
+
+def move_all_to_cart(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+    
+    wishlist_items = Wishlist.objects.filter(user=request.user)
+
+    if not wishlist_items.exists():
+        messages.warning(request, "Your wishlist is empty.")
+        return redirect("wishlist")
+    
+    for item in wishlist_items:
+        product = item.product
+        variant = product.variants.filter(is_active=True, stock__gt=0).first()
+
+        if variant:
+            CartItem.objects.get_or_create(user=request.user, variant=variant)
+
+        item.delete()
+
+    messages.success(request, "All items moved to cart successfully")
+    return redirect("cart")
+
+
+def clear_all_wishlist(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+    
+    Wishlist.objects.filter(user=request.user).delete()
+    messages.success(request, "All items cleared from wishlist.")
+    return redirect('wishlist')
+
+    

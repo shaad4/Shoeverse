@@ -122,13 +122,33 @@
 
                 <!-- SHOW SEARCH ONLY WHEN LOGGED IN -->
                 {% if request.user.is_authenticated %}
-                <form method="GET" action="{% url 'shop_search' %}" class="hidden md:block">
-                    <input type="text" name="q"
-                        placeholder="Search shoes..."
-                        value="{{ request.GET.q }}"
-                        class="bg-dark-green/60 border border-border-light px-4 py-2 h-10 rounded-button text-white text-small focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                </form>
+                    <form method="GET" action="{% url 'shop_products' %}" class="hidden md:block">
+                        
+                        <!-- SEARCH INPUT -->
+                        <input type="text" name="q"
+                            placeholder="Search shoes..."
+                            value="{{ q }}"
+                            class="bg-dark-green/60 border border-border-light px-4 py-2 h-10 rounded-button text-white text-small focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+
+                         <!-- Preserve main category -->
+                        {% if category %}
+                            <input type="hidden" name="category" value="{{ category }}">
+                        {% endif %}
+
+                        <!-- Preserve filters, sort, category, price range, size, etc -->
+                        <input type="hidden" name="sort" value="{{ sort }}">
+                        <input type="hidden" name="color" value="{{ active_color }}">
+                        <input type="hidden" name="subcategory" value="{{ active_subcategory }}">
+                        <input type="hidden" name="min_price" value="{{ min_price }}">
+                        <input type="hidden" name="max_price" value="{{ max_price }}">
+
+                        {% for size in active_sizes %}
+                            <input type="hidden" name="size" value="{{ size }}">
+                        {% endfor %}
+
+                        <button type="submit" class="hidden"></button>
+                    </form>
                 {% endif %}
 
                 <!-- CART ALWAYS VISIBLE -->
@@ -158,7 +178,7 @@
                 <!-- AFTER LOGIN → SHOW PROFILE ICON -->
                 {% if request.user.is_authenticated %}
                 <!-- Wishlist Icon -->
-                <a href="#"
+                <a href="{% url 'wishlist' %}"
                 class="bg-dark-green text-white p-2.5 h-10 w-10 rounded-button 
                         hover:opacity-90 transition flex items-center justify-center"
                 aria-label="Wishlist">

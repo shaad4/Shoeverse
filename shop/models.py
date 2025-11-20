@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
-from products.models import ProductVariant
+from products.models import ProductVariant, Product
+
 
 # Create your models here.
 
@@ -18,3 +19,18 @@ class CartItem(models.Model):
     def total_price(self):
         quantity = min(self.quantity, 4)
         return self.variant.product.price * quantity
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete= models.CASCADE, related_name='wishlist')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user','product')
+
+
+
+
+
+   

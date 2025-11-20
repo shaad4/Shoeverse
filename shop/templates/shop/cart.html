@@ -37,108 +37,91 @@
         <!-- Cart list -->
         <div class="lg:col-span-2 space-y-6">
 
+            {# In-stock items #}
             {% for item in cart_items %}
             <article class="glass rounded-card border border-white/5 p-4 md:p-6 cursor-pointer"
                     onclick="window.location.href='{% url 'product_detail' item.variant.product.id %}'">
 
                 <div class="flex items-start gap-4">
-
-                    <!-- Product Image -->
                     <div class="w-24 h-24 rounded-xl bg-white/10 overflow-hidden">
-                        
-                        <img src="{{ item.variant.product.images.first.image.url }}"
-                            class="w-full h-full object-cover">
+                        <img src="{{ item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
                     </div>
 
-                    <!-- Details Section -->
                     <div class="flex-1 space-y-4">
-
-                        <!-- Product name and remove link -->
-                        <div class="flex items-center justify-between"
-                            >
+                        <div class="flex items-center justify-between">
                             <h2 class="font-semibold text-lg">{{ item.variant.product.name }}</h2>
-                            <button 
-                                onclick="event.stopPropagation(); openRemoveModal('{{ item.id }}')"
+                            <button onclick="event.stopPropagation(); openRemoveModal('{{ item.id }}')" 
                                 class="text-white/50 hover:text-primary transition text-sm">
                                 Remove
                             </button>
-
                         </div>
 
-                        <p class="text-sm text-white/70"
-                        onclick="event.stopPropagation()">
-                            {{ item.variant.product.category }} • Size: {{ item.variant.size }}
-                        </p>
+                        <p class="text-sm text-white/70">{{ item.variant.product.category }} • Size: {{ item.variant.size }}</p>
 
-                        <!-- Size and Quantity Section -->
-                        <div class="flex flex-wrap gap-4 items-center text-sm"
-                            onclick="event.stopPropagation()">
-
-                            <!-- Size Selector -->
+                        <div class="flex flex-wrap gap-4 items-center text-sm">
                             <label class="flex items-center gap-2 border border-white/15 rounded-full px-4 py-1">
                                 Size
-                                <select class="bg-dark-green text-white border border-white/15 rounded-full px-2 py-1
-                                            focus:outline-none"
-                                        onchange="updateSize('{{ item.id }}', this.value)"
-                                        onclick="event.stopPropagation()">
+                                <select class="bg-dark-green text-white border border-white/15 rounded-full px-2 py-1"
+                                        onchange="updateSize('{{ item.id }}', this.value)">
                                     {% for variant in item.variant.product.variants.all %}
-                                        <option value="{{ variant.id }}"
-                                                {% if variant.id == item.variant.id %}selected{% endif %}>
+                                        <option value="{{ variant.id }}" {% if variant.id == item.variant.id %}selected{% endif %}>
                                             {{ variant.size }}
                                         </option>
                                     {% endfor %}
                                 </select>
                             </label>
 
-                            <!-- Quantity Counter (Updated Design) -->
                             <div class="flex items-center gap-3 select-none">
-
-                                <!-- Decrease Button -->
-                                <button 
-                                    class="w-9 h-9 flex items-center justify-center rounded-full 
-                                        bg-white/10 border border-white/10 text-white/80 
-                                        hover:bg-white/20 hover:border-white/30 
-                                        transition disabled:opacity-40 disabled:cursor-not-allowed"
-                                    onclick="event.stopPropagation();updateQuantity('{{ item.id }}', {{ item.quantity|add:'-1' }})"
-                                    {% if item.quantity <= 1 %}disabled{% endif %}>
+                                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/10
+                                                text-white/80 hover:bg-white/20 hover:border-white/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                        onclick="event.stopPropagation(); updateQuantity('{{ item.id }}', {{ item.quantity|add:'-1' }})"
+                                        {% if item.quantity <= 1 %}disabled{% endif %}>
                                     −
                                 </button>
 
-                                <!-- Quantity Display -->
-                                <span class="min-w-[40px] text-center font-semibold text-white/90" onclick="event.stopPropagation()">
-                                    {{ item.quantity }}
-                                </span>
+                                <span class="min-w-[40px] text-center font-semibold text-white/90">{{ item.quantity }}</span>
 
-                                <!-- Increase Button -->
-                                <button 
-                                    class="w-9 h-9 flex items-center justify-center rounded-full 
-                                        bg-white/10 border border-white/10 text-white/80 
-                                        hover:bg-white/20 hover:border-white/30 
-                                        transition disabled:opacity-40 disabled:cursor-not-allowed"
-                                    onclick="event.stopPropagation(); updateQuantity('{{ item.id }}', {{ item.quantity|add:'1' }})"
-                                    {% if item.quantity >= item.variant.stock or item.quantity >= 4 %}disabled{% endif %}>
+                                <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/10
+                                                text-white/80 hover:bg-white/20 hover:border-white/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                        onclick="event.stopPropagation(); updateQuantity('{{ item.id }}', {{ item.quantity|add:'1' }})"
+                                        {% if item.quantity >= item.variant.stock or item.quantity >= 4 %}disabled{% endif %}>
                                     +
                                 </button>
-
                             </div>
-
-
-
                         </div>
-
                     </div>
 
-                    <!-- Product Price -->
-                    <p class="font-semibold text-lg whitespace-nowrap"
-                    onclick="event.stopPropagation()">₹{{ item.total_price }}</p>
-
+                    <p class="font-semibold text-lg whitespace-nowrap">₹{{ item.total_price }}</p>
                 </div>
             </article>
-
-            {% empty %}
-            <p class="text-center text-white/70 py-10">Your cart is empty.</p>
             {% endfor %}
+
+            {# Out-of-stock items (separate loop) #}
+            {% for out_item in out_of_stock_items %}
+            <article class="glass rounded-card border border-red-500/40 p-4 md:p-6 bg-red-500/5">
+                <div class="flex items-start gap-4">
+                    <div class="w-24 h-24 rounded-xl overflow-hidden opacity-60">
+                        <img src="{{ out_item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 space-y-3">
+                        <h2 class="font-semibold text-lg text-red-400">{{ out_item.variant.product.name }}</h2>
+                        <p class="text-sm text-red-400">Out of Stock • Size: {{ out_item.variant.size }}</p>
+                        <button onclick="openRemoveModal('{{ out_item.id }}')"
+                                class="text-red-500 hover:text-red-600 transition text-sm">
+                            Remove from cart
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+
+            {# If nothing exists #}
+            {% if not cart_items and not out_of_stock_items %}
+                <p class="text-center text-white/70 py-10">Your cart is empty.</p>
+            {% endif %}
+
         </div>
+
 
         <!-- Summary card -->
         <aside class="space-y-6">
@@ -173,9 +156,14 @@
                 </div>
 
                 <div class="space-y-3">
-                    <button class="w-full rounded-button-lg bg-primary text-dark font-semibold py-3 text-lg hover:opacity-90 transition">
-                        Proceed to checkout
-                    </button>
+                    {% if cart_items %}
+                        <button class="w-full bg-primary text-dark rounded-button-lg py-3">Proceed to checkout</button>
+                    {% else %}
+                        <button class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 cursor-not-allowed" disabled>
+                            No valid items to checkout
+                        </button>
+                    {% endif %}
+
                     <p class="text-xs text-white/60 text-center">
                         By continuing you agree to the Shoeverse terms and privacy policy.
                     </p>

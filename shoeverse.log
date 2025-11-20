@@ -389,3 +389,25 @@
 [INFO] 2025-11-19 13:28:54,414 users: User logged in successfully: noushidhk@gmail.com
 [INFO] 2025-11-19 16:10:30,762 users: Login attempt for email: noushidhk@gmail.com
 [INFO] 2025-11-19 16:10:31,737 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-20 04:17:23,800 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-20 04:17:24,468 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-20 04:20:13,008 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-20 04:20:13,664 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-20 08:47:54,261 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-20 08:47:54,907 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-20 09:37:58,541 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-20 09:37:59,201 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-20 10:38:56,341 users: Signup attempt: email=rojali7022@izeao.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-20 10:38:56,397 users: User rojali7022@izeao.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-20 10:38:57,021 users: User created (not verified): rojali7022@izeao.com
+[INFO] 2025-11-20 10:38:57,025 users: OTP generated for rojali7022@izeao.com: 206693
+[INFO] 2025-11-20 10:39:01,056 users.utils: OTP email sent successfully to rojali7022@izeao.com
+[INFO] 2025-11-20 10:39:01,057 users: OTP email sent to rojali7022@izeao.com
+[INFO] 2025-11-20 10:39:01,118 users: OTP verification for user: rojali7022@izeao.com
+[INFO] 2025-11-20 10:40:55,937 users: OTP verification for user: rojali7022@izeao.com
+[INFO] 2025-11-20 10:40:55,941 users: OTP verified successfully for rojali7022@izeao.com
+[INFO] 2025-11-20 10:40:55,952 users: User logged in after OTP verification: rojali7022@izeao.com
+[INFO] 2025-11-20 10:41:05,769 users.utils: Password reset email sent successfully to rojali7022@izeao.com
+[INFO] 2025-11-20 10:41:05,770 users: Password reset link sent to rojali7022@izeao.com
+[INFO] 2025-11-20 10:47:02,858 users.utils: Password reset email sent successfully to rojali7022@izeao.com
+[INFO] 2025-11-20 10:47:02,872 users: reset email sent to rojali7022@izeao.com

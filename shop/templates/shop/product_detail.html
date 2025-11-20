@@ -203,10 +203,25 @@
             </form>
 
 
-                <!-- WISHLIST -->
-                <button class="h-12 w-12 flex items-center justify-center rounded-button border border-border-soft hover:border-primary hover:bg-primary/10 transition">
-                    <img src="{% static 'images/icon-heart.svg' %}" class="w-6 h-6" />
-                </button>
+            
+               <!-- Wishlist Button -->
+                <form method="POST" action="{% url 'add_to_wishlist' product.id %}">
+                    {% csrf_token %}
+                    <button 
+                        type="submit"
+                        class="h-12 w-12 flex items-center justify-center rounded-button border 
+                            {% if is_in_wishlist %}
+                                    bg-primary text-dark border-primary
+                            {% else %}
+                                    border-border-soft bg-dark-green text-white hover:border-primary hover:bg-primary/10
+                            {% endif %} transition">
+                        {% if is_in_wishlist %}
+                            <img src="{% static 'images/icon-heart-filled.svg' %}" class="w-6 h-6" />
+                        {% else %}
+                            <img src="{% static 'images/icon-heart.svg' %}" class="w-6 h-6" />
+                        {% endif %}
+                    </button>
+                </form>
             </div>
 
 

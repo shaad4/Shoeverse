@@ -99,13 +99,18 @@
                         </a>
 
                         <!-- Wishlist Button - Top Right -->
-                        <button 
-                            class="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full 
-                                bg-panel/70 backdrop-blur border border-border-soft hover:bg-primary/20 transition"
-                            aria-label="Wishlist"
-                        >
-                            <img src="{% static 'images/icon-heart.svg' %}" class="w-5 h-5">
-                        </button>
+                        <form action="{% url 'add_to_wishlist' product.id %}" method="POST" class="absolute top-3 right-3">
+                            {% csrf_token %}
+                            <button 
+                                type="submit"
+                                class="w-10 h-10 flex items-center justify-center rounded-full 
+                                    bg-panel/70 backdrop-blur border border-border-soft 
+                                    hover:bg-primary/20 transition"
+                                aria-label="Wishlist"
+                            >
+                                <img src="{% static 'images/icon-heart.svg' %}" class="w-5 h-5">
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Product Details -->
