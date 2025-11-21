@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Shoeverse | Order Success {% endblock %}
+
+{% block content %}
+<main class="pt-24 pb-16">
+    <div class="max-w-container mx-auto px-5 md:px-10 lg:px-20">
+        <div class="grid lg:grid-cols-[1.3fr_0.7fr] gap-10 items-start">
+
+            <!-- Success Banner Section -->
+            <section class="relative overflow-hidden rounded-card bg-black/40 shadow-soft border border-white/10">
+                <img src="{% static 'images/hero-main.png' %}" alt="Shoeverse hero" 
+                     class="absolute inset-0 h-full w-full object-cover opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+
+                <div class="relative z-10 px-8 py-12 lg:px-16 lg:py-16 flex flex-col items-center text-center gap-8">
+                    <div class="flex flex-col items-center gap-3">
+                        <span class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 text-primary">
+                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </span>
+                        <p class="uppercase tracking-[0.3em] text-small text-muted">Success</p>
+                        <h1 class="text-display font-black">Order Confirmed!</h1>
+                        <p class="text-body max-w-2xl text-muted">
+                            Thank you {{ order.user.fullName }}!  
+                            Your order has been successfully placed and we’ve started prepping your kicks.
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-4 justify-center w-full">
+                        <a href="#" 
+                           class="flex-1 min-w-[200px] bg-primary text-dark font-semibold py-3 rounded-button text-center">
+                            Track My Order
+                        </a>
+                        <a href="#" 
+                           class="flex-1 min-w-[200px] bg-white/10 text-white font-semibold py-3 rounded-button border border-white/20 text-center">
+                            Download Invoice
+                        </a>
+                        <a href="{% url 'shop_products' %}" 
+                           class="flex-1 min-w-[200px] bg-transparent text-white font-semibold py-3 rounded-button border border-white/20 text-center">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Order Summary Section -->
+            <aside class="bg-card border border-white/10 rounded-card p-6 space-y-6">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.2em] text-muted mb-2">Order Summary</p>
+                    <h2 class="text-heading font-semibold">Here’s what you can expect</h2>
+                </div>
+
+                <div class="space-y-4 text-body text-muted">
+                    <div class="flex items-start justify-between gap-6">
+                        <p class="text-white font-medium">Order ID</p>
+                        <p>#{{ order.order_id }}</p>
+                    </div>
+                    <div class="h-px bg-white/10"></div>
+
+                    <div class="flex items-start justify-between gap-6">
+                        <p class="text-white font-medium">Order Date</p>
+                        <p>{{ order.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="h-px bg-white/10"></div>
+
+                    <div class="flex items-start justify-between gap-6">
+                        <p class="text-white font-medium">Estimated Delivery</p>
+                        <p>{{ estimated_delivery_date }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between text-body text-muted">
+                        <span>Payment Method</span>
+                        <span>{{ order.payment_method }}</span>
+                    </div>
+                    
+                    
+                    <div class="h-px bg-white/10"></div>
+                    <div class="flex items-center justify-between text-heading font-semibold">
+                        <span>Total Amount</span>
+                        <span>₹{{ order.total_amount }}</span>
+                    </div>
+                </div>
+
+                <div class="rounded-[12px] bg-dark-green/60 border border-white/10 p-4">
+                    <p class="text-small text-muted mb-1">Delivery Address</p>
+                    <p class="text-body text-white">
+                        {{ order.address.full_name }} <br>
+                        {{ order.address.address_line1 }} <br>
+                        {{ order.address.address_line2 }} <br>
+                        {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}
+                    </p>
+                </div>
+
+                <div class="mt-6">
+                    <a href="#" 
+                    class="flex justify-center w-full mt-6 py-3 rounded-xl border border-primary/50 
+                            text-primary text-sm font-semibold hover:bg-primary/10">
+                        Need Help? Contact Support
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Shoeverse | Payment {% endblock %}
+
+{% block content %}
+<main class="mx-auto max-w-6xl px-4 py-12 lg:px-6">
+
+    <!-- Heading + Order Status -->
+    <section class="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 mb-10">
+
+        <!-- Left: Page heading -->
+        <div class="space-y-4">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-[0.4em] text-mint-100/70">
+                <span class="h-px w-8 bg-mint-300/60"></span>
+                Payment
+            </div>
+            <h1 class="text-3xl md:text-4xl font-semibold leading-tight">
+                Secure payment for your Shoeverse order
+            </h1>
+            <p class="max-w-2xl text-base text-mint-100/80">
+                Complete your purchase using secure encrypted checkout.
+            </p>
+        </div>
+
+        <!-- Right: Progress Tracker -->
+        <div class="flex items-center gap-3 text-sm mt-6 md:mt-0">
+
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold">1</span>
+                <span>Cart</span>
+            </div>
+
+            <span class="text-white/40">―――</span>
+
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold">2</span>
+                <span>Checkout</span>
+            </div>
+
+            <span class="text-white/40">―――</span>
+
+            <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-primary text-dark flex items-center justify-center font-semibold">3</span>
+                <span class="text-primary">Payment</span>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+
+        <!-- LEFT SECTION -->
+        <div class="space-y-8">
+
+            <!-- Payment Methods -->
+            <section
+              class="rounded-3xl border border-white/10 bg-forest-900/80 p-6 shadow-glass">
+
+                <div class="flex flex-col gap-2">
+                    <p class="text-lg font-semibold">Payment method</p>
+                    <p class="text-sm text-mint-100/80">
+                        Choose a payment option. All transactions are secured.
+                    </p>
+                </div>
+
+                
+
+                <!-- Cash on Delivery (only if COD selected before) -->
+                <div class="rounded-3xl border border-white/15 bg-forest-900/70 p-6 mt-6">
+                    <p class="text-base font-semibold">Cash on Delivery (COD)</p>
+                    <p class="text-sm text-mint-100/70 mt-1">Available for orders under ₹20,000.</p>
+
+                    <form method="POST" action="{% url 'place_order' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="address_id" value="{{ address.id }}">
+
+                        <button type="submit"
+                            class="mt-4 w-full rounded-2xl bg-primary py-3 text-base font-semibold text-dark hover:bg-primary/90 transition">
+                            Place Order using COD
+                        </button>
+                    </form>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- RIGHT SUMMARY -->
+        <aside class="space-y-6">
+            <section
+              class="rounded-3xl border border-white/10 bg-forest-900/80 p-6 shadow-glass">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-lg font-semibold">Order summary</p>
+                  <p class="text-sm text-mint-100/70">{{ total_items }} items</p>
+                </div>
+              </div>
+
+              <div class="mt-5 space-y-3 text-sm text-mint-100/80">
+                <div class="flex items-center justify-between">
+                    <span>Subtotal</span>
+                    <span class="text-white">₹{{ subtotal }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>Delivery</span>
+                    <span class="text-white">₹{{ delivery_charge }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>GST</span>
+                    <span class="text-white">₹{{ gst }}</span>
+                </div>
+              </div>
+
+              <div class="mt-5 border-t border-white/10 pt-4">
+                <div class="flex items-center justify-between text-lg">
+                  <p class="font-semibold">Total payable</p>
+                  <p class="font-semibold text-primary">₹{{ grand_total }}</p>
+                </div>
+              </div>
+            </section>
+        </aside>
+    </div>
+</main>
+{% endblock %}

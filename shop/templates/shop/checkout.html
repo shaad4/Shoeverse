@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Checkout · Shoeverse {% endblock %}
+
+{% block content %}
+<main class="mx-auto max-w-6xl px-4 py-12 lg:px-6">
+
+   <!-- Page Title + Step Progress Tracker (Side by Side) -->
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 mb-8">
+
+            <!-- Left: Page title and description -->
+            <div class="space-y-3">
+                <p class="text-sm uppercase tracking-[0.3em] text-muted">Checkout</p>
+                <h1 class="text-3xl md:text-4xl font-semibold">Review your order</h1>
+                <p class="text-base text-mint-100/80">
+                    Confirm delivery details and make sure everything looks perfect before placing your order.
+                </p>
+            </div>
+
+            <!-- Right: Step Progress Tracker -->
+            <div class="flex items-center gap-3 text-sm mt-6 md:mt-0">
+
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-semibold">1</span>
+                    <span>Cart</span>
+                </div>
+
+                <span class="text-white/40">―――</span>
+
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-primary text-dark flex items-center justify-center font-semibold">2</span>
+                    <span class="text-primary">Checkout</span>
+                </div>
+
+                <span class="text-white/40">―――</span>
+
+                <div class="flex items-center gap-2 text-white/40">
+                    <span class="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center font-semibold">3</span>
+                    <span>Payment</span>
+                </div>
+
+            </div>
+        </section>
+
+
+    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+
+        <!-- LEFT SECTION -->
+        <div class="space-y-8">
+
+            <!-- ORDER ITEMS -->
+            <section class="rounded-3xl border border-primary/30 bg-dark-green/40 px-6 py-6 shadow-card">
+                <div class="flex flex-col gap-2 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-lg font-semibold text-white">Your Order Details</p>
+                        <p class="text-sm text-muted">Your selected items are almost yours.</p>
+                    </div>
+                    <a href="{% url 'cart' %}" class="text-sm font-medium text-primary hover:text-white transition">
+                        Modify Cart
+                    </a>
+                </div>
+
+                <div class="mt-5 space-y-3 text-sm text-mint-100/80">
+                    <!-- Table Header -->
+                    <div class="grid grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] gap-4 bg-forest-800 px-4 py-3 text-xs uppercase tracking-wide text-primary rounded-2xl">
+                        <span>Product</span>
+                        <span>Price</span>
+                        <span>Qty</span>
+                        <span>Total</span>
+                    </div>
+
+                    {% for item in cart_items %}
+                    <div class="grid grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] gap-4 bg-forest-800/60 px-4 py-4 rounded-2xl">
+                        <div class="flex items-center gap-4">
+                            <img src="{{ item.variant.product.images.first.image.url }}" 
+                                 alt="{{ item.variant.product.name }}" 
+                                 class="h-14 w-14 rounded-2xl border border-white/10 bg-dark-green object-cover" />
+                            <div>
+                                <p class="font-semibold text-white">{{ item.variant.product.name }}</p>
+                                <p class="text-xs text-muted">Size {{ item.variant.size }}</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-white">₹{{ item.variant.product.price }}</p>
+                        <p class="font-semibold text-white">{{ item.quantity }}</p>
+                        <p class="font-semibold text-white">₹{{ item.total_price }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- ADDRESS SECTION -->
+            <section class="space-y-5 rounded-3xl border border-primary/30 bg-dark-green/40 px-6 py-6 shadow-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-lg font-semibold text-white">Select Delivery Address</p>
+                        <p class="text-sm text-muted">Choose your drop-off location.</p>
+                    </div>
+                    <a href="{% url 'address' %}" class="text-sm font-medium text-primary">Manage</a>
+                </div>
+
+                <form method="POST" action="{% url 'checkout' %}">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+
+                        {% for address in addresses %}
+                        <label class="flex cursor-pointer items-start gap-4 rounded-2xl border
+                            {% if address.is_default %} border-primary bg-dark-green/60 {% else %} border-white/10 bg-dark/40 hover:border-primary/60 {% endif %}
+                            p-5 transition w-full">
+
+                            <!-- RADIO INPUT: properly positioned -->
+                            <input type="radio" name="address_id" value="{{ address.id }}"
+                                class="mt-1 h-4 w-4 accent-primary cursor-pointer"
+                                {% if address.is_default %}checked{% endif %} />
+
+                            <div>
+                                <p class="text-base font-semibold text-white">{{ address.full_name }}</p>
+                                <p class="text-sm text-muted">
+                                    {{ address.address_line1 }}, {{ address.city }}, {{ address.state }} - {{ address.pincode }}
+                                </p>
+                            </div>
+                        </label>
+                        {% endfor %}
+
+                        <!-- Add Address Button -->
+                        <a href="{% url 'add_address' %}?next=checkout"
+                        class="flex w-full items-center justify-center gap-3 rounded-2xl border border-dashed 
+                                border-primary/60 bg-dark-green/30 px-4 py-4 text-sm font-semibold text-primary hover:border-primary">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-dark-green text-lg">+</span>
+                            Add New Address
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+
+
+        </div>
+
+        <!-- RIGHT SIDE SUMMARY -->
+        <aside class="space-y-6">
+            <section class="glass rounded-card border border-white/5 p-6 space-y-6 shadow-card">
+
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">Order Summary</h2>
+                <span class="text-sm text-white/50">{{ total_items }} items</span>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                
+                <div class="flex justify-between">
+                    <span class="text-white/70">Subtotal</span>
+                    <span class="font-semibold text-white">₹{{ subtotal }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-white/70">GST (18%)</span>
+                    <span class="font-semibold text-white">₹{{ gst }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-white/70">Delivery Charges</span>
+
+                    {% if is_free_delivery %}
+                        <span class="text-primary font-semibold">Free</span>
+                    {% else %}
+                        <span class="font-semibold text-white">₹{{ delivery_charge }}</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="border-t border-white/10 pt-4 flex items-center justify-between">
+                <span class="text-sm text-white/70">Total</span>
+                <span class="text-2xl font-semibold text-primary">₹{{ grand_total }}</span>
+            </div>
+
+            <p class="text-xs text-mint-100/70 mt-1">
+                Estimated Delivery: {{ estimated_delivery_date }}
+            </p>
+
+
+        </section>
+
+
+            
+
+            <button type="button" 
+                onclick="goToPayment()" 
+                class="w-full rounded-2xl bg-primary py-4 text-base font-semibold text-dark hover:bg-primary/90 transition">
+                Continue to Payment
+            </button>
+
+            </form>
+        </aside>
+    </div>
+</main>
+<script>
+function goToPayment() {
+    const selected = document.querySelector('input[name="address_id"]:checked');
+    if (!selected) {
+        alert("Please select a delivery address before continuing.");
+        return;
+    }
+    window.location.href = `/payment/${selected.value}/`;
+}
+</script>
+{% endblock %}

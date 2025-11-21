@@ -5,11 +5,15 @@ from django.db.models import Count, Q
 
 from products.models import Product, ProductVariant
 from django.contrib import messages
-from .models import CartItem, Wishlist
+from .models import CartItem, Wishlist, Address
 from decimal import Decimal
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
+from .models import Order, OrderItem
+
+from datetime import timedelta
+from django.utils.timezone import now
 # Create your views here.
 
 
@@ -275,7 +279,7 @@ def cart_view(request):
         
     gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
 
-    delivery_charge = Decimal('0') if subtotal >= Decimal('500') else Decimal('100')
+    delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
 
     grand_total  = subtotal + gst + delivery_charge
 
@@ -328,11 +332,7 @@ def update_size(request, item_id):
 
 
 
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-import json
-from decimal import Decimal
-from .models import CartItem
+
 
 @require_POST
 def update_cart_quantity(request, item_id):
@@ -460,3 +460,135 @@ def clear_all_wishlist(request):
     return redirect('wishlist')
 
     
+#checkout views
+
+def checkout_view(request):
+
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to proceed to checkout")
+        return  redirect("login")
+    
+    cart_items = CartItem.objects.filter(
+        user=request.user,
+        variant__is_active=True,
+        variant__product__is_active=True,
+    ).select_related('variant', 'variant__product')
+
+    if not cart_items.exists():
+        messages.error(request, "Your cart is empty!")
+        return redirect("cart")
+    
+    addresses = Address.objects.filter(user=request.user)
+
+    
+    subtotal = sum(item.total_price for item in cart_items)
+    gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+    delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
+    grand_total = subtotal + gst + delivery_charge
+    total_items = sum(item.quantity for item in cart_items)
+
+    is_free_delivery = (delivery_charge == Decimal('0'))
+
+    estimated_delivery_date = (now() + timedelta(days=5)).strftime("%d %b %Y")
+
+
+    context = {
+        'addresses' : addresses,
+        'cart_items' : cart_items,
+        'subtotal' : subtotal,
+        'grand_total' : grand_total,
+        'gst' : gst,
+        'total_items': total_items,
+        'estimated_delivery_date': estimated_delivery_date,
+        'is_free_delivery': is_free_delivery,
+
+
+    }
+    return render(request, 'shop/checkout.html', context)
+
+
+def payment_view(request, address_id):
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to continue payment.")
+        return redirect("login")
+    
+    address = get_object_or_404(Address, id=address_id, user=request.user)
+    cart_items = CartItem.objects.filter(user=request.user)
+
+    if not cart_items.exists():
+        messages.error(request, "Your cart is empty")
+        return redirect("cart")
+
+    subtotal = sum(item.total_price for item in cart_items)
+    gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+    delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
+    grand_total = subtotal + gst + delivery_charge
+
+    context = {
+        'address': address,
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'gst': gst,
+        'delivery_charge': delivery_charge,
+        'grand_total': grand_total,
+    }
+
+    return render(request, 'shop/payment.html', context)
+
+def place_order(request):
+    if request.method != "POST":
+        return redirect('checkout')
+    
+    address_id = request.POST.get('address_id')
+    if not address_id:
+        messages.error(request, "Please select a delivery address.")
+        return redirect("checkout")
+    
+    address = get_object_or_404(Address, id=address_id, user=request.user)
+
+    cart_items = CartItem.objects.filter(user=request.user)
+
+    if not cart_items.exists():
+        messages.error(request, "Your cart is empty")
+        return redirect("cart")
+    
+    subtotal = sum(item.total_price for item in cart_items)
+    gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+    delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
+    grand_total = subtotal + gst + delivery_charge
+
+    order = Order.objects.create(
+        user = request.user,
+        address = address,
+        total_amount = grand_total,
+        payment_method = 'COD',
+        status = 'PLACED',
+    )
+
+    for item in cart_items:
+        if item.quantity > item.variant.stock:
+            messages.error(request, f"{item.variant.product.name} is out of stock")
+            return redirect('checkout')
+        
+        OrderItem.objects.create(
+            order=order,
+            variant=item.variant,
+            quantity = item.quantity,
+            price = item.variant.product.price,
+        )
+        item.variant.stock -= item.quantity
+        item.variant.save()
+
+    cart_items.delete()
+
+    return redirect('order_success',order_id=order.id)
+
+
+
+
+def order_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    estimated_delivery_date = (now() + timedelta(days=5)).strftime("%d %b %Y")
+
+
+    return render(request, 'shop/order_success.html',{'order': order, "estimated_delivery_date" : estimated_delivery_date })

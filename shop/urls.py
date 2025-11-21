@@ -22,6 +22,13 @@ urlpatterns = [
    path("wishlist/move-all-to-cart/", views.move_all_to_cart, name="move_all_to_cart"),
    path("wishlist/clear-all/", views.clear_all_wishlist, name="wishlist_clear_all"),
 
+   path('checkout/', views.checkout_view, name='checkout'),
+   path('place-order/', views.place_order, name='place_order'),
+   path('order-success/<int:order_id>/', views.order_success, name='order_success'),
+
+   path('payment/<int:address_id>/', views.payment_view, name="payment"),
+   path('place_order/<int:address_id>/',views.place_order, name="place_order"),
+
 ]
 
 

@@ -157,12 +157,16 @@
 
                 <div class="space-y-3">
                     {% if cart_items %}
-                        <button class="w-full bg-primary text-dark rounded-button-lg py-3">Proceed to checkout</button>
+                        <a href="{% url 'checkout' %}" 
+                        class="w-full bg-primary text-dark rounded-button-lg py-3 text-center block font-semibold hover:opacity-90">
+                            Proceed to checkout
+                        </a>
                     {% else %}
-                        <button class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 cursor-not-allowed" disabled>
+                        <span class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 text-center block cursor-not-allowed">
                             No valid items to checkout
-                        </button>
+                        </span>
                     {% endif %}
+
 
                     <p class="text-xs text-white/60 text-center">
                         By continuing you agree to the Shoeverse terms and privacy policy.

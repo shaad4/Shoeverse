@@ -411,3 +411,30 @@
 [INFO] 2025-11-20 10:41:05,770 users: Password reset link sent to rojali7022@izeao.com
 [INFO] 2025-11-20 10:47:02,858 users.utils: Password reset email sent successfully to rojali7022@izeao.com
 [INFO] 2025-11-20 10:47:02,872 users: reset email sent to rojali7022@izeao.com
+[INFO] 2025-11-20 14:12:59,040 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-20 14:12:59,740 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 04:10:13,477 users: Signup attempt: email=cogon69565@gamepec.com, referral=GKG9QBQGJ1
+[INFO] 2025-11-21 04:10:13,561 users: User cogon69565@gamepec.com was referred by nepen79875@fantastu.com
+[INFO] 2025-11-21 04:10:14,181 users: User created (not verified): cogon69565@gamepec.com
+[INFO] 2025-11-21 04:10:14,185 users: OTP generated for cogon69565@gamepec.com: 774756
+[INFO] 2025-11-21 04:10:23,543 users.utils: OTP email sent successfully to cogon69565@gamepec.com
+[INFO] 2025-11-21 04:10:23,546 users: OTP email sent to cogon69565@gamepec.com
+[INFO] 2025-11-21 04:10:23,609 users: OTP verification for user: cogon69565@gamepec.com
+[INFO] 2025-11-21 05:39:05,155 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 05:39:05,815 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 06:19:59,835 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 06:20:00,494 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 06:32:16,508 users: Login attempt for email: noushidhk@gmail.com
+[WARNING] 2025-11-21 06:32:17,847 users: Login failed for email: noushidhk@gmail.com
+[INFO] 2025-11-21 06:32:25,202 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 06:32:25,849 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 08:27:28,126 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 08:27:28,782 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 09:41:28,746 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 09:41:29,508 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 10:14:26,110 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 10:14:26,760 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 10:57:25,028 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 10:57:25,678 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-21 11:25:18,306 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-21 11:25:18,950 users: Admin logged in: admin@shoeverse.com

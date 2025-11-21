@@ -455,6 +455,10 @@ def address_add_view(request):
             address.user = request.user
             address.save()
             messages.success(request, "Address saved successfully!")
+
+            if request.GET.get('next') == 'checkout':
+                return redirect("checkout")
+            
             return redirect("address")
     else:
         form = AddressForm()
