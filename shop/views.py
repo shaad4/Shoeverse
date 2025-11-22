@@ -595,3 +595,21 @@ def order_success(request, order_id):
 
 
     return render(request, 'shop/order_success.html',{'order': order, "estimated_delivery_date" : estimated_delivery_date })
+
+
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+
+    if request.method == "POST":
+        reason = request.POST.get("cancel_reason")
+        order.status = "Cancelled"
+        order.cancel_reason = reason
+        order.save()
+
+    order_items = OrderItem.objects.filter(order=order)
+    for item in order_items:
+        item.variant.stock += item.quantity
+        item.variant.save()
+
+    messages.success(request, "Order cancelled successfully")
+    return redirect('order_detail', order_id=order_id)

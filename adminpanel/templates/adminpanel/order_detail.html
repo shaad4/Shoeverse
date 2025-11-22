@@ -1,0 +1,203 @@
+{% extends "adminpanel/base_admin.html" %}
+{% block title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="p-6 text-white">
+
+  <!-- Breadcrumb -->
+  {% include 'adminpanel/partials/breadcrumb.html' %}
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold">Order #{{ order.order_id }}</h1>
+
+    <!-- Change Status Dropdown -->
+    <form method="POST" action="{% url 'update_order_status' order.order_id %}" class="flex items-center space-x-3">
+      {% csrf_token %}
+      <select name="status"
+              class="bg-[#1F1F1F] border border-gray-600 rounded px-4 py-2 text-white">
+          {% for key, value in order.STATUS_CHOICES %}
+              <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
+      </select>
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">
+          Update Status
+      </button>
+    </form>
+  </div>
+
+  <!-- Order Status Progress Bar -->
+ <section class="rounded-2xl border border-[#2a3b31] bg-[#18211d] p-4 md:p-5 mb-6">
+      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <p class="text-base md:text-lg font-medium">
+          Current Status: 
+          <span class="text-mint-300 font-bold">{{ order.get_status_display }}</span>
+        </p>
+
+        <!-- Dynamic Status Badge -->
+        <span class="
+            inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+            {% if order.status == 'Delivered' %}
+                bg-green-600 text-white
+            {% elif order.status == 'Shipped' %}
+                bg-blue-500 text-white
+            {% elif order.status == 'Processing' %}
+                bg-yellow-500 text-black
+            {% elif order.status == 'Cancelled' %}
+                bg-red-600 text-white
+            {% else %}
+                bg-gray-500 text-white
+            {% endif %}
+        ">
+          {{ order.get_status_display }}
+        </span>
+      </div>
+
+      <!-- Visual progress bar -->
+      <div class="mt-3 h-2 rounded-full bg-[#366347] overflow-hidden">
+        <div class="h-full 
+            {% if order.status == 'Pending' %} w-1/5 bg-yellow-500
+            {% elif order.status == 'Processing' %} w-2/5 bg-blue-400
+            {% elif order.status == 'Shipped' %} w-3/5 bg-blue-500
+            {% elif order.status == 'Delivered' %} w-full bg-green-500
+            {% elif order.status == 'Cancelled' %} w-full bg-red-600
+            {% endif %}
+        "></div>
+      </div>
+
+      {% if order.delivered_at %}
+      <p class="mt-3 text-sm text-[#96c4a8]">
+        Delivered on: {{ order.delivered_at|date:"M d, Y" }}
+      </p>
+      {% endif %}
+    </section>
+
+
+  <!-- Main Content Grid -->
+  <div class="grid lg:grid-cols-2 gap-6">
+
+    <!-- Left Column -->
+    <div class="space-y-6">
+
+      <!-- Order Items -->
+      <section class="p-6 bg-[#1A1A1A] border border-gray-700 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-3">Ordered Items</h2>
+        <table class="w-full text-sm">
+          <thead class="bg-[#1F1F1F] text-gray-300">
+            <tr>
+              <th class="p-2 text-left">Item</th>
+              <th class="p-2 text-center">Qty</th>
+              <th class="p-2 text-right">Price</th>
+              <th class="p-2 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr class="border-b border-gray-700">
+              <td class="py-3 flex items-center gap-3">
+                <img src="{{ item.variant.product.images.first.image.url }}"
+                     class="w-14 h-14 rounded object-cover border border-gray-600">
+                <div>
+                  <p class="font-medium">{{ item.variant.product.name }}</p>
+                  <p class="text-xs text-gray-400">Size {{ item.variant.size }}</p>
+                </div>
+              </td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-right">₹{{ item.price }}</td>
+              <td class="text-right font-semibold">₹{{ item.total_price }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Customer Info -->
+      <section class="p-6 bg-[#1A1A1A] border border-gray-700 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4">Customer Information</h2>
+        <p><strong>Name:</strong> {{ order.user.fullName }}</p>
+        <p><strong>Email:</strong> {{ order.user.email }}</p>
+        <p><strong>Phone:</strong> {{ order.address.phone_number }}</p>
+      </section>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-6">
+
+      <!-- Delivery Address -->
+      <section class="p-6 bg-[#1A1A1A] border border-gray-700 rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Delivery Address</h2>
+        <p>{{ order.address.full_name }}</p>
+        <p>{{ order.address.address_line1 }}</p>
+        {% if order.address.address_line2 %}<p>{{ order.address.address_line2 }}</p>{% endif %}
+        <p>{{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}</p>
+        <p class="mt-2">Phone: {{ order.address.phone_number }}</p>
+      </section>
+
+      <!-- Price Summary -->
+      <section class="p-6 bg-[#1A1A1A] border border-gray-700 rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Price Summary</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+          <div class="flex justify-between"><span>GST (18%)</span><span>₹{{ order.gst }}</span></div>
+          <div class="flex justify-between"><span>Delivery</span><span>₹{{ order.delivery_charge }}</span></div>
+          <div class="border-t border-gray-700 pt-2 flex justify-between font-semibold text-base">
+            <span>Total</span><span class="text-green-400">₹{{ order.total_amount }}</span>
+          </div>
+        </div>
+      </section>
+
+      {% if order.status == 'Cancelled' %}
+        <section class="p-6 bg-[#1A1A1A] border border-red-700 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-red-400 mb-3">Order Cancelled</h2>
+
+        {% if order.cancel_reason %}
+            <p class="text-sm mb-2">
+            <strong>Reason:</strong> {{ order.cancel_reason }}
+            </p>
+        {% endif %}
+
+        {% if order.cancelled_at %}
+            <p class="text-xs text-gray-400">
+            <strong>Cancelled on:</strong> {{ order.cancelled_at|date:"M d, Y, h:i A" }}
+            </p>
+        {% endif %}
+        </section>
+        {% endif %}
+
+
+      <!-- Admin Actions for Cancel / Return -->
+      {% if order.cancel_request %}
+      <section class="p-6 bg-[#1A1A1A] border border-red-700 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-red-300 mb-3">Cancellation Requested</h2>
+        <p class="text-sm mb-4"><strong>Reason:</strong> {{ order.cancel_request.reason }}</p>
+        <div class="flex gap-3">
+          <a href="#"
+             class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded text-white">Approve</a>
+          <a href="#"
+             class="px-5 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white">Reject</a>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if order.return_request %}
+      <section class="p-6 bg-[#1A1A1A] border border-yellow-700 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-yellow-300 mb-3">Return Requested</h2>
+        <p class="text-sm mb-2"><strong>Reason:</strong> {{ order.return_request.reason }}</p>
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          {% for img in order.return_request.images.all %}
+          <img src="{{ img.image.url }}" class="h-20 w-20 rounded object-cover border border-gray-600">
+          {% endfor %}
+        </div>
+        <div class="flex gap-3">
+          <a href="{% url 'approve_return' order.id %}"
+             class="px-5 py-2 bg-green-600 hover:bg-green-700 rounded text-white">Approve Return</a>
+          <a href="{% url 'reject_return' order.id %}"
+             class="px-5 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white">Reject</a>
+        </div>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

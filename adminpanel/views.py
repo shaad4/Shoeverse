@@ -12,6 +12,7 @@ from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
 from shop.models import  Order
 from .decorator import admin_required
+from django.utils.timezone import now
 
 logger = logging.getLogger("users")
 User = get_user_model()
@@ -597,3 +598,33 @@ def admin_order_list(request):
 
     return render(request, 'adminpanel/order_list.html', context)
 
+#order detail
+
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(Order, order_id = order_id)
+
+    return render(request, 'adminpanel/order_detail.html', {"order":order})
+
+
+def update_order_status(request, order_id):
+    order = get_object_or_404(Order, order_id=order_id)
+
+    if request.method == "POST":
+        new_status = request.POST.get('status')
+
+    if new_status == order.status:
+            messages.info(request, "No changes made.")
+            return redirect('admin_order_detail', order_id=order.order_id)
+    
+    order.status = new_status
+
+    if new_status == "Delivered":
+        order.delivered_at = now()
+
+    elif new_status != "Delivered":
+        order.delivered_at = None
+
+    order.save()
+
+    messages.success(request, f"Order status updated to {new_status}.")
+    return redirect('admin_order_detail', order_id=order.order_id)

@@ -67,6 +67,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, default='COD')
 
     cancel_reason = models.TextField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -97,3 +98,5 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"{self.variant.product.name} - Qty: {self.quantity}"
+    
+

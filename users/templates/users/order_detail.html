@@ -142,16 +142,81 @@
 
         <!-- ACTIONS -->
         <section class="rounded-2xl border border-[#2a3b31] bg-[#18211d] p-4 flex gap-3 justify-center">
-          <a href="{% url 'download_invoice' order.order_id %}"
-             class="rounded-xl bg-primary text-dark px-6 py-2 text-sm font-semibold">Download Invoice</a>
 
-          {% if order.status == 'Delivered' %}
-              <a href="#"
-                 class="rounded-xl bg-red-500 text-white px-6 py-2 text-sm font-semibold">Return Order</a>
+          <a href="{% url 'download_invoice' order.order_id %}"
+            class="rounded-xl bg-primary text-dark px-6 py-2 text-sm font-semibold">
+            Download Invoice
+          </a>
+
+          <!-- Cancel Order Button (Only Pending / Processing) -->
+          {% if order.status == 'Pending' or order.status == 'Processing' %}
+              <button 
+                onclick="openCancelModal('{{ order.order_id }}')"
+                class="rounded-xl bg-red-600 text-white px-6 py-2 text-sm font-semibold hover:bg-red-700 transition">
+                Cancel Order
+              </button>
           {% endif %}
+
+          <!-- Show Return button only if delivered -->
+          {% if order.status == 'Delivered' %}
+              <button 
+                onclick="openReturnModal('{{ order.order_id }}')"
+                class="rounded-xl bg-yellow-500 text-white px-6 py-2 text-sm font-semibold hover:bg-yellow-600 transition">
+                Return Order
+              </button>
+          {% endif %}
+
         </section>
+
       </aside>
     </div>
   </div>
 </div>
+
+<!-- Cancel Order Modal -->
+<div id="cancelModal" 
+     class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
+    <div class="bg-[#122117] border border-gray-600 p-8 rounded-xl shadow-2xl max-w-sm w-full text-center">
+        
+        <h2 class="text-xl font-semibold text-white mb-4">Cancel Order</h2>
+        <p class="text-gray-300 mb-4">Please provide a reason for cancellation:</p>
+
+        <form id="cancelForm" method="POST">
+            {% csrf_token %}
+            <textarea name="cancel_reason" rows="3" required
+                class="w-full rounded-lg p-2 bg-[#1A1F1B] text-gray-200 border border-gray-700 focus:ring focus:ring-primary"
+                placeholder="Enter your reason"></textarea>
+
+            <div class="flex justify-center gap-3 mt-6">
+                <button type="submit"
+                    class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition">
+                    Confirm Cancellation
+                </button>
+                <button type="button" onclick="closeCancelModal()"
+                    class="px-5 py-2 border border-gray-400 rounded-lg text-gray-300 hover:bg-gray-700 transition">
+                    Keep Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openCancelModal(orderId) {
+    const modal = document.getElementById("cancelModal");
+    const form = document.getElementById("cancelForm");
+
+    form.action = "{% url 'cancel_order' 'ORDER_ID_PLACEHOLDER' %}".replace(
+        'ORDER_ID_PLACEHOLDER',
+        orderId
+    );
+
+    modal.classList.remove("hidden");
+}
+
+function closeCancelModal() {
+    document.getElementById("cancelModal").classList.add("hidden");
+}
+</script>
+
 {% endblock %}
