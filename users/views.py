@@ -12,14 +12,17 @@ from users.models import EmailOTP
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-
+from django.db.models import Q
 
 from .forms import AddressForm
 
 from products.models import Product, ProductVariant
 from .models import Address
-
+from shop.models import Order
 import logging
+
+from shop.utils import generate_invoice
+from django.http import HttpResponse
 
 logger = logging.getLogger('users')
 User = get_user_model()
@@ -498,3 +501,55 @@ def address_delete_view(request, pk):
     
     
 
+#orders
+
+def order_list_view(request):
+    filter_value = request.GET.get('filter', 'ALL')
+    filter_options = [
+        ('ALL','All'),
+        ('Pending','Pending'),
+        ('Processing','Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled'),
+    ]
+    orders = Order.objects.filter(user = request.user).order_by("-created_at")
+
+
+    if filter_value != "ALL":
+        orders = orders.filter(status = filter_value).order_by("-created_at")
+
+    context  = {
+        'orders' : orders,
+        'filter_options' : filter_options,
+        'current_filter' : filter_value,
+    }
+
+    return render(request, 'users/order_list.html' , context)
+
+
+
+#order list
+
+def order_detail_view(request, order_id):
+    order = get_object_or_404(Order, order_id = order_id, user = request.user)
+
+    order_items = order.items.all()
+
+    address = order.address
+
+    context = {
+        "order":order,
+        "order_items" : order_items,
+        "address" : address,
+    }
+
+    return render(request, "users/order_detail.html", context)
+
+def download_invoice(request, order_id):
+    order = get_object_or_404(Order, order_id = order_id, user = request.user)
+    pdf_buffer = generate_invoice(order)
+
+    response  = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Dispostion'] = f"attachment; filename='Invoice_{order.order_id}.pdf'"
+    return response

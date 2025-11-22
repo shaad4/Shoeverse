@@ -438,3 +438,18 @@
 [INFO] 2025-11-21 10:57:25,678 users: User logged in successfully: noushidhk@gmail.com
 [INFO] 2025-11-21 11:25:18,306 users: Admin login attempt: admin@shoeverse.com
 [INFO] 2025-11-21 11:25:18,950 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-21 13:13:36,390 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-21 13:13:37,070 users: User logged in successfully: noushidhk@gmail.com
+[WARNING] 2025-11-22 03:51:18,853 users: OTP verification failed: No pending user session.
+[INFO] 2025-11-22 04:06:13,246 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-22 04:06:13,900 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-22 05:23:45,366 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-22 05:23:46,019 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-22 10:05:57,275 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-22 10:05:57,948 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-22 10:08:32,952 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-22 10:08:33,630 users: Admin logged in: admin@shoeverse.com
+[INFO] 2025-11-22 10:53:00,617 users: Login attempt for email: noushidhk@gmail.com
+[INFO] 2025-11-22 10:53:01,265 users: User logged in successfully: noushidhk@gmail.com
+[INFO] 2025-11-22 11:18:20,799 users: Admin login attempt: admin@shoeverse.com
+[INFO] 2025-11-22 11:18:21,448 users: Admin logged in: admin@shoeverse.com

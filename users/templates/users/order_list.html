@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}My Orders - Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    {% include "users/profile_sidebar.html" %}
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 text-white bg-dark">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-heading font-bold mb-2">My Orders</h1>
+                <p class="text-small text-muted-light">Track, review, or manage your recent orders.</p>
+            </div>
+
+        
+
+            <!-- Filter Tabs -->
+            <div class="flex space-x-6 text-small mb-4 border-b border-gray-700 pb-2">
+                {% for status,label in filter_options %}
+                    <a href="?filter={{ status }}"
+                      class="{% if current_filter == status %}text-primary border-b-2 border-primary pb-2{% else %}text-muted-light{% endif %}">
+                      {{ label }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- Orders Table -->
+            <div class="bg-sidebar-bg rounded-lg border border-input-border overflow-hidden">
+
+                <div class="bg-table-header-bg text-small font-medium text-white grid grid-cols-[150px,1.5fr,100px,120px,120px,130px] px-4 py-3 border-b border-input-border">
+                    <div>Order ID</div>
+                    <div>Product Details</div>
+                    <div>Total</div>
+                    <div>Order Date</div>
+                    <div>Status</div>
+                    <div class="text-center">Action</div>
+                </div>
+
+                {% for order in orders %}
+                <div class="grid grid-cols-[150px,1.5fr,100px,120px,120px,130px] px-4 py-4 border-b border-input-border text-small">
+
+                    <!-- Order ID -->
+                    <div class="flex items-center text-primary font-semibold">
+                        {{ order.order_id }}
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="space-y-1">
+                        {% for item in order.items.all|slice:":1" %}
+                            <p class="font-semibold">{{ item.variant.product.name }}</p>
+                            <p class="text-muted-light text-xs">Size {{ item.variant.size }} | Qty: {{ item.quantity }}</p>
+                        {% endfor %}
+                        {% if order.items.count > 1 %}
+                            <p class="text-xs text-gray-400">+ {{ order.items.count|add:"-1" }} more items</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Price -->
+                    <div class="font-semibold">₹{{ order.total_amount }}</div>
+
+                    <!-- Date -->
+                    <div class="text-muted-light">{{ order.created_at|date:"M d, Y" }}</div>
+
+                    <!-- Status -->
+                    <div>
+                        {% if order.status == 'Pending' %}
+                            <span class="px-3 py-1 rounded-full bg-yellow-500 text-black text-xs">Pending</span>
+
+                        {% elif order.status == 'Processing' %}
+                            <span class="px-3 py-1 rounded-full bg-blue-500 text-white text-xs">Processing</span>
+
+                        {% elif order.status == 'Shipped' %}
+                            <span class="px-3 py-1 rounded-full bg-purple-500 text-white text-xs">Shipped</span>
+
+                        {% elif order.status == 'Delivered' %}
+                            <span class="px-3 py-1 rounded-full bg-green-600 text-white text-xs">Delivered</span>
+
+                        {% elif order.status == 'Cancelled' %}
+                            <span class="px-3 py-1 rounded-full bg-red-500 text-white text-xs">Cancelled</span>
+
+                        {% else %}
+                            <span class="px-3 py-1 rounded-full bg-gray-500 text-white text-xs">Unknown</span>
+                        {% endif %}
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="flex items-center justify-center space-x-4">
+                        <a href="{% url 'order_detail' order.order_id %}" class="text-blue-300 hover:text-blue-400">Track Order</a>
+                        {% if order.status == 'DELIVERED' %}
+                        <a href="#" class="text-green-300 hover:text-green-400">Write Review</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted-light py-6">No orders found.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
 from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
-
+from shop.models import  Order
 from .decorator import admin_required
 
 logger = logging.getLogger("users")
@@ -550,3 +550,50 @@ def admin_category_delete(request, id):
     messages.success(request, f"Subcategory '{subcategory.name}' deleted successfully.")
 
     return redirect("admin_category_list")
+
+
+# order list
+def admin_order_list(request):
+    search_query = request.GET.get('search',"")
+    status_filter = request.GET.get("status","")
+    sort = request.GET.get('sort','')
+
+    orders = Order.objects.all()
+
+    if search_query:
+        orders = orders.filter(
+            Q(order_id__icontains=search_query)|
+            Q(user__fullName__icontains=search_query)|
+            Q(user__email__icontains = search_query)
+        )
+
+
+    if status_filter:
+        orders = orders.filter(status = status_filter)
+
+    if sort == 'date_desc':
+        orders = orders.order_by('-created_at')
+    elif sort == 'date_asc':
+        orders = orders.order_by('created_at')
+    elif sort ==  'amount_desc':
+        orders = orders.order_by('-total_amount')
+    elif sort == 'amount_asc':
+        orders = orders.order_by('total_amount')
+    else:
+        orders = orders.order_by('-created_at')
+
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj' : page_obj,
+        'search_query' : search_query,
+        'status_filter' : status_filter,
+        'sort' : sort,
+        'status_choices' : Order.STATUS_CHOICES,
+        'active_page' : "orders",
+    }
+
+    return render(request, 'adminpanel/order_list.html', context)
+

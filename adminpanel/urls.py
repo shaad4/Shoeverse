@@ -27,6 +27,9 @@ urlpatterns = [
     path("categories/edit/<int:id>/", views.admin_category_edit, name="admin_category_edit"),
     path("categories/delete/<int:id>/", views.admin_category_delete, name="admin_category_delete"),
 
+    path("orders/", views.admin_order_list, name='admin_order_list'),
+
+
 
     path("logout/", views.admin_logout_view, name="admin_logout"),
 

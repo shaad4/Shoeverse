@@ -30,11 +30,11 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-4 justify-center w-full">
-                        <a href="#" 
+                        <a href="{% url 'order_detail' order.order_id %}" 
                            class="flex-1 min-w-[200px] bg-primary text-dark font-semibold py-3 rounded-button text-center">
                             Track My Order
                         </a>
-                        <a href="#" 
+                        <a href="{% url 'download_invoice' order.order_id %}" 
                            class="flex-1 min-w-[200px] bg-white/10 text-white font-semibold py-3 rounded-button border border-white/20 text-center">
                             Download Invoice
                         </a>

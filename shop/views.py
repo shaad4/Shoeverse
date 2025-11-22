@@ -560,9 +560,12 @@ def place_order(request):
     order = Order.objects.create(
         user = request.user,
         address = address,
+        subtotal = subtotal,
+        gst=gst,
+        delivery_charge= delivery_charge,
         total_amount = grand_total,
         payment_method = 'COD',
-        status = 'PLACED',
+        status = 'Pending',
     )
 
     for item in cart_items:

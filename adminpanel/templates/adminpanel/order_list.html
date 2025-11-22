@@ -1,0 +1,169 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Order Management{% endblock %}
+{% block content %}
+
+<!-- Include breadcrumb -->
+{% include 'adminpanel/partials/breadcrumb.html' %}
+
+<div x-data="{ confirmOpen: false, confirmUrl: '', confirmText: '' }">
+
+    <h1 class="text-2xl font-semibold text-white">Order Management</h1>
+
+    <!-- TOP BAR: Search -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+        <!-- SEARCH -->
+        <form method="get" class="flex items-center gap-2 flex-1 max-w-lg">
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search Order ID or Customer..."
+                class="w-full px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border"
+            />
+            <button
+                type="submit"
+                class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 whitespace-nowrap">
+                Search
+            </button>
+        </form>
+
+    </div>
+
+    <!-- FILTER BAR -->
+    <form method="get" id="filterForm"
+        class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+        <!-- Preserve search -->
+        <input type="hidden" name="search" value="{{ search_query }}">
+
+        <!-- STATUS FILTER -->
+        <select name="status"
+                onchange="this.form.submit()"
+                class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">All Status</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- SORT FILTER -->
+        <select name="sort"
+                onchange="this.form.submit()"
+                class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">Sort By</option>
+            <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Newest First</option>
+            <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Oldest First</option>
+            <option value="amount_desc" {% if sort == 'amount_desc' %}selected{% endif %}>Amount High → Low</option>
+            <option value="amount_asc" {% if sort == 'amount_asc' %}selected{% endif %}>Amount Low → High</option>
+        </select>
+
+        <!-- CLEAR FILTER -->
+        <a href="{% url 'admin_order_list' %}"
+            class="px-4 py-2 bg-gray-700 text-white rounded-md text-center hover:bg-gray-600">
+            Clear Filters
+        </a>
+    </form>
+
+    <!-- ORDER TABLE -->
+    <div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
+        <table class="min-w-full text-white">
+            <thead class="bg-[#1F1F1F] text-gray-300 uppercase text-sm">
+            <tr>
+                <th class="px-6 py-3 text-left">#</th>
+                <th class="px-6 py-3 text-left">Order ID</th>
+                <th class="px-6 py-3 text-left">Customer</th>
+                <th class="px-6 py-3 text-left">Date</th>
+                <th class="px-6 py-3 text-left">Amount</th>
+                <th class="px-6 py-3 text-left">Payment</th>
+                <th class="px-6 py-3 text-left">Status</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for order in page_obj %}
+                <tr class="border-t border-border hover:bg-[#2A2A2A] transition">
+
+                    <td class="px-6 py-4">{{ forloop.counter0|add:page_obj.start_index }}</td>
+
+                    <td class="px-6 py-4 font-mono text-primary">
+                        {{ order.order_id }}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <div class="font-medium">{{ order.user.fullName|default:order.user.email }}</div>
+                        <div class="text-xs text-gray-400">{{ order.user.email }}</div>
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-300">
+                        {{ order.created_at|date:"d M Y, H:i" }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold">
+                        ₹{{ order.total_amount }}
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-300">
+                        {{ order.payment_method }}
+                    </td>
+
+                    <!-- STATUS BADGE -->
+                    <td class="px-6 py-4">
+                        {% if order.status == "Pending" %}
+                            <span class="px-2 py-1 text-xs bg-yellow-700 text-white rounded">Pending</span>
+                        {% elif order.status == "Processing" %}
+                            <span class="px-2 py-1 text-xs bg-blue-700 text-white rounded">Processing</span>
+                        {% elif order.status == "Shipped" %}
+                            <span class="px-2 py-1 text-xs bg-indigo-700 text-white rounded">Shipped</span>
+                        {% elif order.status == "Delivered" %}
+                            <span class="px-2 py-1 text-xs bg-green-700 text-white rounded">Delivered</span>
+                        {% elif order.status == "Cancelled" %}
+                            <span class="px-2 py-1 text-xs bg-red-700 text-white rounded">Cancelled</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td class="px-6 py-4 text-center space-x-3">
+
+                        <a href="#"
+                           class="text-blue-400 hover:underline">View</a>
+                           
+                    </td>
+
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-6 text-gray-400">No orders found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex justify-between items-center text-gray-400 text-sm mt-4">
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}"
+                   class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Prev</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
+                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <a href="?page={{ num }}"
+                       class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}"
+                   class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

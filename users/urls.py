@@ -21,7 +21,13 @@ urlpatterns = [
     path("address/add/", views.address_add_view, name="add_address"),
     path("address/edit/<int:pk>/", views.address_edit_view, name="edit_address"),
     path("address/delete/<int:pk>/", views.address_delete_view, name="delete_address"),
+    
+    path("my-orders/", views.order_list_view, name="order_list"),
+    path("order/<str:order_id>/", views.order_detail_view, name="order_detail"),
+    path("invoice/<str:order_id>/", views.download_invoice, name="download_invoice"),
 
+
+    
 
     
 ]
