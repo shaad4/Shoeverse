@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Return Items | Order #{{ order.order_id }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white pb-20">
+
+    <!-- Header Section -->
+    <div class="bg-[#18211d] border-b border-[#2a3b31] mb-8 sticky top-0 z-20">
+        <div class="mx-auto max-w-3xl px-4 py-6">
+            <nav class="flex items-center gap-2 text-sm text-[#96c4a8]/70 mb-3">
+                <a href="{% url 'home' %}" class="hover:text-white transition-colors">Home</a>
+                <span>/</span>
+                <a href="{% url 'order_list' %}" class="hover:text-white transition-colors">Orders</a>
+                <span>/</span>
+                <a href="{% url 'order_detail' order.order_id %}" class="hover:text-white transition-colors">Order #{{ order.order_id }}</a>
+                <span>/</span>
+                <span class="text-white">Return</span>
+            </nav>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">Return Items</h1>
+                    <p class="text-sm text-gray-400 mt-1">Select items and provide details for your return request.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mx-auto max-w-3xl px-4">
+        <form method="POST" action="{% url 'submit_return_request' order.order_id %}" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- STEP 1: Select Items -->
+            <section class="animate-fade-in-up">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">1</span>
+                        <h2 class="text-lg font-bold text-white">Select Items to Return</h2>
+                    </div>
+                    <!-- Select All Button -->
+                    <button type="button" id="selectAllBtn" class="text-sm font-medium text-[#96c4a8] hover:text-white bg-[#2a3b31]/50 px-3 py-1.5 rounded-lg border border-[#2a3b31] transition-all hover:bg-[#2a3b31]">
+                        Select All
+                    </button>
+                </div>
+
+                <div class="grid gap-3">
+                    {% for item in items %}
+                    <label class="relative group cursor-pointer">
+                        <!-- Changed type="radio" to type="checkbox" -->
+                        <input type="checkbox" name="item_id" value="{{ item.id }}" class="peer sr-only item-checkbox">
+
+                        
+                        <div class="flex items-start gap-4 p-4 rounded-xl border border-[#2a3b31] bg-[#18211d] transition-all duration-200 peer-checked:border-amber-500 peer-checked:bg-[#1f1a18] peer-checked:shadow-lg peer-checked:shadow-amber-900/10 hover:bg-[#1f2b26]">
+                            
+                            <!-- Checkbox Indicator (Square) -->
+                            <div class="mt-1 w-5 h-5 rounded border border-gray-500 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-colors">
+                                <!-- Checkmark Icon -->
+                                <svg class="w-3.5 h-3.5 text-[#121714] opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+
+                            <!-- Product Image -->
+                            <div class="w-20 h-20 rounded-lg bg-[#121714] border border-[#2a3b31] overflow-hidden flex-shrink-0">
+                                <img src="{{ item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
+                            </div>
+
+                            <!-- Details -->
+                            <div class="flex-1">
+                                <h3 class="font-bold text-white text-base group-hover:text-[#96c4a8] transition-colors">{{ item.variant.product.name }}</h3>
+                                <p class="text-sm text-gray-400 mt-0.5">Size: {{ item.variant.size }}</p>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-sm font-medium text-white bg-[#2a3b31]/50 px-2 py-0.5 rounded border border-[#2a3b31]">
+                                        ₹{{ item.price }} × {{ item.quantity }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Border Glow (Pseudo-element) -->
+                        <div class="absolute inset-0 border-2 border-amber-500 rounded-xl opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></div>
+                    </label>
+                    {% empty %}
+                    <div class="p-8 text-center border border-dashed border-[#2a3b31] rounded-xl bg-[#18211d]/50">
+                        <p class="text-gray-500">No items available for return from this order.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- STEP 2: Return Details -->
+            <section class="animate-fade-in-up" style="animation-delay: 100ms;">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">2</span>
+                    <h2 class="text-lg font-bold text-white">Return Reason</h2>
+                </div>
+
+                <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 shadow-xl shadow-black/20 space-y-5">
+                    
+                    
+
+                    <!-- Reason Textarea -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Why are you returning this?</label>
+                        <textarea name="reason" required rows="4" 
+                            class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl p-4 text-white placeholder-gray-600 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none"
+                            placeholder="Please provide details about the issue (e.g., Size too small, Damaged product)..."></textarea>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Upload Photos (Optional)</label>
+                        <div class="relative">
+                            <input type="file" name="images" multiple accept="image/*" 
+                                class="block w-full text-sm text-gray-400
+                                file:mr-4 file:py-2.5 file:px-4
+                                file:rounded-lg file:border-0
+                                file:text-xs file:font-semibold
+                                file:bg-[#2a3b31] file:text-[#96c4a8]
+                                hover:file:bg-[#364a3e]
+                                cursor-pointer border border-[#2a3b31] rounded-xl bg-[#121714]">
+                        </div>
+                        <p class="text-xs text-gray-600 mt-2">Max 3 images. Useful for damage or defect claims.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 3: Pickup Address -->
+            <section class="animate-fade-in-up" style="animation-delay: 200ms;">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">3</span>
+                    <h2 class="text-lg font-bold text-white">Select Pickup Address</h2>
+                </div>
+
+                <div class="grid gap-3">
+                    {% for address in addresses %}
+                    <label class="relative group cursor-pointer">
+                        <input type="radio" name="pickup_address" value="{{ address.id }}" required class="peer sr-only">
+                        
+                        <div class="p-4 rounded-xl border border-[#2a3b31] bg-[#18211d] transition-all duration-200 peer-checked:border-amber-500 peer-checked:bg-[#1f1a18] hover:bg-[#1f2b26] flex items-start gap-3">
+                            <!-- Radio Indicator -->
+                            <div class="mt-1 w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-colors flex-shrink-0">
+                                <div class="w-1.5 h-1.5 bg-[#121714] rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            </div>
+
+                            <div>
+                                <p class="font-bold text-white text-sm">{{ address.full_name }}</p>
+                                <p class="text-gray-400 text-sm mt-1 leading-relaxed">
+                                    {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}, 
+                                    {{ address.city }} - <span class="text-gray-300">{{ address.pincode }}</span>
+                                </p>
+                                <p class="text-xs text-[#96c4a8] mt-2 font-medium">Phone: {{ address.phone_number }}</p>
+                            </div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Policy Notice -->
+            <div class="bg-amber-900/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 text-sm text-amber-200/80">
+                <svg class="w-5 h-5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div>
+                    <p class="font-semibold text-amber-500 mb-1">Return Policy</p>
+                    <ul class="list-disc list-inside space-y-0.5 text-xs opacity-80">
+                        <li>Returns accepted within 7 days of delivery.</li>
+                        <li>Items must be unused and in original packaging.</li>
+                        <li>Refunds processed after quality check.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 pb-12">
+                <button type="submit" class="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg shadow-amber-900/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-lg">
+                    Submit Return Request
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+                <button type="button" onclick="history.back()" class="w-full mt-3 py-3 text-gray-500 hover:text-white text-sm font-medium transition-colors">
+                    Cancel and Go Back
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        
+        if (selectAllBtn && checkboxes.length > 0) {
+            
+            // Function to update button text based on selection state
+            function updateButtonText() {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAllBtn.textContent = allChecked ? "Deselect All" : "Select All";
+            }
+
+            // Click handler for Select/Deselect All
+            selectAllBtn.addEventListener('click', function() {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                
+                checkboxes.forEach(cb => {
+                    cb.checked = !allChecked;
+                });
+                
+                updateButtonText();
+            });
+
+            // Update button text when individual items are toggled
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateButtonText);
+            });
+        }
+    });
+</script>
+{% endblock %}

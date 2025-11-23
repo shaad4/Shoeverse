@@ -18,7 +18,7 @@ from .forms import AddressForm
 
 from products.models import Product, ProductVariant
 from .models import Address
-from shop.models import Order
+from shop.models import Order, ReturnRequest
 import logging
 
 from shop.utils import generate_invoice
@@ -532,16 +532,36 @@ def order_list_view(request):
 #order list
 
 def order_detail_view(request, order_id):
-    order = get_object_or_404(Order, order_id = order_id, user = request.user)
-
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
 
-    address = order.address
+    has_returnable_items = False  # To control main return button
+    today = timezone.now().date()
+
+    # Only check eligibility if the order was delivered
+    if order.status == "Delivered" and order.delivered_at:
+        return_deadline = order.delivered_at.date() + timedelta(days=10)
+
+        for item in order_items:
+            # Check if already returned
+            has_return_request = ReturnRequest.objects.filter(order_item=item).exists()
+
+            # Check if return is allowed (within time and not already returned)
+            item.is_return_eligible = (today <= return_deadline) and not has_return_request
+
+        # Check if at least one item is eligible
+        has_returnable_items = any(item.is_return_eligible for item in order_items)
+    else:
+        # No return eligibility if not delivered
+        for item in order_items:
+            item.is_return_eligible = False
 
     context = {
-        "order":order,
-        "order_items" : order_items,
-        "address" : address,
+        "order": order,
+        "order_items": order_items,
+        "address": order.address,
+        "has_returnable_items": has_returnable_items,  # For main button
+        "return_deadline": return_deadline if order.delivered_at else None,
     }
 
     return render(request, "users/order_detail.html", context)

@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
 from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
-from shop.models import  Order
+from shop.models import  Order, ReturnRequest
 from .decorator import admin_required
 from django.utils.timezone import now
 
@@ -628,3 +628,96 @@ def update_order_status(request, order_id):
 
     messages.success(request, f"Order status updated to {new_status}.")
     return redirect('admin_order_detail', order_id=order.order_id)
+
+#return 
+def admin_return_list(request):
+    returns = ReturnRequest.objects.select_related(
+        'order_item__order',
+        'order_item__variant__product',
+        'user'
+    )
+
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        returns = returns.filter(
+            Q(order_item__order__order_id__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(order_item__variant__product__name__icontains=search_query)
+        )
+
+    status_filter = request.GET.get('status')
+    if status_filter:
+        returns = returns.filter(status=status_filter)
+
+    sort = request.GET.get('sort', '')
+    if sort == 'newest':
+        returns = returns.order_by('-requested_at')
+    elif sort == 'oldest':
+        returns = returns.order_by('requested_at')
+    elif sort == 'amount_desc':
+        returns = returns.order_by('-refund_amount')
+    elif sort == 'amount_asc':
+        returns = returns.order_by('refund_amount')
+
+    paginator = Paginator(returns, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'sort': sort,
+        'return_status_choices': ReturnRequest.RETURN_STATUS_CHOICES,
+        'active_page': 'returns',
+    }
+
+    return render(request, 'adminpanel/returns_list.html', context)
+
+
+
+def admin_return_detail(request, return_id):
+    return_request = get_object_or_404(
+        ReturnRequest.objects.select_related(
+            "order_item__order",
+            "order_item__variant__product",
+            "user",
+            "pickup_address"
+        ),
+        id=return_id
+    )
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        admin_comments = request.POST.get("comments", "")
+        refund_mode = request.POST.get("refund_mode", "")
+        pickup_date = request.POST.get("pickup_date", "")
+
+        return_request.status = new_status
+
+        if pickup_date:
+            return_request.pickup_date = pickup_date
+
+        if refund_mode and new_status in ["REFUND_INITIATED", "REFUNDED"]:
+            return_request.refund_mode = refund_mode
+
+        if admin_comments:
+            return_request.comments = admin_comments
+
+        if new_status == "REFUND_INITIATED":
+            return_request.refund_amount = return_request.calculate_refund_amount()
+            messages.info(request, f"Refund Initiated for ₹{return_request.refund_amount}")
+
+        return_request.save()
+
+        messages.success(request, "Return request updated successfully.")
+        return redirect("admin_return_detail", return_id=return_id)
+    
+    context = {
+        "return_request": return_request,
+        "status_choices": ReturnRequest.RETURN_STATUS_CHOICES,
+        "active_page": "returns",
+    }
+
+
+    return render(request, 'adminpanel/return_detail.html', context)

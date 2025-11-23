@@ -10,7 +10,8 @@ from decimal import Decimal
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
-from .models import Order, OrderItem
+from .models import Order, OrderItem, ReturnRequest
+from django.utils import timezone
 
 from datetime import timedelta
 from django.utils.timezone import now
@@ -600,6 +601,10 @@ def order_success(request, order_id):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
+    if order.status in ["Shipped", "Delivered"]:
+        messages.error(request, "Cannot cancel this order. Please contact support.")
+        return redirect('order_detail', order_id=order_id)
+
     if request.method == "POST":
         reason = request.POST.get("cancel_reason")
         order.status = "Cancelled"
@@ -613,3 +618,86 @@ def cancel_order(request, order_id):
 
     messages.success(request, "Order cancelled successfully")
     return redirect('order_detail', order_id=order_id)
+
+
+#return 
+
+def return_order_items(request, order_id):
+    order = get_object_or_404(Order, order_id = order_id, user=request.user)
+
+
+    if order.status != "Delivered" or not order.delivered_at:
+        messages.error(request, "Return request is only allowed after delivery.")
+        return redirect('order_detail', order_id=order_id)
+    
+    expiry_date = (order.delivered_at + timedelta(days=10)).date()
+    today = now().date()
+
+    if today > expiry_date:
+        messages.error(request, "Return window has expired for this order.")
+        return redirect('order_detail', order_id=order_id)
+
+    eligible_items = order.items.all()
+
+    context = {
+        "order": order,
+        "items": eligible_items,
+        "addresses": request.user.addresses.all(),
+        "expiry_date": expiry_date,
+    }
+
+    return render(request, "shop/returns.html", context)
+
+
+def submit_return_request(request, order_id):
+    if request.method == "POST":
+        order = get_object_or_404(Order, order_id=order_id, user=request.user)
+
+        selected_item_ids = request.POST.getlist('item_id')
+
+        if not selected_item_ids:
+            messages.error(request, "Please select at least one item to return.")
+            return redirect('return_order_items', order_id=order_id)
+
+
+        
+        reason = request.POST.get('reason')
+        pickup_address_id = request.POST.get('pickup_address')
+
+        uploaded_images = request.FILES.getlist('images')
+
+
+        for item_id in selected_item_ids:
+            order_item = get_object_or_404(OrderItem, id=item_id, order=order)
+
+            if not order_item.is_return_eligible():
+                messages.error(
+                    request,
+                    f"Return window expired for {order_item.variant.product.name}. "
+                    f"Returns are allowed only within 10 days of delivery."
+                )
+                return redirect('order_detail', order_id=order_id)
+            
+            if ReturnRequest.objects.filter(order_item=order_item).exists():
+                continue
+
+            return_request = ReturnRequest.objects.create(
+                order_item = order_item,
+                user=request.user,
+                reason = reason,
+                pickup_address_id = pickup_address_id,
+            )
+
+            if uploaded_images:
+                if len(uploaded_images) > 0:
+                    return_request.image1 = uploaded_images[0]
+                if len(uploaded_images) > 1:
+                    return_request.image2 = uploaded_images[1]
+                if len(uploaded_images) > 2:
+                    return_request.image3 = uploaded_images[2]
+                return_request.save()
+
+        messages.success(request, "Return request submitted successfully")
+        return redirect('order_detail', order_id = order.order_id)
+    
+    return redirect('return_order_items', order_id=order_id)

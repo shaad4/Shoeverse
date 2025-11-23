@@ -1,0 +1,148 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Returns Management{% endblock %}
+
+{% block content %}
+{% include 'adminpanel/partials/breadcrumb.html' %}
+
+<div>
+
+    <h1 class="text-2xl font-semibold text-white">Return Requests</h1>
+
+    <!-- TOP BAR: Search -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+        <form method="get" class="flex items-center gap-2 flex-1 max-w-lg">
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search Order ID, Product, or User..."
+                class="w-full px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border"
+            />
+            <button type="submit"
+                class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 whitespace-nowrap">
+                Search
+            </button>
+        </form>
+    </div>
+
+    <!-- FILTER BAR -->
+    <form method="get" id="filterForm"
+        class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+        <input type="hidden" name="search" value="{{ search_query }}">
+
+        <!-- Return Status Filter -->
+        <select name="status" onchange="this.form.submit()"
+                class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">All Return Status</option>
+            {% for value, label in return_status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Sort -->
+        <select name="sort" onchange="this.form.submit()"
+                class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">Sort By</option>
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+            <option value="amount_desc" {% if sort == 'amount_desc' %}selected{% endif %}>Amount High → Low</option>
+            <option value="amount_asc" {% if sort == 'amount_asc' %}selected{% endif %}>Amount Low → High</option>
+        </select>
+
+        <!-- Clear Filters -->
+        <a href="{% url 'admin_return_list' %}"
+           class="px-4 py-2 bg-gray-700 text-white rounded-md text-center hover:bg-gray-600">
+            Clear Filters
+        </a>
+    </form>
+
+    <!-- RETURN TABLE -->
+    <div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
+        <table class="min-w-full text-white">
+            <thead class="bg-[#1F1F1F] text-gray-300 uppercase text-sm">
+            <tr>
+                <th class="px-6 py-3 text-left">#</th>
+                <th class="px-6 py-3 text-left">Order ID</th>
+                <th class="px-6 py-3 text-left">Product</th>
+                <th class="px-6 py-3 text-left">User</th>
+                <th class="px-6 py-3 text-left">Refund Amount</th>
+                <th class="px-6 py-3 text-left">Status</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for ret in page_obj %}
+                <tr class="border-t border-border hover:bg-[#2A2A2A] transition">
+
+                    <td class="px-6 py-3">{{ forloop.counter0|add:page_obj.start_index }}</td>
+
+                    <td class="px-6 py-3 font-mono text-primary">
+                        {{ ret.order_item.order.order_id }}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        <div>{{ ret.order_item.variant.product.name }}</div>
+                        <div class="text-xs text-gray-400">Size: {{ ret.order_item.variant.size }}</div>
+                    </td>
+
+                    <td class="px-6 py-3">
+                        <div class="font-medium">{{ ret.user.fullName|default:ret.user.email }}</div>
+                        <div class="text-xs text-gray-400">{{ ret.user.email }}</div>
+                    </td>
+
+                    <td class="px-6 py-3">
+                        ₹{{ ret.refund_amount|default:"-" }}
+                    </td>
+
+                    <td class="px-6 py-3">
+                        {% if ret.status == "REQUESTED" %}<span class="px-2 py-1 bg-gray-700 text-white text-xs rounded">Requested</span>
+                        {% elif ret.status == "APPROVED" %}<span class="px-2 py-1 bg-blue-700 text-white text-xs rounded">Approved</span>
+                        {% elif ret.status == "PICKUP_SCHEDULED" %}<span class="px-2 py-1 bg-indigo-700 text-white text-xs rounded">Pickup Scheduled</span>
+                        {% elif ret.status == "PICKED_UP" %}<span class="px-2 py-1 bg-yellow-700 text-white text-xs rounded">Picked Up</span>
+                        {% elif ret.status == "REFUND_INITIATED" %}<span class="px-2 py-1 bg-purple-700 text-white text-xs rounded">Refund Initiated</span>
+                        {% elif ret.status == "REFUNDED" %}<span class="px-2 py-1 bg-green-700 text-white text-xs rounded">Refund Completed</span>
+                        {% elif ret.status == "DECLINED" %}<span class="px-2 py-1 bg-red-700 text-white text-xs rounded">Declined</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="px-6 py-3 text-center space-x-3">
+                        <a href="{% url 'admin_return_detail' ret.id %}"
+                           class="text-blue-400 hover:underline">Manage</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-gray-400">No returns found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex justify-between items-center text-gray-400 text-sm mt-4">
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Prev</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
+                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                    <a href="?page={{ num }}" class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Next</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
