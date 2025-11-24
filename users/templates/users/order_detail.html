@@ -143,7 +143,7 @@
             </div>
             
             <div class="divide-y divide-[#2a3b31]">
-                {% for item in order.items.all %}
+                {% for item in order_items %}
                 <div class="p-6 flex flex-col sm:flex-row gap-6 transition-colors hover:bg-[#1f2b26]">
                     <!-- Image -->
                     <div class="w-full sm:w-28 h-28 flex-shrink-0 bg-[#121714] rounded-xl border border-[#2a3b31] overflow-hidden group">
@@ -169,8 +169,23 @@
                                 Qty: {{ item.quantity }} × ₹{{ item.price }}
                              </div>
                              {% if order.status == 'Delivered' %}
-                             <button class="text-sm text-gray-400 hover:text-white underline decoration-gray-600 underline-offset-4">Write a Review</button>
-                             {% endif %}
+                                <a href="{% url 'submit_review' item.variant.product.id %}" 
+                                class="text-xs font-medium text-[#96c4a8] hover:text-white border border-[#2a3b31] bg-[#2a3b31]/50 px-3 py-1.5 rounded-lg transition-colors">
+                                {% if item.has_review %}Edit Review{% else %}Write Review{% endif %}
+                                </a>
+                            {% endif %}
+
+                            {% if item.return_request %}
+                                <a href="{% url 'return_detail' item.return_request.id %}"
+                                class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-md hover:bg-blue-500/20 hover:text-blue-300 transition-colors">
+                                    Return Status: {{ item.return_request.get_status_display }}
+                                </a>
+                            {% elif item.is_return_eligible %}
+                                <a href="{% url 'return_order_items' order.order_id %}"
+                                class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-md hover:bg-amber-500/20 transition-colors">
+                                    Return / Exchange
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -249,7 +264,7 @@
 
             <!-- ACTION BUTTONS -->
             <div class="mt-8 space-y-3">
-                <a href="{% url 'download_invoice' order.order_id %}" 
+                <a href="{% url 'download_invoice' order.order_id %}" target="_blank"
                    class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white font-semibold transition-all duration-200 border border-[#3d5244]">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download Invoice

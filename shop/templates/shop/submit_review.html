@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Write a Review | {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#121714] text-gray-200 font-sans py-12 px-4">
+    <div class="max-w-2xl mx-auto">
+        
+        <nav class="flex items-center gap-2 text-sm text-[#96c4a8]/70 mb-6">
+            <a href="{% url 'order_list' %}" class="hover:text-white transition-colors">Orders</a>
+            <span>/</span>
+            <span class="text-white">Write Review</span>
+        </nav>
+
+        <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-8 shadow-2xl">
+            
+            <div class="flex items-center gap-6 mb-8 border-b border-[#2a3b31] pb-6">
+                <div class="w-20 h-20 rounded-xl bg-[#121714] border border-[#2a3b31] overflow-hidden flex-shrink-0">
+                    <img src="{{ product.images.first.image.url }}" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">{{ product.name }}</h1>
+                    <p class="text-gray-400 text-sm mt-1">How was your experience with this item?</p>
+                </div>
+            </div>
+
+            <form method="POST" class="space-y-8">
+                {% csrf_token %}
+
+                <div class="text-center">
+                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">Rate this product</label>
+                    
+                    <div class="flex flex-row-reverse justify-center gap-2 group">
+                        {% for i in "54321" %}
+                        <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" class="peer hidden" 
+                            {% if review and review.rating|stringformat:"s" == i %}checked{% endif %} required>
+                        
+                        <label for="star{{ i }}" class="cursor-pointer text-[#2a3b31] peer-checked:text-amber-400 hover:text-amber-400 peer-hover:text-amber-400 transition-colors duration-200">
+                            <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-wide mb-2">Write your review</label>
+                    <textarea name="comment" rows="5" 
+                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl p-4 text-white placeholder-gray-600 focus:ring-1 focus:ring-[#96c4a8] focus:border-[#96c4a8] outline-none transition-all resize-none"
+                        placeholder="What did you like or dislike? How is the fit?">{{ review.comment|default:'' }}</textarea>
+                </div>
+
+                <div class="flex gap-4 pt-2">
+                    <button type="submit" class="flex-1 py-3 bg-[#96c4a8] hover:bg-[#85b095] text-[#121714] font-bold rounded-xl transition-all transform hover:-translate-y-0.5">
+                        Submit Review
+                    </button>
+                    <a href="{% url 'product_detail' product.id %}" class="px-6 py-3 bg-[#2a3b31] hover:bg-[#364a3e] text-gray-300 font-medium rounded-xl transition-colors">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

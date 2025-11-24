@@ -1,7 +1,7 @@
 from django.shortcuts import render,  get_object_or_404, redirect
-from products.models import Product, SubCategory
+from products.models import Product, SubCategory, ProductReview
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Avg
 
 from products.models import Product, ProductVariant
 from django.contrib import messages
@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from datetime import timedelta
 from django.utils.timezone import now
+
 # Create your views here.
 
 
@@ -23,7 +24,11 @@ def product_list_view(request, category=None):
     products = (
         Product.objects.filter(is_active=True)
         .prefetch_related("images")
-        .annotate(in_stock_count=Count('variants', filter=Q(variants__stock__gt=0)))
+        .annotate(
+            in_stock_count=Count('variants', filter=Q(variants__stock__gt=0)),
+            avg_rating=Avg('reviews__rating'),  
+            review_count=Count('reviews')       
+        )
     )
 
     category_param = request.GET.get("category")
@@ -116,6 +121,11 @@ def product_list_view(request, category=None):
         sizes = ["6", "7", "8", "9", "10", "11"]
 
 
+    wishlist_ids = []
+    if request.user.is_authenticated:
+        wishlist_ids = request.user.wishlist.values_list('product_id', flat=True)
+
+
     
 
     context = {
@@ -135,6 +145,7 @@ def product_list_view(request, category=None):
         "page_query" : querystring,
         "subcategories":subcategories,
         "active_subcategory":active_subcategory,
+        "wishlist_ids": wishlist_ids,
     }
 
     return render(request, "shop/product_list.html", context)
@@ -178,7 +189,35 @@ def  product_detail_view(request, product_id):
     if request.user.is_authenticated:
         is_in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
 
+    #review
+    reviews = product.reviews.all().order_by('-created_at')
+    review_count = reviews.count()
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
+    star_distribution = {
+        5: reviews.filter(rating=5).count(),
+        4: reviews.filter(rating=4).count(),
+        3: reviews.filter(rating=3).count(),
+        2: reviews.filter(rating=2).count(),
+        1: reviews.filter(rating=1).count(),
+    }
+
+    # Check if user can review (Has bought + Delivered)
+    can_review = False
+    user_review = None
+
+    if request.user.is_authenticated:
+        has_purchased = OrderItem.objects.filter(
+            order__user=request.user,
+            order__status='Delivered',
+            variant__product=product
+        ).exists()
+
+    user_review = reviews.filter(user=request.user).first()
+
+    if has_purchased:
+        can_review = True
+    
     context = {
         "product" : product,
         "variants" : variants,
@@ -186,6 +225,12 @@ def  product_detail_view(request, product_id):
         "related_products" : related_products,
         "is_out_of_stock" : is_out_of_stock,
         "is_in_wishlist": is_in_wishlist,
+        'reviews': reviews,
+        'review_count': review_count,
+        'avg_rating': round(avg_rating, 1),
+        'star_distribution': star_distribution,
+        'can_review': can_review,
+        'user_review': user_review, 
     }
 
     return render(request, "shop/product_detail.html", context)
@@ -636,8 +681,16 @@ def return_order_items(request, order_id):
     if today > expiry_date:
         messages.error(request, "Return window has expired for this order.")
         return redirect('order_detail', order_id=order_id)
+    
+    already_requested_ids = ReturnRequest.objects.filter(
+        order_item__order=order
+    ).values_list('order_item_id', flat=True)
 
-    eligible_items = order.items.all()
+    eligible_items = order.items.exclude(id__in=already_requested_ids)
+
+    if not eligible_items.exists():
+        messages.info(request, "All eligible items in this order have already been requested for return.")
+        return redirect('order_detail', order_id=order_id)
 
     context = {
         "order": order,
@@ -701,3 +754,54 @@ def submit_return_request(request, order_id):
         return redirect('order_detail', order_id = order.order_id)
     
     return redirect('return_order_items', order_id=order_id)
+
+
+#reviews
+
+def submit_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    has_purchased  = OrderItem.objects.filter(
+        order__user = request.user,
+        order__status = 'Delivered',
+        variant__product = product
+    ).exists()
+
+    if  not has_purchased:
+        messages.error(request,  "You can only review products you have purchased")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    
+    existing_review = ProductReview.objects.filter(user=request.user, product=product).first()
+
+    if request.method == "POST":
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+
+        if not rating:
+            messages.error(request, "Please select a star rating")
+            return redirect(request.path)
+        
+        if existing_review:
+            existing_review.rating = rating
+            existing_review.comment = comment
+            existing_review.save()
+            messages.success(request, "Your review has been updated!")
+        else:
+            ProductReview.objects.create(
+                product=product,
+                user = request.user,
+                rating = rating,
+                comment =  comment,
+
+            )
+            messages.success(request, "Thank you for your review!")
+
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    
+    context = {
+        'product' : product,
+        'review' : existing_review
+    }
+
+    return render(request, 'shop/submit_review.html', context)
+

@@ -535,36 +535,45 @@ def order_detail_view(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
 
-    has_returnable_items = False  # To control main return button
     today = timezone.now().date()
+    return_deadline = None
 
-    # Only check eligibility if the order was delivered
+    # Fetch all return requests for this order
+    return_requests = ReturnRequest.objects.filter(order_item__order=order)
+    
+    # Create a lookup (map) by order_item.id
+    return_request_map = {ret.order_item_id: ret for ret in return_requests}
+
+    has_returnable_items = False
+
     if order.status == "Delivered" and order.delivered_at:
         return_deadline = order.delivered_at.date() + timedelta(days=10)
 
         for item in order_items:
-            # Check if already returned
-            has_return_request = ReturnRequest.objects.filter(order_item=item).exists()
+            # Attach the return request to item if exists
+            item.return_request = return_request_map.get(item.id, None)
 
-            # Check if return is allowed (within time and not already returned)
-            item.is_return_eligible = (today <= return_deadline) and not has_return_request
+            if item.return_request:
+                item.return_status = item.return_request.status
+                item.return_request_id = item.return_request.id
+                item.is_return_eligible = False
+            else:
+                item.return_status = None
+                item.return_request_id = None
+                item.is_return_eligible = item.is_return_eligible()
 
-        # Check if at least one item is eligible
         has_returnable_items = any(item.is_return_eligible for item in order_items)
-    else:
-        # No return eligibility if not delivered
-        for item in order_items:
-            item.is_return_eligible = False
 
     context = {
         "order": order,
         "order_items": order_items,
-        "address": order.address,
-        "has_returnable_items": has_returnable_items,  # For main button
-        "return_deadline": return_deadline if order.delivered_at else None,
+        "has_returnable_items": has_returnable_items,
     }
 
     return render(request, "users/order_detail.html", context)
+
+
+
 
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, order_id = order_id, user = request.user)
@@ -573,3 +582,12 @@ def download_invoice(request, order_id):
     response  = HttpResponse(pdf_buffer, content_type='application/pdf')
     response['Content-Dispostion'] = f"attachment; filename='Invoice_{order.order_id}.pdf'"
     return response
+
+
+def return_request_detail(request, return_id):
+    return_request = get_object_or_404(ReturnRequest, id=return_id, user=request.user)
+    
+    context = {
+        'return_request': return_request,
+    }
+    return render(request, 'users/return_detail.html', context)

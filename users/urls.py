@@ -25,9 +25,11 @@ urlpatterns = [
     path("my-orders/", views.order_list_view, name="order_list"),
     path("order/<str:order_id>/", views.order_detail_view, name="order_detail"),
     path("invoice/<str:order_id>/", views.download_invoice, name="download_invoice"),
-
-
-    
+    path('return/request/<int:return_id>/', views.return_request_detail, name='return_detail'),
 
     
 ]
+
+    
+
+    
