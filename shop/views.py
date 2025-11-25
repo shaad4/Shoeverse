@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from datetime import timedelta
 from django.utils.timezone import now
-
+from users.decorator import user_required
 # Create your views here.
 
 
@@ -239,6 +239,7 @@ def  product_detail_view(request, product_id):
 
 #cart
 
+@user_required
 def add_to_cart(request, variant_id=None):
     if not request.user.is_authenticated:
         messages.error(request, "Please log in to add items to cart.")
@@ -287,7 +288,7 @@ def add_to_cart(request, variant_id=None):
 
     return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
-
+@user_required
 def cart_view(request):
     if not request.user.is_authenticated:
         messages.error(request, "Please log in to view your cart.")
@@ -344,14 +345,14 @@ def cart_view(request):
 
     return render(request,  "shop/cart.html", context)
 
-
+@user_required
 def remove_cart_item(request, item_id):
     item = get_object_or_404(CartItem, id = item_id, user = request.user)
     item.delete()
     messages.success(request, "Item removed form cart")
     return redirect("cart")
 
-
+@user_required
 @require_POST
 def update_size(request, item_id):
     try:
@@ -379,7 +380,7 @@ def update_size(request, item_id):
 
 
 
-
+@user_required
 @require_POST
 def update_cart_quantity(request, item_id):
     if not request.user.is_authenticated:
@@ -421,7 +422,7 @@ def update_cart_quantity(request, item_id):
 
 
 #wishlist
-
+@user_required
 def add_to_wishlist(request,  product_id):
     if not request.user.is_authenticated:
         messages.error(request, "Please log in to save items")
@@ -440,7 +441,7 @@ def add_to_wishlist(request,  product_id):
 
     return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
-
+@user_required
 def wishlist_view(request):
     if not request.user.is_authenticated:
         return redirect("login")
@@ -451,6 +452,7 @@ def wishlist_view(request):
 
     return render(request, "shop/wishlist.html", {"wishlist_items":wishlist_items, "wishlist_total":wishlist_total})
 
+@user_required
 def remove_wishlist_item(request, item_id):
     item = get_object_or_404(Wishlist, id=item_id, user=request.user)
     item.delete()
@@ -458,6 +460,7 @@ def remove_wishlist_item(request, item_id):
     return redirect('wishlist')
 
 
+@user_required
 def move_to_cart(request, item_id):
     wishlist_item = get_object_or_404(Wishlist, id=item_id, user=request.user)
     
@@ -473,7 +476,7 @@ def move_to_cart(request, item_id):
 
     return redirect("cart")
     
-
+@user_required
 def move_all_to_cart(request):
     if not request.user.is_authenticated:
         return redirect("login")
@@ -497,6 +500,7 @@ def move_all_to_cart(request):
     return redirect("cart")
 
 
+@user_required
 def clear_all_wishlist(request):
     if not request.user.is_authenticated:
         return redirect("login")
@@ -508,6 +512,7 @@ def clear_all_wishlist(request):
     
 #checkout views
 
+@user_required
 def checkout_view(request):
 
     if not request.user.is_authenticated:
@@ -553,6 +558,7 @@ def checkout_view(request):
     return render(request, 'shop/checkout.html', context)
 
 
+@user_required
 def payment_view(request, address_id):
     if not request.user.is_authenticated:
         messages.error(request, "Please log in to continue payment.")
@@ -581,6 +587,7 @@ def payment_view(request, address_id):
 
     return render(request, 'shop/payment.html', context)
 
+@user_required
 def place_order(request):
     if request.method != "POST":
         return redirect('checkout')
@@ -634,7 +641,7 @@ def place_order(request):
 
 
 
-
+@user_required
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     estimated_delivery_date = (now() + timedelta(days=5)).strftime("%d %b %Y")
@@ -642,7 +649,7 @@ def order_success(request, order_id):
 
     return render(request, 'shop/order_success.html',{'order': order, "estimated_delivery_date" : estimated_delivery_date })
 
-
+@user_required
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
@@ -666,7 +673,7 @@ def cancel_order(request, order_id):
 
 
 #return 
-
+@user_required
 def return_order_items(request, order_id):
     order = get_object_or_404(Order, order_id = order_id, user=request.user)
 
@@ -701,7 +708,7 @@ def return_order_items(request, order_id):
 
     return render(request, "shop/returns.html", context)
 
-
+@user_required
 def submit_return_request(request, order_id):
     if request.method == "POST":
         order = get_object_or_404(Order, order_id=order_id, user=request.user)
@@ -757,7 +764,7 @@ def submit_return_request(request, order_id):
 
 
 #reviews
-
+@user_required
 def submit_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 

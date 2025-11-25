@@ -1,117 +1,137 @@
 {% extends "base.html" %}
-{% block title %}Edit Address - Shoeverse{% endblock %}
+{% load static %}
+
+{% block title %}Edit Address | Shoeverse{% endblock %}
 
 {% block content %}
-<div class="flex">
+<div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white">
 
-    {% include "users/profile_sidebar.html" %}
+    <!-- Sidebar -->
+    
+        {% include "users/profile_sidebar.html" %}
+ 
 
-    <main class="flex-1 p-10 text-white">
-        <div class="max-w-3xl mx-auto">
+    <!-- Main Content -->
+    <main class="flex-1 p-4 lg:p-10">
+        <div class="max-w-3xl mx-auto space-y-8">
 
-            <h1 class="text-heading font-bold mb-6">Edit Address</h1>
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">Edit Address</h1>
+                    <p class="text-sm text-gray-400 mt-1">Update your delivery location details.</p>
+                </div>
+                <a href="{% url 'address' %}" class="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-white transition-colors">
+                    <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to List
+                </a>
+            </div>
 
-            <div class="bg-[#122117]/90 backdrop-blur-sm rounded-2xl p-10 
-                        shadow-[0_8px_25px_rgba(0,0,0,0.5)] border border-[#264533]">
-
-                <form method="POST" class="space-y-6">
+            <!-- Form Card -->
+            <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] shadow-xl shadow-black/20 overflow-hidden">
+                
+                <form method="POST" class="p-6 md:p-8 space-y-8">
                     {% csrf_token %}
-
-                    <!-- Hidden ID to keep track -->
+                    
+                    <!-- Hidden ID -->
                     <input type="hidden" name="address_id" value="{{ address.id }}">
 
-                    <div class="grid grid-cols-2 gap-6 text-sm">
+                    <!-- SECTION 1: Contact Details -->
+                    <div class="space-y-6">
+                        <h3 class="text-sm font-bold text-white border-b border-[#2a3b31] pb-2">Contact Information</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Full Name -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
+                                <input type="text" name="full_name" value="{{ address.full_name }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
 
-                        <!-- Full Name -->
-                        <div>
-                            <label class="block mb-1 font-medium">Full Name</label>
-                            <input type="text" name="full_name"
-                                   value="{{ address.full_name }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
+                            <!-- Phone -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
+                                <input type="text" name="phone_number" value="{{ address.phone_number }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email (Optional)</label>
+                                <input type="email" name="email" value="{{ address.email|default:'' }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
+
+                            <!-- Address Type -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Type</label>
+                                <div class="relative">
+                                    <select name="address_type" class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all cursor-pointer">
+                                        <option value="HOME" {% if address.address_type == 'HOME' %}selected{% endif %}>Home (7am - 9pm delivery)</option>
+                                        <option value="WORK" {% if address.address_type == 'WORK' %}selected{% endif %}>Work (10am - 6pm delivery)</option>
+                                        <option value="OTHER" {% if address.address_type == 'OTHER' %}selected{% endif %}>Other</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-                        <!-- Phone -->
-                        <div>
-                            <label class="block mb-1 font-medium">Phone Number</label>
-                            <input type="text" name="phone_number"
-                                   value="{{ address.phone_number }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- Email -->
-                        <div>
-                            <label class="block mb-1 font-medium">Email (Optional)</label>
-                            <input type="email" name="email"
-                                   value="{{ address.email|default:'' }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- Address Type -->
-                        <div>
-                            <label class="block mb-1 font-medium">Address Type</label>
-                            <select name="address_type"
-                                    class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                                <option value="home" {% if address.address_type == 'home' %}selected{% endif %}>Home</option>
-                                <option value="work" {% if address.address_type == 'work' %}selected{% endif %}>Work</option>
-                                <option value="other" {% if address.address_type == 'other' %}selected{% endif %}>Other</option>
-                            </select>
-                        </div>
-
-                        <!-- Address Line 1 -->
-                        <div class="col-span-2">
-                            <label class="block mb-1 font-medium">Address Line 1</label>
-                            <input type="text" name="address_line1"
-                                   value="{{ address.address_line1 }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- Address Line 2 -->
-                        <div class="col-span-2">
-                            <label class="block mb-1 font-medium">Address Line 2 (Optional)</label>
-                            <input type="text" name="address_line2"
-                                   value="{{ address.address_line2|default:'' }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- City -->
-                        <div>
-                            <label class="block mb-1 font-medium">City</label>
-                            <input type="text" name="city"
-                                   value="{{ address.city }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- State -->
-                        <div>
-                            <label class="block mb-1 font-medium">State</label>
-                            <input type="text" name="state"
-                                   value="{{ address.state }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
-                        <!-- ZIP -->
-                        <div>
-                            <label class="block mb-1 font-medium">ZIP / Postal Code</label>
-                            <input type="text" name="pincode"
-                                   value="{{ address.pincode }}"
-                                   class="w-full bg-[#1C3024] border border-[#366347] text-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-[#24E06B]">
-                        </div>
-
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="flex justify-center mt-8 space-x-4">
-                        <button type="submit"
-                            class="bg-[#24E06B] hover:bg-[#2ECC71] text-black font-semibold 
-                                   py-2 px-8 rounded-lg shadow-lg transition">
-                            Update Address
-                        </button>
+                    <!-- SECTION 2: Location Details -->
+                    <div class="space-y-6">
+                        <h3 class="text-sm font-bold text-white border-b border-[#2a3b31] pb-2">Address Details</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Line 1 -->
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 1</label>
+                                <input type="text" name="address_line1" value="{{ address.address_line1 }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
+                                       placeholder="House No, Building, Street Area">
+                            </div>
 
-                        <a href="{% url 'address' %}" 
-                            class="py-2 px-8 border border-gray-500 rounded-lg text-gray-300 
-                                   hover:bg-gray-700 transition">
+                            <!-- Line 2 -->
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 2 (Optional)</label>
+                                <input type="text" name="address_line2" value="{{ address.address_line2|default:'' }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
+                                       placeholder="Landmark, nearby details">
+                            </div>
+
+                            <!-- City -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">City</label>
+                                <input type="text" name="city" value="{{ address.city }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
+
+                            <!-- State -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">State</label>
+                                <input type="text" name="state" value="{{ address.state }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
+
+                            <!-- Pincode -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pincode / ZIP</label>
+                                <input type="text" name="pincode" value="{{ address.pincode }}" 
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-6 border-t border-[#2a3b31] flex items-center justify-end gap-4">
+                        <a href="{% url 'address' %}" class="px-6 py-2.5 rounded-xl border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all font-medium text-sm">
                             Cancel
                         </a>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white border border-[#3d5244] font-medium text-sm transition-all shadow-lg hover:shadow-[#96c4a8]/10 flex items-center gap-2">
+                            <span>Update Address</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
                     </div>
 
                 </form>

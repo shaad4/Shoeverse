@@ -4,349 +4,424 @@
 
 <!-- Include breadcrumb -->
 {% include 'adminpanel/partials/breadcrumb.html' %}
+
+<!-- Main Container with x-data -->
 <div x-data="{ openAddModal: false, confirmOpen: false, confirmUrl: '', confirmText: '' }">
 
-<div x-data="{ openAddModal: false }">
-<!-- Header -->
+    <!-- Cropper.js Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
-    <h1 class="text-2xl font-semibold text-white">Product Management</h1>
+    <h1 class="text-2xl font-semibold text-white mb-6">Product Management</h1>
 
     <!-- TOP BAR: Search + Add Product -->
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
-                <!-- SEARCH -->
-                <form method="get" class="flex items-center gap-2 flex-1 max-w-lg">
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ query }}"
-                        placeholder="Search product..."
-                        class="w-full px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border focus:ring focus:ring-blue-500"
-                    />
-                    <button
-                        type="submit"
-                        class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 whitespace-nowrap">
-                        Search
-                    </button>
-                </form>
-
-                <!-- ADD PRODUCT BUTTON -->
-                <button @click="openAddModal = true"
-                        class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-md shadow whitespace-nowrap">
-                    + Add Product
-                </button>
-
-            </div>
-
-
-            <!-- FILTER BAR -->
-            <form method="get" id="sortForm" 
-                class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-
-                <!-- Preserve Search -->
-                <input type="hidden" name="q" value="{{ query }}">
-
-                <!-- CATEGORY FILTER -->
-                <select name="category"
-                        onchange="this.form.submit()"
-                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
-                    <option value="">All Categories</option>
-                    <option value="MEN"   {% if category_filter == 'MEN' %}selected{% endif %}>Men</option>
-                    <option value="WOMEN" {% if category_filter == 'WOMEN' %}selected{% endif %}>Women</option>
-                    <option value="KIDS"  {% if category_filter == 'KIDS' %}selected{% endif %}>Kids</option>
-                </select>
-
-                <!-- STATUS FILTER -->
-                <select name="status"
-                        onchange="this.form.submit()"
-                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
-                    <option value="">All Status</option>
-                    <option value="listed"   {% if status_filter == "listed" %}selected{% endif %}>Listed</option>
-                    <option value="unlisted" {% if status_filter == "unlisted" %}selected{% endif %}>Unlisted</option>
-                </select>
-
-                <!-- SORT FILTER -->
-                <select name="sort"
-                        onchange="document.getElementById('sortForm').submit()"
-                        class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
-                    <option value="">Sort By</option>
-
-                    <option value="nameAsc"   {% if sort == 'nameAsc' %}selected{% endif %}>Name A → Z</option>
-                    <option value="nameDesc"  {% if sort == 'nameDesc' %}selected{% endif %}>Name Z → A</option>
-                    <option value="priceLow"  {% if sort == 'priceLow' %}selected{% endif %}>Price Low → High</option>
-                    <option value="priceHigh" {% if sort == 'priceHigh' %}selected{% endif %}>Price High → Low</option>
-                    <option value="stockHigh" {% if sort == 'stockHigh' %}selected{% endif %}>Stock High → Low</option>
-                    <option value="stockLow"  {% if sort == 'stockLow' %}selected{% endif %}>Stock Low → High</option>
-                    <option value="newest"    {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
-                    <option value="oldest"    {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
-                </select>
-            </form>
-
-
-
-
-
-
-
-
-<!-- Product Table -->
-<div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
-    <table class="min-w-full text-white">
-        <thead class="bg-[#1F1F1F] text-gray-300 uppercase text-sm">
-            <tr>
-                <th class="px-6 py-3 text-left">#</th>
-                <th class="px-6 py-3 text-left">Image</th>
-                <th class="px-6 py-3 text-left">Product Name</th>
-                <th class="px-6 py-3 text-left">Category</th>
-                <th class="px-6 py-3 text-left">Color</th>
-                <th class="px-6 py-3 text-left">Price</th>
-                <th class="px-6 py-3 text-left">Stock</th>
-                <th class="px-6 py-3 text-left">Variants</th>
-                <th class="px-6 py-3 text-left">Status</th>
-                <th class="px-6 py-3 text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in page_obj %}
-            <tr class="border-t border-border hover:bg-[#2A2A2A] transition">
-
-                <td class="px-6 py-4">{{ forloop.counter0|add:page_obj.start_index }}</td>
-                <td class="px-6 py-4">
-                    {% with primary=product.images.first %}
-                        {% if primary %}
-                            <img src="{{ primary.image.url }}" alt="{{ product.name }}" class="w-12 h-12 rounded object-cover border border-border">
-                        {% else %}
-                            <span class="text-gray-400 text-sm">No image</span>
-                        {% endif %}
-                    {% endwith %}
-                </td>
-
-
-
-                <td class="px-6 py-4 font-medium">{{ product.name }}</td>
-                <td class="px-6 py-4">{{ product.get_category_display }}</td>
-                <td class="px-6 py-4">{{ product.color }}</td>
-                <td class="px-6 py-4">₹{{ product.price }}</td>
-                <td class="px-6 py-4">
-                    {% with stock=product.total_stock %}
-                        {% if stock > 0 %}
-                            <span class="text-green-400">{{ stock }}</span>
-                        {% else %}
-                            <span class="text-red-400">Out of Stock</span>
-                        {% endif %}
-                    {% endwith %}
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <a href="{% url 'admin_product_variants' product.id %}"
-                        class="text-blue-400 hover:underline">Manage</a>
-                </td>
-
-                <td class="px-6 py-4">
-                    {% if product.is_active %}
-                        <span class="px-2 py-1 text-xs bg-green-700 text-white rounded">Listed</span>
-                    {% else %}
-                        <span class="px-2 py-1 text-xs bg-red-700 text-white rounded">Unlisted</span>
-                    {% endif %}
-                </td>
-                <td class="px-6 py-4 text-center space-x-3">
-                    <a href="{% url 'admin_product_edit' product.id %}" class="text-blue-400 hover:underline">Edit</a>
-                    {% if product.is_active %}
-                        <button 
-                            @click="
-                                confirmOpen = true; 
-                                confirmUrl = '{% url 'admin_product_toggle' product.id %}'; 
-                                confirmText = 'Are you sure you want to UNLIST {{ product.name }}?';
-                            "
-                            class="text-yellow-400 hover:underline">
-                            Unlist
-                        </button>
-                    {% else %}
-                        <button 
-                            @click="
-                                confirmOpen = true; 
-                                confirmUrl = '{% url 'admin_product_toggle' product.id %}'; 
-                                confirmText = 'Are you sure you want to LIST {{ product.name }}?';
-                            "
-                            class="text-green-400 hover:underline">
-                            List
-                        </button>
-                    {% endif %}
-
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" class="text-center py-6 text-gray-400">No products found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<!-- Pagination -->
-<div class="flex justify-between items-center text-gray-400 text-sm mt-4">
-    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    <div class="flex space-x-2">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"
-               class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Prev</a>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-            {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
-            {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-                <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}"
-                   class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">{{ num }}</a>
-            {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"
-               class="px-3 py-1 rounded bg-[#1F1F1F] hover:bg-blue-600 hover:text-white">Next</a>
-        {% endif %}
-    </div>
-</div>
-
-
-<!-- Add Product Modal -->
-<div x-show="openAddModal"
-     class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
-     x-transition>
-    <div class="bg-[#1A1A1A] p-6 rounded-2xl w-[28rem] max-h-[90vh] shadow-xl relative border border-border overflow-y-auto">
-
-        <!-- Close Button -->
-        <button @click="openAddModal = false"
-                class="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl">&times;</button>
-
-        <h2 class="text-xl font-semibold mb-5 text-white border-b border-border pb-2">
-            Add New Product
-        </h2>
-
-        <form method="POST" action="{% url 'admin_product_add' %}" enctype="multipart/form-data" class="space-y-4">
-            {% csrf_token %}
-
-            <!-- Form Fields -->
-            <div class="space-y-3">
-
-                <!-- Name -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Name</label>
-                    {{ form.name }}
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Description</label>
-                    {{ form.description }}
-                </div>
-
-                <!-- Price + Old Price -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Price</label>
-                        {{ form.price }}
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Old Price</label>
-                        {{ form.old_price }}
-                    </div>
-                </div>
-
-                <!-- Color + Category -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Color</label>
-                        {{ form.color }}
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Category</label>
-                        {{ form.category }}
-                    </div>
-                </div>
-                <!-- Subcategory -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Subcategory</label>
-                    {{ form.subcategory }}
-                </div>
-
-
-                <!-- NEW: Highlights -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Highlights</label>
-                    {{ form.highlights }}
-                    <p class="text-xs text-gray-500 mt-1">Enter one highlight per line.</p>
-                </div>
-
-                <!-- NEW: Specifications -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Specifications</label>
-                    {{ form.specifications }}
-                    <p class="text-xs text-gray-500 mt-1">Enter one spec per line. (Example: "Weight: 250g")</p>
-                </div>
-
-                <!-- Is Active -->
-                <div class="flex items-center space-x-2">
-                    {{ form.is_active }}
-                    <label class="text-sm text-gray-400">Is Active</label>
-                </div>
-
-            </div>
-
-            <!-- Product Images -->
-            <div>
-                <label class="block text-sm mb-1 text-gray-300">Product Images (Max 3)</label>
-                <input type="file" name="images" accept="image/*" multiple
-                       class="w-full p-2 rounded bg-[#1F1F1F] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600">
-                <p class="text-xs text-gray-400 mt-1">You can upload up to 3 images.</p>
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex justify-end space-x-2 pt-5">
-                <button type="button"
-                        @click="openAddModal = false"
-                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md text-white transition">
-                    Cancel
-                </button>
-
-                <button type="submit"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-white transition">
-                    Save Product
-                </button>
-            </div>
-
+        <!-- SEARCH -->
+        <form method="get" class="flex items-center gap-2 flex-1 max-w-lg">
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Search product..."
+                class="w-full px-4 py-2 rounded-md bg-[#1F1F1F] text-white border border-border focus:ring focus:ring-blue-500"
+            />
+            <button
+                type="submit"
+                class="bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 whitespace-nowrap">
+                Search
+            </button>
         </form>
+
+        <!-- ADD PRODUCT BUTTON -->
+        <button @click="openAddModal = true"
+                class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-md shadow whitespace-nowrap flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Add Product
+        </button>
+
     </div>
-</div>
 
 
+    <!-- FILTER BAR -->
+    <form method="get" id="sortForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Preserve Search -->
+        <input type="hidden" name="q" value="{{ query }}">
 
+        <!-- CATEGORY FILTER -->
+        <select name="category" onchange="this.form.submit()" class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">All Categories</option>
+            <option value="MEN"   {% if category_filter == 'MEN' %}selected{% endif %}>Men</option>
+            <option value="WOMEN" {% if category_filter == 'WOMEN' %}selected{% endif %}>Women</option>
+            <option value="KIDS"  {% if category_filter == 'KIDS' %}selected{% endif %}>Kids</option>
+        </select>
+
+        <!-- STATUS FILTER -->
+        <select name="status" onchange="this.form.submit()" class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">All Status</option>
+            <option value="listed"   {% if status_filter == "listed" %}selected{% endif %}>Listed</option>
+            <option value="unlisted" {% if status_filter == "unlisted" %}selected{% endif %}>Unlisted</option>
+        </select>
+
+        <!-- SORT FILTER -->
+        <select name="sort" onchange="document.getElementById('sortForm').submit()" class="bg-[#1F1F1F] text-white px-4 py-2 rounded-md border border-border">
+            <option value="">Sort By</option>
+            <option value="nameAsc"   {% if sort == 'nameAsc' %}selected{% endif %}>Name A → Z</option>
+            <option value="nameDesc"  {% if sort == 'nameDesc' %}selected{% endif %}>Name Z → A</option>
+            <option value="priceLow"  {% if sort == 'priceLow' %}selected{% endif %}>Price Low → High</option>
+            <option value="priceHigh" {% if sort == 'priceHigh' %}selected{% endif %}>Price High → Low</option>
+            <option value="stockHigh" {% if sort == 'stockHigh' %}selected{% endif %}>Stock High → Low</option>
+            <option value="stockLow"  {% if sort == 'stockLow' %}selected{% endif %}>Stock Low → High</option>
+            <option value="newest"    {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest"    {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+        </select>
+    </form>
+
+    <!-- Product Table -->
+    <div class="bg-[#1A1A1A] border border-border rounded-xl overflow-hidden shadow">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-white">
+                <thead class="bg-[#1F1F1F] text-gray-300 uppercase text-sm font-medium">
+                    <tr>
+                        <th class="px-6 py-4 text-left">#</th>
+                        <th class="px-6 py-4 text-left">Image</th>
+                        <th class="px-6 py-4 text-left">Product Name</th>
+                        <th class="px-6 py-4 text-left">Category</th>
+                        <th class="px-6 py-4 text-left">Color</th>
+                        <th class="px-6 py-4 text-left">Price</th>
+                        <th class="px-6 py-4 text-left">Stock</th>
+                        <th class="px-6 py-4 text-left">Variants</th>
+                        <th class="px-6 py-4 text-left">Status</th>
+                        <th class="px-6 py-4 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    {% for product in page_obj %}
+                    <tr class="hover:bg-[#2A2A2A] transition-colors">
+                        <td class="px-6 py-4 text-gray-400">{{ forloop.counter0|add:page_obj.start_index }}</td>
+                        <td class="px-6 py-4">
+                            <div class="h-12 w-12 rounded bg-gray-700 flex items-center justify-center overflow-hidden border border-border">
+                                {% with primary=product.images.first %}
+                                    {% if primary %}
+                                        <img src="{{ primary.image.url }}" alt="{{ product.name }}" class="h-full w-full object-cover">
+                                    {% else %}
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium">{{ product.name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-300">{{ product.get_category_display }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-300">{{ product.color }}</td>
+                        <td class="px-6 py-4 font-medium">₹{{ product.price }}</td>
+                        <td class="px-6 py-4">
+                            {% with stock=product.total_stock %}
+                                {% if stock > 0 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-300">{{ stock }}</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-300">Out of Stock</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="{% url 'admin_product_variants' product.id %}" class="text-blue-400 hover:text-blue-300 hover:underline text-sm">Manage</a>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if product.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-400 border border-green-800">Listed</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900/50 text-red-400 border border-red-800">Unlisted</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-3">
+                                <a href="{% url 'admin_product_edit' product.id %}" class="text-gray-400 hover:text-white transition-colors" title="Edit">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </a>
+                                {% if product.is_active %}
+                                    <button @click="confirmOpen = true; confirmUrl = '{% url 'admin_product_toggle' product.id %}'; confirmText = 'Are you sure you want to UNLIST {{ product.name }}?';" class="text-yellow-500 hover:text-yellow-400 transition-colors" title="Unlist">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                                    </button>
+                                {% else %}
+                                    <button @click="confirmOpen = true; confirmUrl = '{% url 'admin_product_toggle' product.id %}'; confirmText = 'Are you sure you want to LIST {{ product.name }}?';" class="text-green-500 hover:text-green-400 transition-colors" title="List">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-12 text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                <p class="text-lg font-medium">No products found</p>
+                                <p class="text-sm text-gray-600">Try adjusting your search or filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center mt-6 border-t border-border pt-4">
+        <span class="text-sm text-gray-400">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-lg bg-[#1F1F1F] border border-border text-gray-300 hover:bg-gray-700 hover:text-white transition">Previous</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm font-medium rounded-lg bg-[#1F1F1F] border border-border text-gray-600 cursor-not-allowed">Previous</span>
+            {% endif %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-lg bg-[#1F1F1F] border border-border text-gray-300 hover:bg-gray-700 hover:text-white transition">Next</a>
+            {% else %}
+                <span class="px-4 py-2 text-sm font-medium rounded-lg bg-[#1F1F1F] border border-border text-gray-600 cursor-not-allowed">Next</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Add Product Modal -->
+    <div x-show="openAddModal"
+         class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+         x-transition.opacity>
+        
+        <div class="bg-[#1A1A1A] rounded-2xl w-full max-w-lg max-h-[90vh] shadow-2xl border border-gray-700 flex flex-col"
+             @click.away="openAddModal = false">
+
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-700">
+                <h2 class="text-xl font-bold text-white">Add New Product</h2>
+                <button @click="openAddModal = false" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <form method="POST" action="{% url 'admin_product_add' %}" enctype="multipart/form-data" class="space-y-5">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Price</label>
+                            {{ form.price }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Old Price</label>
+                            {{ form.old_price }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Color</label>
+                            {{ form.color }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                            {{ form.category }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subcategory</label>
+                        {{ form.subcategory }}
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Highlights</label>
+                        {{ form.highlights }}
+                        <p class="text-[10px] text-gray-500 mt-1">Enter one highlight per line.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Specifications</label>
+                        {{ form.specifications }}
+                        <p class="text-[10px] text-gray-500 mt-1">Format: "Key: Value" per line.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 bg-[#1F1F1F] p-3 rounded-lg border border-gray-700">
+                        {{ form.is_active }}
+                        <label class="text-sm text-gray-300 font-medium select-none cursor-pointer" for="{{ form.is_active.id_for_label }}">List Product Immediately</label>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="pt-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Product Images</label>
+                        <div class="relative">
+                            <input type="file" id="imageInput" name="images" accept="image/*" multiple 
+                                   class="block w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer bg-[#1F1F1F] border border-gray-700 rounded-lg focus:outline-none">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Upload up to 3 images. First image will be primary.</p>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
+                        <button type="button" @click="openAddModal = false" class="px-5 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition text-sm font-medium">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-lg shadow-blue-900/20 transition transform active:scale-95">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- CONFIRM MODAL -->
     <div x-show="confirmOpen"
-         class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+         class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
          x-transition>
-         
-        <div class="bg-[#1A1A1A] p-6 rounded-xl w-[22rem] shadow-xl border border-border relative">
-
-            <h2 class="text-xl font-semibold mb-4 text-white" x-text="confirmText"></h2>
-
-            <div class="flex justify-end gap-3">
-                <button 
-                    @click="confirmOpen=false"
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md">
-                    Cancel
-                </button>
-
-                <a :href="confirmUrl"
-                   class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md">
-                    Confirm
-                </a>
+        <div class="bg-[#1A1A1A] p-6 rounded-2xl w-full max-w-sm shadow-2xl border border-gray-700 text-center" @click.away="confirmOpen=false">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-900/30 mb-4">
+                <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
+            <h3 class="text-lg font-bold text-white mb-2">Confirm Action</h3>
+            <p class="text-sm text-gray-400 mb-6" x-text="confirmText"></p>
+            <div class="grid grid-cols-2 gap-3">
+                <button @click="confirmOpen=false" class="px-4 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition">Cancel</button>
+                <a :href="confirmUrl" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Confirm</a>
+            </div>
+        </div>
+    </div>
 
+</div>
+
+<!-- CROP MODAL (Fixed Layout) -->
+<div id="cropModal" class="fixed inset-0 bg-black/90 z-[9999] hidden flex items-center justify-center p-4 backdrop-blur-md">
+    <div class="bg-[#1A1A1A] rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-700">
+        
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center bg-[#1F1F1F]">
+            <h3 class="text-lg font-bold text-white">Crop Image</h3>
+            <button id="cancelCropX" class="text-gray-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Crop Area -->
+        <div class="flex-1 bg-black relative flex items-center justify-center overflow-hidden" style="min-height: 300px;">
+            <div class="max-w-full max-h-full p-4">
+                <img id="cropImage" class="block max-w-full max-h-[60vh]" style="display: block; max-width: 100%;">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-700 flex justify-end gap-3 bg-[#1F1F1F]">
+            <button id="cancelCrop" class="px-5 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition-colors border border-gray-600">
+                Cancel
+            </button>
+            <button id="saveCrop" class="px-6 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Crop & Save
+            </button>
         </div>
     </div>
 </div>
 
+<script>
+let cropper;
+let currentFileIndex = 0;
+let originalFiles = [];
 
+const imageInput = document.getElementById("imageInput");
+const cropModal = document.getElementById("cropModal");
+const cropImage = document.getElementById("cropImage");
 
+imageInput.addEventListener("change", handleFiles);
+
+function handleFiles(e) {
+    if (e.target.files.length === 0) return;
+    originalFiles = Array.from(e.target.files);
+    currentFileIndex = 0;
+    openCropper(originalFiles[currentFileIndex]);
+}
+
+function openCropper(file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        cropImage.src = event.target.result;
+        
+        // Show modal
+        cropModal.classList.remove("hidden");
+        
+        // Destroy previous cropper if exists
+        if (cropper) cropper.destroy();
+        
+        // Initialize new cropper
+        cropper = new Cropper(cropImage, {
+            aspectRatio: 1, // Square for products usually
+            viewMode: 2, // Restrict crop box to not exceed image size
+            autoCropArea: 1,
+            responsive: true,
+            background: false,
+            zoomable: true,
+            movable: true,
+            guides: true,
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+function closeCropper() {
+    cropModal.classList.add("hidden");
+    imageInput.value = ""; // Clear input if cancelled
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
+// Event Listeners for Close Actions
+document.getElementById("cancelCrop").addEventListener("click", closeCropper);
+document.getElementById("cancelCropX").addEventListener("click", closeCropper);
+
+document.getElementById("saveCrop").addEventListener("click", () => {
+    if (!cropper) return;
+
+    cropper.getCroppedCanvas({ 
+        width: 800, 
+        height: 800,
+        fillColor: '#fff' 
+    }).toBlob((blob) => {
+        // Replace original file with cropped version
+        originalFiles[currentFileIndex] = new File([blob], originalFiles[currentFileIndex].name, { type: blob.type });
+
+        currentFileIndex++;
+
+        if (currentFileIndex < originalFiles.length) {
+            // Crop next image
+            cropper.destroy();
+            openCropper(originalFiles[currentFileIndex]);
+        } else {
+            // All images cropped, update input
+            const dataTransfer = new DataTransfer();
+            originalFiles.forEach(file => dataTransfer.items.add(file));
+            imageInput.files = dataTransfer.files;
+
+            cropModal.classList.add("hidden");
+            cropper.destroy();
+            cropper = null;
+        }
+    }, 'image/jpeg', 0.9);
+});
+</script>
 
 {% endblock %}

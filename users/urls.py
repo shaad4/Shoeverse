@@ -27,7 +27,8 @@ urlpatterns = [
     path("invoice/<str:order_id>/", views.download_invoice, name="download_invoice"),
     path('return/request/<int:return_id>/', views.return_request_detail, name='return_detail'),
 
-    
+    path('send-email-change-link/', views.send_email_change_link, name='send_email_change_link'),
+    path('confirm-email-change/<uidb64>/<token>/', views.confirm_email_change, name='confirm_email_change'),
 ]
 
     

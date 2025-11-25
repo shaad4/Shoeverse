@@ -5,7 +5,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
-from .utils import generate_otp, send_otp_email, password_reset_email
+from .utils import generate_otp, send_otp_email, password_reset_email, email_change_confirmation
 from django.conf import settings
 from users.models import EmailOTP
 
@@ -13,6 +13,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.db.models import Q
+from .decorator import user_required
+from django.http import JsonResponse
 
 from .forms import AddressForm
 
@@ -23,6 +25,7 @@ import logging
 
 from shop.utils import generate_invoice
 from django.http import HttpResponse
+import json
 
 logger = logging.getLogger('users')
 User = get_user_model()
@@ -387,7 +390,7 @@ def logout_view(request):
 
 #profile  
 
-
+@user_required
 def profile_view(request):
 
     user = request.user
@@ -398,6 +401,7 @@ def profile_view(request):
 
     return render(request, "users/profile_view.html", context)
 
+@user_required
 def profile_edit_view(request):
     user = request.user
 
@@ -423,6 +427,7 @@ def profile_edit_view(request):
     
     return render(request, "users/profile_edit.html", {"user":user})
 
+@user_required
 def change_password_request(request):
     user = request.user 
 
@@ -445,30 +450,85 @@ def change_password_request(request):
 
 
 #address
-
+@user_required
 def address_list(request):
     addresses = Address.objects.filter(user=request.user)
     return render(request, 'users/address_list.html', {'addresses': addresses})
 
-def address_add_view(request):
-    if request.method == "POST":
-        form = AddressForm(request.POST)
-        if form.is_valid():
-            address = form.save(commit=False)
-            address.user = request.user
-            address.save()
-            messages.success(request, "Address saved successfully!")
+# @user_required
+# def address_add_view(request):
 
-            if request.GET.get('next') == 'checkout':
-                return redirect("checkout")
+#     next_page = request.GET.get('next', '')
+
+#     if request.method == "POST":
+#         form = AddressForm(request.POST)
+#         if form.is_valid():
+#             address = form.save(commit=False)
+#             address.user = request.user
+#             address.save()
+#             messages.success(request, "Address saved successfully!")
+
+#             if next_page == 'checkout':
+#                 return redirect("checkout")
             
-            return redirect("address")
-    else:
-        form = AddressForm()
-
-    return render(request, 'users/address_add.html', {"form":form}) 
+#             return redirect("address")
+#     else:
+#         form = AddressForm()
     
+#     context = {
+#         "form":form,
+#         "next_page":next_page
+#     }
 
+#     return render(request, 'users/address_add.html', context) 
+
+@user_required
+def address_add_view(request):
+    next_page = request.GET.get('next',"")
+
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        phone_number = request.POST.get("phone_number")
+        email = request.POST.get("email")
+        address_type = request.POST.get("address_type") # Returns "HOME", "WORK", or "OTHER"
+        address_line1 = request.POST.get("address_line1")
+        address_line2 = request.POST.get("address_line2")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        pincode = request.POST.get("pincode")
+
+        if not full_name or not phone_number or not address_line1 or not city or not state or not pincode:
+            messages.error(request, "Please fill in all required fields.")
+
+            context = {
+                "values": request.POST, 
+                "next_page": next_page
+            }
+            return render(request, 'users/address_add.html', context)
+        
+        Address.objects.create(
+            user=request.user,
+            full_name=full_name,
+            phone_number=phone_number,
+            email=email,
+            address_type=address_type,
+            address_line1=address_line1,
+            address_line2=address_line2,
+            city=city,
+            state=state,
+            pincode=pincode
+        )
+
+        messages.success(request, "Address saved successfully!")
+
+        if next_page == 'checkout':
+            return redirect("checkout")
+        
+        return redirect("address")
+    
+    return render(request, 'users/address_add.html', {"next_page": next_page})
+    
+@user_required
 def address_edit_view(request, pk):
     address = get_object_or_404(Address, id=pk, user=request.user)
 
@@ -490,7 +550,7 @@ def address_edit_view(request, pk):
     
     return render(request,  "users/address_edit.html", {"address":address})
 
-
+@user_required
 def address_delete_view(request, pk):
     address = get_object_or_404(Address, id = pk , user = request.user)
 
@@ -503,6 +563,7 @@ def address_delete_view(request, pk):
 
 #orders
 
+@user_required
 def order_list_view(request):
     filter_value = request.GET.get('filter', 'ALL')
     filter_options = [
@@ -531,6 +592,7 @@ def order_list_view(request):
 
 #order list
 
+@user_required
 def order_detail_view(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
@@ -574,7 +636,7 @@ def order_detail_view(request, order_id):
 
 
 
-
+@user_required
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, order_id = order_id, user = request.user)
     pdf_buffer = generate_invoice(order)
@@ -584,6 +646,7 @@ def download_invoice(request, order_id):
     return response
 
 
+@user_required
 def return_request_detail(request, return_id):
     return_request = get_object_or_404(ReturnRequest, id=return_id, user=request.user)
     
@@ -591,3 +654,62 @@ def return_request_detail(request, return_id):
         'return_request': return_request,
     }
     return render(request, 'users/return_detail.html', context)
+
+
+@user_required
+def  send_email_change_link(request):
+    if request.method == "POST":
+        try:
+            
+            data = json.loads(request.body)
+            new_email = clean_input(data.get("email"))
+        except Exception:
+            return JsonResponse({"success": False, "error": "Invalid request data."})
+
+        if User.objects.filter(email=new_email).exists():
+            return JsonResponse({"success": False, "error": "Email already in use."})
+        
+        user = request.user
+
+        request.session["pending_email_change"] = new_email
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        confirm_link = request.build_absolute_uri(
+            f"/confirm-email-change/{uid}/{token}/"
+        )
+
+        try:
+            email_change_confirmation(confirm_link, new_email)
+            return JsonResponse({"success": True, "email": new_email})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": "Failed to send email."})
+        
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+
+
+def confirm_email_change(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        new_email = request.session.get("pending_email_change")
+
+        if not new_email:
+            messages.error(request, "Session expired. Try again.")
+            return redirect("profile")
+        
+        user.email = new_email
+        user.save()
+        request.session.pop("pending_email_change", None)
+
+        messages.success(request, "Email updated successfully!")
+        return redirect("profile")
+    else:
+        messages.error(request, "Invalid or expired confirmation link.")
+        return redirect("profile")

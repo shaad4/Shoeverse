@@ -9,20 +9,26 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-import os
-
-
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR,'.env'))
+
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6ewty5w%c)v)pc^6*-$^(y(*f!gs!=d!+f1@k2+=8*41-8*6c5'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -100,11 +106,11 @@ WSGI_APPLICATION = 'shoeverse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'shoeverse_db',
-        'USER': 'postgres',
-        'PASSWORD': 'laptop',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -202,8 +208,8 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "logonxavi77@gmail.com"  # Your Gmail
-EMAIL_HOST_PASSWORD = "whee mvqc vfkg oudt"  # App password from Google
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Your Gmail
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # App password from Google
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
@@ -234,8 +240,8 @@ SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": "197416231753-j1dtst25t5vu5po6alcaokdakauveak2.apps.googleusercontent.com",
-            "secret": "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",
+            "client_id": os.getenv('client_id'), 
+            "secret": os.getenv('secret'), 
             "key": ""
         },
         "SCOPE": [
@@ -249,3 +255,5 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # SESSION_COOKIE_AGE = 1800     # 30 minutes
 # SESSION_SAVE_EVERY_REQUEST = True
+
+

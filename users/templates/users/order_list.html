@@ -1,106 +1,143 @@
 {% extends "base.html" %}
-{% block title %}My Orders - Shoeverse{% endblock %}
+{% load static %}
+
+{% block title %}My Orders | Shoeverse{% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen">
+<div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white">
 
     <!-- Sidebar -->
-    {% include "users/profile_sidebar.html" %}
+        {% include "users/profile_sidebar.html" %}
 
     <!-- Main Content -->
-    <main class="flex-1 p-8 text-white bg-dark">
-        <div class="max-w-6xl mx-auto">
+    <main class="flex-1 p-4 lg:p-10">
+        <div class="max-w-5xl mx-auto space-y-8">
 
             <!-- Header -->
-            <div class="mb-6">
-                <h1 class="text-heading font-bold mb-2">My Orders</h1>
-                <p class="text-small text-muted-light">Track, review, or manage your recent orders.</p>
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">My Orders</h1>
+                    <p class="text-sm text-gray-400 mt-1">Track pending orders and review purchase history.</p>
+                </div>
             </div>
 
-        
-
             <!-- Filter Tabs -->
-            <div class="flex space-x-6 text-small mb-4 border-b border-gray-700 pb-2">
-                {% for status,label in filter_options %}
+            <div class="flex overflow-x-auto pb-2 gap-2 border-b border-[#2a3b31] scrollbar-hide">
+                {% for status, label in filter_options %}
                     <a href="?filter={{ status }}"
-                      class="{% if current_filter == status %}text-primary border-b-2 border-primary pb-2{% else %}text-muted-light{% endif %}">
+                       class="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-t-lg transition-all border-b-2 
+                       {% if current_filter == status %}
+                           border-[#96c4a8] text-[#96c4a8] bg-[#2a3b31]/30
+                       {% else %}
+                           border-transparent text-gray-500 hover:text-white hover:bg-[#2a3b31]/10
+                       {% endif %}">
                       {{ label }}
                     </a>
                 {% endfor %}
             </div>
 
-            <!-- Orders Table -->
-            <div class="bg-sidebar-bg rounded-lg border border-input-border overflow-hidden">
-
-                <div class="bg-table-header-bg text-small font-medium text-white grid grid-cols-[150px,1.5fr,100px,120px,120px,130px] px-4 py-3 border-b border-input-border">
-                    <div>Order ID</div>
-                    <div>Product Details</div>
-                    <div>Total</div>
-                    <div>Order Date</div>
-                    <div>Status</div>
-                    <div class="text-center">Action</div>
-                </div>
-
+            <!-- Orders Grid -->
+            <div class="space-y-4">
                 {% for order in orders %}
-                <div class="grid grid-cols-[150px,1.5fr,100px,120px,120px,130px] px-4 py-4 border-b border-input-border text-small">
-
-                    <!-- Order ID -->
-                    <div class="flex items-center text-primary font-semibold">
-                        {{ order.order_id }}
+                <div class="group bg-[#18211d] rounded-2xl border border-[#2a3b31] p-5 transition-all hover:border-[#96c4a8]/30 hover:shadow-lg hover:shadow-black/20">
+                    
+                    <!-- Top Row: ID, Date, Status -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-[#2a3b31]/50">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <span class="font-mono text-sm font-bold text-white">#{{ order.order_id }}</span>
+                            <span class="hidden sm:block text-[#2a3b31]">•</span>
+                            <span class="text-xs text-gray-500">{{ order.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <!-- Status Badge -->
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border
+                                {% if order.status == 'Delivered' %} bg-green-500/10 text-green-400 border-green-500/20
+                                {% elif order.status == 'Shipped' %} bg-blue-500/10 text-blue-400 border-blue-500/20
+                                {% elif order.status == 'Processing' %} bg-yellow-500/10 text-yellow-400 border-yellow-500/20
+                                {% elif order.status == 'Cancelled' %} bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %} bg-gray-500/10 text-gray-400 border-gray-500/20 {% endif %}">
+                                
+                                <span class="w-1.5 h-1.5 rounded-full 
+                                    {% if order.status == 'Delivered' %} bg-green-400
+                                    {% elif order.status == 'Shipped' %} bg-blue-400
+                                    {% elif order.status == 'Processing' %} bg-yellow-400
+                                    {% elif order.status == 'Cancelled' %} bg-red-400
+                                    {% else %} bg-gray-400 {% endif %}"></span>
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- Product Details -->
-                    <div class="space-y-1">
-                        {% for item in order.items.all|slice:":1" %}
-                            <p class="font-semibold">{{ item.variant.product.name }}</p>
-                            <p class="text-muted-light text-xs">Size {{ item.variant.size }} | Qty: {{ item.quantity }}</p>
-                        {% endfor %}
-                        {% if order.items.count > 1 %}
-                            <p class="text-xs text-gray-400">+ {{ order.items.count|add:"-1" }} more items</p>
-                        {% endif %}
+                    <!-- Middle Row: Product Info & Actions -->
+                    <div class="flex flex-col sm:flex-row gap-5">
+                        
+                        <!-- Product Preview (First item) -->
+                        <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-[#121714] rounded-xl border border-[#2a3b31] overflow-hidden">
+                            {% with first_item=order.items.first %}
+                                {% if first_item.variant.product.images.first %}
+                                    <img src="{{ first_item.variant.product.images.first.image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-xs text-gray-600">No Img</div>
+                                {% endif %}
+                            {% endwith %}
+                            
+                            <!-- +More Items Badge -->
+                            {% if order.items.count > 1 %}
+                            <div class="absolute bottom-0 right-0 bg-[#2a3b31] text-white text-[10px] px-1.5 py-0.5 rounded-tl-lg font-bold border-t border-l border-[#121714]">
+                                +{{ order.items.count|add:"-1" }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 flex flex-col justify-center min-w-0">
+                            {% with first_item=order.items.first %}
+                                <h3 class="font-bold text-white text-base truncate pr-4">{{ first_item.variant.product.name }}</h3>
+                                <div class="text-sm text-gray-400 mt-1 flex flex-wrap gap-x-3 items-center">
+                                    <span class="bg-[#121714] px-2 py-0.5 rounded text-xs border border-[#2a3b31]">Size: {{ first_item.variant.size }}</span>
+                                    <span>Qty: {{ first_item.quantity }}</span>
+                                </div>
+                            {% endwith %}
+                            <div class="mt-3 font-bold text-lg text-white">₹{{ order.total_amount }}</div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-row sm:flex-col justify-center gap-3 sm:min-w-[140px]">
+                            <a href="{% url 'order_detail' order.order_id %}" 
+                               class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm font-medium transition-colors border border-transparent hover:border-[#3d5244]">
+                                Details
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                            
+                            {% if order.status == 'Delivered' %}
+                                {% with first_item=order.items.first %}
+                                    <a href="{% url 'submit_review' first_item.variant.product.id %}" 
+                                    class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-transparent border border-[#2a3b31] hover:bg-[#2a3b31] text-gray-400 hover:text-white text-sm font-medium transition-colors">
+                                        Review
+                                    </a>
+                                {% endwith %}
+                            {% endif %}
+
+                        </div>
                     </div>
 
-                    <!-- Price -->
-                    <div class="font-semibold">₹{{ order.total_amount }}</div>
-
-                    <!-- Date -->
-                    <div class="text-muted-light">{{ order.created_at|date:"M d, Y" }}</div>
-
-                    <!-- Status -->
-                    <div>
-                        {% if order.status == 'Pending' %}
-                            <span class="px-3 py-1 rounded-full bg-yellow-500 text-black text-xs">Pending</span>
-
-                        {% elif order.status == 'Processing' %}
-                            <span class="px-3 py-1 rounded-full bg-blue-500 text-white text-xs">Processing</span>
-
-                        {% elif order.status == 'Shipped' %}
-                            <span class="px-3 py-1 rounded-full bg-purple-500 text-white text-xs">Shipped</span>
-
-                        {% elif order.status == 'Delivered' %}
-                            <span class="px-3 py-1 rounded-full bg-green-600 text-white text-xs">Delivered</span>
-
-                        {% elif order.status == 'Cancelled' %}
-                            <span class="px-3 py-1 rounded-full bg-red-500 text-white text-xs">Cancelled</span>
-
-                        {% else %}
-                            <span class="px-3 py-1 rounded-full bg-gray-500 text-white text-xs">Unknown</span>
-                        {% endif %}
-                    </div>
-
-
-                    <!-- Actions -->
-                    <div class="flex items-center justify-center space-x-4">
-                        <a href="{% url 'order_detail' order.order_id %}" class="text-blue-300 hover:text-blue-400">Track Order</a>
-                        {% if order.status == 'DELIVERED' %}
-                        <a href="#" class="text-green-300 hover:text-green-400">Write Review</a>
-                        {% endif %}
-                    </div>
                 </div>
                 {% empty %}
-                <div class="text-center text-muted-light py-6">No orders found.</div>
+                <!-- Empty State -->
+                <div class="text-center py-20 bg-[#18211d] rounded-2xl border border-[#2a3b31] border-dashed">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#2a3b31] text-gray-500 mb-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">No orders found</h3>
+                    <p class="text-gray-400 text-sm mt-1">Looks like you haven't placed any orders yet.</p>
+                    <a href="{% url 'shop_products' %}" class="inline-block mt-6 px-6 py-2.5 rounded-xl bg-[#96c4a8] hover:bg-[#85b095] text-[#121714] font-bold text-sm transition-colors shadow-lg shadow-[#96c4a8]/20">
+                        Start Shopping
+                    </a>
+                </div>
                 {% endfor %}
             </div>
+
         </div>
     </main>
 </div>
