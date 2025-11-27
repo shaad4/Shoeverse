@@ -577,6 +577,14 @@ def order_list_view(request):
     orders = Order.objects.filter(user = request.user).order_by("-created_at")
 
 
+    search_query = request.GET.get("search")
+
+    if search_query:
+        orders = orders.filter(
+            Q(order_id__icontains = search_query)|
+            Q(items__variant__product__name__icontains = search_query)
+        )
+
     if filter_value != "ALL":
         orders = orders.filter(status = filter_value).order_by("-created_at")
 
@@ -590,6 +598,7 @@ def order_list_view(request):
         'filter_options' : filter_options,
         'current_filter' : filter_value,
         "page_obj" : page_obj,
+        "search_query" : search_query,
     }
 
     return render(request, 'users/order_list.html' , context)

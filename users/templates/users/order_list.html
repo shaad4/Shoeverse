@@ -6,25 +6,41 @@
 {% block content %}
 <div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white">
 
-    <!-- Sidebar -->
-        {% include "users/profile_sidebar.html" %}
+    {% include "users/profile_sidebar.html" %}
 
-    <!-- Main Content -->
     <main class="flex-1 p-4 lg:p-10">
         <div class="max-w-5xl mx-auto space-y-8">
 
-            <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-white tracking-tight">My Orders</h1>
                     <p class="text-sm text-gray-400 mt-1">Track pending orders and review purchase history.</p>
                 </div>
+
+                <form method="GET" action="" class="w-full md:w-72">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                            </svg>
+                        </div>
+                        
+                        <input type="text" 
+                               name="search" 
+                               value="{{ request.GET.search|default:'' }}" 
+                               class="block w-full p-2.5 pl-10 text-sm text-white bg-[#18211d] border border-[#2a3b31] rounded-xl focus:ring-[#96c4a8] focus:border-[#96c4a8] placeholder-gray-500 transition-colors" 
+                               placeholder="Search Order ID or Product...">
+                        
+                        {% if current_filter %}
+                            <input type="hidden" name="filter" value="{{ current_filter }}">
+                        {% endif %}
+                    </div>
+                </form>
             </div>
 
-            <!-- Filter Tabs -->
             <div class="flex overflow-x-auto pb-2 gap-2 border-b border-[#2a3b31] scrollbar-hide">
                 {% for status, label in filter_options %}
-                    <a href="?filter={{ status }}"
+                    <a href="?filter={{ status }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                        class="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-t-lg transition-all border-b-2 
                        {% if current_filter == status %}
                            border-[#96c4a8] text-[#96c4a8] bg-[#2a3b31]/30
@@ -36,12 +52,10 @@
                 {% endfor %}
             </div>
 
-            <!-- Orders Grid -->
             <div class="space-y-4">
                 {% for order in orders %}
                 <div class="group bg-[#18211d] rounded-2xl border border-[#2a3b31] p-5 transition-all hover:border-[#96c4a8]/30 hover:shadow-lg hover:shadow-black/20">
                     
-                    <!-- Top Row: ID, Date, Status -->
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-[#2a3b31]/50">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                             <span class="font-mono text-sm font-bold text-white">#{{ order.order_id }}</span>
@@ -50,7 +64,6 @@
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            <!-- Status Badge -->
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border
                                 {% if order.status == 'Delivered' %} bg-green-500/10 text-green-400 border-green-500/20
                                 {% elif order.status == 'Shipped' %} bg-blue-500/10 text-blue-400 border-blue-500/20
@@ -69,10 +82,8 @@
                         </div>
                     </div>
 
-                    <!-- Middle Row: Product Info & Actions -->
                     <div class="flex flex-col sm:flex-row gap-5">
                         
-                        <!-- Product Preview (First item) -->
                         <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-[#121714] rounded-xl border border-[#2a3b31] overflow-hidden">
                             {% with first_item=order.items.first %}
                                 {% if first_item.variant.product.images.first %}
@@ -82,7 +93,6 @@
                                 {% endif %}
                             {% endwith %}
                             
-                            <!-- +More Items Badge -->
                             {% if order.items.count > 1 %}
                             <div class="absolute bottom-0 right-0 bg-[#2a3b31] text-white text-[10px] px-1.5 py-0.5 rounded-tl-lg font-bold border-t border-l border-[#121714]">
                                 +{{ order.items.count|add:"-1" }}
@@ -90,7 +100,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- Info -->
                         <div class="flex-1 flex flex-col justify-center min-w-0">
                             {% with first_item=order.items.first %}
                                 <h3 class="font-bold text-white text-base truncate pr-4">{{ first_item.variant.product.name }}</h3>
@@ -102,7 +111,6 @@
                             <div class="mt-3 font-bold text-lg text-white">₹{{ order.total_amount }}</div>
                         </div>
 
-                        <!-- Actions -->
                         <div class="flex flex-row sm:flex-col justify-center gap-3 sm:min-w-[140px]">
                             <a href="{% url 'order_detail' order.order_id %}" 
                                class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm font-medium transition-colors border border-transparent hover:border-[#3d5244]">
@@ -124,15 +132,20 @@
 
                 </div>
                 {% empty %}
-                <!-- Empty State -->
                 <div class="text-center py-20 bg-[#18211d] rounded-2xl border border-[#2a3b31] border-dashed">
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#2a3b31] text-gray-500 mb-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     </div>
                     <h3 class="text-lg font-bold text-white">No orders found</h3>
-                    <p class="text-gray-400 text-sm mt-1">Looks like you haven't placed any orders yet.</p>
+                    <p class="text-gray-400 text-sm mt-1">
+                        {% if request.GET.search %}
+                            No results found for "{{ request.GET.search }}"
+                        {% else %}
+                            Looks like you haven't placed any orders yet.
+                        {% endif %}
+                    </p>
                     <a href="{% url 'shop_products' %}" class="inline-block mt-6 px-6 py-2.5 rounded-xl bg-[#96c4a8] hover:bg-[#85b095] text-[#121714] font-bold text-sm transition-colors shadow-lg shadow-[#96c4a8]/20">
-                        Start Shopping
+                        {% if request.GET.search %}View All Products{% else %}Start Shopping{% endif %}
                     </a>
                 </div>
                 {% endfor %}
@@ -142,7 +155,7 @@
             <nav class="flex justify-center mt-8 space-x-2">
                 
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                    <a href="?page={{ page_obj.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                     class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">Previous</a>
                 {% else %}
                     <span class="px-3 py-1 rounded bg-[#121714] text-gray-600 text-sm cursor-not-allowed">Previous</span>
@@ -152,13 +165,13 @@
                     {% if page_obj.number == num %}
                         <span class="px-3 py-1 rounded bg-[#96c4a8] text-[#121714] font-bold text-sm">{{ num }}</span>
                     {% else %}
-                        <a href="?page={{ num }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                        <a href="?page={{ num }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                         class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">{{ num }}</a>
                     {% endif %}
                 {% endfor %}
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                    <a href="?page={{ page_obj.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                     class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">Next</a>
                 {% else %}
                     <span class="px-3 py-1 rounded bg-[#121714] text-gray-600 text-sm cursor-not-allowed">Next</span>
