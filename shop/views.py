@@ -16,11 +16,19 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.timezone import now
 from users.decorator import user_required
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Create your views here.
 
 
 
 def product_list_view(request, category=None):
+
+    logger.info("Product list view called with category: %s", category)
+
     products = (
         Product.objects.filter(is_active=True)
         .prefetch_related("images")
@@ -30,6 +38,7 @@ def product_list_view(request, category=None):
             review_count=Count('reviews')       
         )
     )
+    logger.debug("Initial product count: %s", products.count())
 
     category_param = request.GET.get("category")
 
@@ -154,13 +163,17 @@ def product_list_view(request, category=None):
 
 def  product_detail_view(request, product_id):
 
+    logger.info("Product detail view called for product_id=%s", product_id)
+
     #get the product
     product = get_object_or_404(
         Product.objects.prefetch_related("images","variants"),
         id=product_id
     )
+    logger.debug("Loaded product: %s", product.name)
 
     if not product.is_active:
+        logger.warning("Inactive product (ID=%s) accessed", product_id)
         return redirect("shop_products")
     
     #fetching all the product variantes
@@ -178,16 +191,20 @@ def  product_detail_view(request, product_id):
     #stock check
     total_stock = sum(v.stock for v in variants)
     is_out_of_stock = total_stock == 0
+    logger.debug("Stock check for product_id=%s | Total stock=%s", product_id, total_stock)
 
     #cart
     if request.GET.get("action") == "add_to_cart":
+        logger.info("Add-to-cart request for product_id=%s", product_id)
         if is_out_of_stock:
+            logger.warning("Attempt to add out-of-stock product_id=%s to cart", product_id)
             return redirect("shop_products")
         ##cart logics later##
 
     is_in_wishlist = False
     if request.user.is_authenticated:
         is_in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
+        logger.debug("Wishlist status for product_id=%s | In wishlist=%s", product_id, is_in_wishlist)
 
     #review
     reviews = product.reviews.all().order_by('-created_at')
@@ -213,10 +230,10 @@ def  product_detail_view(request, product_id):
             variant__product=product
         ).exists()
 
-    user_review = reviews.filter(user=request.user).first()
+        user_review = reviews.filter(user=request.user).first()
 
-    if has_purchased:
-        can_review = True
+        if has_purchased:
+            can_review = True
     
     context = {
         "product" : product,

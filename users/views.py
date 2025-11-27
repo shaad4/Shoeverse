@@ -15,7 +15,7 @@ from django.utils.encoding import force_bytes
 from django.db.models import Q
 from .decorator import user_required
 from django.http import JsonResponse
-
+from django.core.paginator import Paginator
 from .forms import AddressForm
 
 from products.models import Product, ProductVariant
@@ -580,10 +580,16 @@ def order_list_view(request):
     if filter_value != "ALL":
         orders = orders.filter(status = filter_value).order_by("-created_at")
 
+    paginator = Paginator(orders,4)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context  = {
-        'orders' : orders,
+
+        'orders' : page_obj,
         'filter_options' : filter_options,
         'current_filter' : filter_value,
+        "page_obj" : page_obj,
     }
 
     return render(request, 'users/order_list.html' , context)

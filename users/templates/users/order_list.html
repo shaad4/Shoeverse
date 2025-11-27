@@ -138,6 +138,35 @@
                 {% endfor %}
             </div>
 
+            {% if page_obj.has_other_pages %}
+            <nav class="flex justify-center mt-8 space-x-2">
+                
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                    class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">Previous</a>
+                {% else %}
+                    <span class="px-3 py-1 rounded bg-[#121714] text-gray-600 text-sm cursor-not-allowed">Previous</span>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="px-3 py-1 rounded bg-[#96c4a8] text-[#121714] font-bold text-sm">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                        class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}"
+                    class="px-3 py-1 rounded bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm">Next</a>
+                {% else %}
+                    <span class="px-3 py-1 rounded bg-[#121714] text-gray-600 text-sm cursor-not-allowed">Next</span>
+                {% endif %}
+
+            </nav>
+            {% endif %}
+
         </div>
     </main>
 </div>
