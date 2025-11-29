@@ -119,11 +119,11 @@ class OrderItem(models.Model):
         if self.status == "Cancelled":
             return False
         
-        # 1️⃣ First, check if this item is from a delivered order
+        # First, check if this item is from a delivered order
         if self.order.status != 'Delivered' or not self.order.delivered_at:
             return False   # Return not allowed
 
-        # 2️⃣ Now check if today is within 10 days of the delivery date
+        # Now check if today is within 10 days of the delivery date
         return timezone.now().date() <= (self.order.delivered_at + timedelta(days=10)).date()
     
 

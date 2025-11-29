@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'products',
     'shop',
     'wallet',
+    'payments',
     
 ]
 
@@ -258,3 +259,5 @@ SESSION_COOKIE_AGE = 1800     # 30 minutes
 SESSION_SAVE_EVERY_REQUEST = True
 
 
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
