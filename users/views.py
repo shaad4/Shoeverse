@@ -27,6 +27,9 @@ from shop.utils import generate_invoice
 from django.http import HttpResponse
 import json
 
+from wallet.utils import credit_wallet, debit_wallet
+from wallet.models import WalletTransaction, Wallet
+
 logger = logging.getLogger('users')
 User = get_user_model()
 
@@ -38,6 +41,8 @@ def clean_input(value: str) -> str:
 # Create your views here.
 
 def signup_view(request):
+    referral = request.GET.get('ref','')
+
     if request.method == "POST":
         email = clean_input(request.POST.get('email'))
         fullName  = clean_input(request.POST.get('fullName'))
@@ -137,7 +142,7 @@ def signup_view(request):
 
         return redirect("verify_otp")
     
-    return render(request, "users/signup.html")
+    return render(request, "users/signup.html", {"referral_code": referral})
 
 
 def verify_otp_view(request):
@@ -202,6 +207,22 @@ def verify_otp_view(request):
         logger.info(f"OTP verified successfully for {user.email}")
 
         login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
+        
+
+        wallet , created = Wallet.objects.get_or_create(user=user)
+
+        if user.referredBy:
+            if not WalletTransaction.objects.filter(
+                wallet = wallet,
+                description__icontains = "Referral"
+            ).exists():
+
+                # Credit 500 to new user
+                credit_wallet(wallet, 500, "Referral signup reward")
+                #for referer 
+                credit_wallet(user.referredBy.wallet, 500, f"Referral bonus for inviting {user.email}")
+
+                
 
 
         #Remove session
@@ -394,9 +415,10 @@ def logout_view(request):
 def profile_view(request):
 
     user = request.user
-
+    referral_link = request.build_absolute_uri(f"/signup/?ref={user.referralCode}")
     context = {
         "user" : user,
+        "referral_link": referral_link,
     }
 
     return render(request, "users/profile_view.html", context)

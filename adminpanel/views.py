@@ -10,8 +10,10 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
 from products.models import Product, ProductVariant, ProductImage, SubCategory
 from products.forms import ProductForm, ProductVarientForm
-from shop.models import  Order, ReturnRequest
+from shop.models import  Order, ReturnRequest, OrderItem
 from .decorator import admin_required
+from django.utils.timezone import now
+from decimal import Decimal
 from django.utils.timezone import now
 
 logger = logging.getLogger("users")
@@ -613,21 +615,76 @@ def update_order_status(request, order_id):
     if request.method == "POST":
         new_status = request.POST.get('status')
 
-    if new_status == order.status:
-            messages.info(request, "No changes made.")
-            return redirect('admin_order_detail', order_id=order.order_id)
+        if new_status == order.status:
+                messages.info(request, "No changes made.")
+                return redirect('admin_order_detail', order_id=order.order_id)
+        
+        if new_status == 'Cancelled' and order.status != 'Cancelled':
+            for item in order.items.all():
+                if item.status != 'Cancelled':
+                    item.status = 'Cancelled'
+                    item.variant.stock += item.quantity
+                    item.variant.save()
+                    item.save()
+
+            order.cancel_reason = "Cancelled by Admin"
     
-    order.status = new_status
+        order.status = new_status
 
-    if new_status == "Delivered":
-        order.delivered_at = now()
+        if new_status == "Delivered":
+            order.delivered_at = now()
 
-    elif new_status != "Delivered":
-        order.delivered_at = None
+        elif new_status != "Delivered":
+            order.delivered_at = None
+
+        order.save()
+
+        messages.success(request, f"Order status updated to {new_status}.")
+
+    return redirect('admin_order_detail', order_id=order.order_id)
+
+@admin_required
+def admin_cancel_order_item(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id)
+    order = item.order
+
+    if order.status in ["Delivered", "Cancelled"]:
+        messages.error(request, "Cannot cancel items for Delivered or Cancelled orders.")
+        return redirect('admin_order_detail', order_id=order.order_id)
+    
+    if item.status == 'Cancelled':
+        messages.warning(request, "Item is already cancelled.")
+        return redirect('admin_order_detail', order_id=order.order_id)
+    
+    item.status = "Cancelled"
+    item.variant.stock += item.quantity
+    item.variant.save()
+    item.save()
+
+    active_items = order.items.exclude(status='Cancelled')
+
+    if not active_items.exists():
+        # If no items left, cancel the whole order
+        order.status = "Cancelled"
+        order.cancel_reason = "All items cancelled by Admin"
+        order.subtotal = Decimal(0)
+        order.gst = Decimal(0)
+        order.delivery_charge = Decimal(0)
+        order.total_amount = Decimal(0)
+    else:
+        new_subtotal = sum(i.total_price for i in active_items)
+        order.subtotal = new_subtotal
+        order.gst = (new_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+        
+        if order.subtotal >= 1000:
+            order.delivery_charge = Decimal(0)
+        else:
+            order.delivery_charge = Decimal(100)
+            
+        order.total_amount = order.subtotal + order.gst + order.delivery_charge
 
     order.save()
-
-    messages.success(request, f"Order status updated to {new_status}.")
+    messages.success(request, f"Item '{item.variant.product.name}' cancelled.")
     return redirect('admin_order_detail', order_id=order.order_id)
 
 #return 

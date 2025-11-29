@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'adminpanel',
     'products',
     'shop',
+    'wallet',
     
 ]
 

@@ -29,6 +29,7 @@ urlpatterns = [
    path('payment/<int:address_id>/', views.payment_view, name="payment"),
    path('place-order/<int:address_id>/',views.place_order, name="place_order"),
    path('cancel-order/<str:order_id>/', views.cancel_order, name='cancel_order'),
+   path('cancel-order/item/<int:item_id>/', views.cancel_order_item, name='cancel_order_item'),
 
    path('return/order/<str:order_id>/', views.return_order_items, name='return_order_items'),
    path('return/submit/<str:order_id>/', views.submit_return_request, name='submit_return_request'),

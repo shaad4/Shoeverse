@@ -4,8 +4,7 @@
 {% block content %}
 <div class="min-h-screen bg-[#121212] text-gray-300 p-6">
 
-  <!-- Top Navigation / Breadcrumb -->
-    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <a href="{% url 'admin_dashboard' %}" class="hover:text-blue-400 transition-colors flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             Dashboard
@@ -18,12 +17,10 @@
 
 
 
-  <!-- Page Header & Main Actions -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
     <div>
       <div class="flex items-center gap-3">
         <h1 class="text-3xl font-bold text-white">Order <span class="text-gray-500">#{{ order.order_id }}</span></h1>
-        <!-- Current Status Badge (Header) -->
         <span class="px-3 py-1 rounded-full text-xs font-semibold border
             {% if order.status == 'Delivered' %} bg-green-500/10 text-green-400 border-green-500/20
             {% elif order.status == 'Shipped' %} bg-blue-500/10 text-blue-400 border-blue-500/20
@@ -38,7 +35,6 @@
       </p>
     </div>
 
-    <!-- Status Update Form -->
     <div class="bg-[#1E1E1E] p-1.5 rounded-lg border border-gray-700 shadow-sm">
       <form method="POST" action="{% url 'update_order_status' order.order_id %}" class="flex items-center gap-2">
         {% csrf_token %}
@@ -58,10 +54,8 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- LEFT COLUMN (Main Details) -->
     <div class="lg:col-span-2 space-y-6">
 
-      <!-- ALERT: Cancellation Request -->
       {% if order.cancel_request %}
       <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
@@ -74,7 +68,6 @@
             <p class="text-gray-400 text-sm mt-1">Reason: <span class="italic">"{{ order.cancel_request.reason }}"</span></p>
           </div>
           <div class="flex gap-2">
-             <!-- Assuming urls exist for these actions -->
              <a href="#" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded shadow transition">Approve</a>
              <a href="#" class="px-4 py-2 bg-[#2A2A2A] hover:bg-[#333] text-white text-sm font-medium rounded border border-gray-600 transition">Reject</a>
           </div>
@@ -82,7 +75,6 @@
       </div>
       {% endif %}
 
-      <!-- ALERT: Return Request -->
       {% if order.return_request %}
       <div class="bg-amber-900/20 border border-amber-500/30 rounded-xl p-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
@@ -92,7 +84,6 @@
         </h3>
         <p class="text-gray-400 text-sm mb-4">Reason: "{{ order.return_request.reason }}"</p>
         
-        <!-- Evidence Images -->
         {% if order.return_request.images.all %}
         <div class="flex gap-3 mb-4 overflow-x-auto pb-2">
             {% for img in order.return_request.images.all %}
@@ -110,20 +101,15 @@
       </div>
       {% endif %}
 
-      <!-- Order Progress (Stepper) -->
       <section class="bg-[#1E1E1E] rounded-xl border border-gray-800 p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-white mb-6">Order Timeline</h3>
         <div class="relative">
-            <!-- Progress Bar Background -->
             <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-700 -translate-y-1/2 rounded-full z-0"></div>
-            <!-- Active Progress -->
             <div class="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-1/2 rounded-full z-0 transition-all duration-500"
                 style="width: {% if order.status == 'Pending' %}10%{% elif order.status == 'Processing' %}45%{% elif order.status == 'Shipped' %}75%{% elif order.status == 'Delivered' %}100%{% else %}0%{% endif %}">
             </div>
 
-            <!-- Steps -->
             <div class="relative z-10 flex justify-between w-full">
-                <!-- Pending -->
                 <div class="flex flex-col items-center">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 
                         {% if order.status == 'Cancelled' %} bg-red-900 border-red-500 text-red-500
@@ -137,7 +123,6 @@
                     <p class="text-xs mt-2 font-medium text-gray-300">Placed</p>
                 </div>
                 
-                <!-- Processing -->
                 <div class="flex flex-col items-center">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 
                         {% if order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %} bg-[#1E1E1E] border-blue-500 text-blue-500
@@ -147,7 +132,6 @@
                     <p class="text-xs mt-2 font-medium {% if order.status == 'Processing' %}text-blue-400{% else %}text-gray-500{% endif %}">Processing</p>
                 </div>
 
-                <!-- Shipped -->
                 <div class="flex flex-col items-center">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 
                         {% if order.status == 'Shipped' or order.status == 'Delivered' %} bg-[#1E1E1E] border-blue-500 text-blue-500
@@ -157,7 +141,6 @@
                     <p class="text-xs mt-2 font-medium {% if order.status == 'Shipped' %}text-blue-400{% else %}text-gray-500{% endif %}">Shipped</p>
                 </div>
 
-                <!-- Delivered -->
                 <div class="flex flex-col items-center">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 
                         {% if order.status == 'Delivered' %} bg-[#1E1E1E] border-green-500 text-green-500
@@ -175,7 +158,6 @@
         {% endif %}
       </section>
 
-      <!-- Order Items List -->
       <section class="bg-[#1E1E1E] rounded-xl border border-gray-800 overflow-hidden shadow-sm">
         <div class="p-6 border-b border-gray-800 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-white">Items Ordered</h2>
@@ -186,14 +168,16 @@
                 <thead class="bg-[#181818] uppercase text-xs font-semibold text-gray-500">
                     <tr>
                         <th class="px-6 py-4">Product</th>
+                        <th class="px-6 py-4 text-center">Status</th>
                         <th class="px-6 py-4 text-center">Qty</th>
                         <th class="px-6 py-4 text-right">Unit Price</th>
                         <th class="px-6 py-4 text-right">Total</th>
+                        <th class="px-6 py-4 text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-800">
                     {% for item in order.items.all %}
-                    <tr class="hover:bg-gray-800/40 transition-colors">
+                    <tr class="hover:bg-gray-800/40 transition-colors {% if item.status == 'Cancelled' %}opacity-50{% endif %}">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-4">
                                 <div class="h-12 w-12 rounded bg-gray-700 flex-shrink-0 overflow-hidden border border-gray-600">
@@ -202,16 +186,43 @@
                                          class="h-full w-full object-cover">
                                 </div>
                                 <div>
-                                    <p class="font-medium text-gray-200">{{ item.variant.product.name }}</p>
+                                    <p class="font-medium text-gray-200 {% if item.status == 'Cancelled' %}line-through{% endif %}">
+                                        {{ item.variant.product.name }}
+                                    </p>
                                     <div class="flex items-center gap-2 mt-0.5">
                                         <span class="text-xs bg-gray-700 px-1.5 py-0.5 rounded text-gray-300">Size: {{ item.variant.size }}</span>
                                     </div>
                                 </div>
                             </div>
                         </td>
+                        
+                        <td class="px-6 py-4 text-center">
+                            {% if item.status == 'Cancelled' %}
+                                <span class="text-xs text-red-400 bg-red-900/20 px-2 py-1 rounded border border-red-500/20">Cancelled</span>
+                            {% elif item.status == 'Returned' %}
+                                <span class="text-xs text-amber-400 bg-amber-900/20 px-2 py-1 rounded border border-amber-500/20">Returned</span>
+                            {% else %}
+                                <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded border border-green-500/20">Active</span>
+                            {% endif %}
+                        </td>
+
                         <td class="px-6 py-4 text-center text-white">{{ item.quantity }}</td>
                         <td class="px-6 py-4 text-right">₹{{ item.price }}</td>
                         <td class="px-6 py-4 text-right font-medium text-white">₹{{ item.total_price }}</td>
+                        
+                        <td class="px-6 py-4 text-center">
+                            {% if item.status != 'Cancelled' and order.status != 'Cancelled' and order.status != 'Delivered' %}
+                                <button onclick="confirmItemCancel('{{ item.id }}', '{{ item.variant.product.name|escapejs }}')" 
+                                        class="text-red-400 hover:text-red-300 p-2 rounded hover:bg-red-900/20 transition"
+                                        title="Cancel Item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            {% else %}
+                                <span class="text-gray-600">-</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -233,10 +244,8 @@
 
     </div>
 
-    <!-- RIGHT COLUMN (Sidebar) -->
     <div class="space-y-6">
 
-      <!-- Customer Card -->
       <section class="bg-[#1E1E1E] rounded-xl border border-gray-800 p-6 shadow-sm">
         <h2 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">Customer Details</h2>
         <div class="flex items-start gap-4">
@@ -252,7 +261,6 @@
         
       </section>
 
-      <!-- Delivery Address Card -->
       <section class="bg-[#1E1E1E] rounded-xl border border-gray-800 p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-sm uppercase tracking-wide text-gray-500 font-bold">Shipping Address</h2>
@@ -271,7 +279,6 @@
         </address>
       </section>
 
-      <!-- Order Summary Card -->
       <section class="bg-[#1E1E1E] rounded-xl border border-gray-800 p-6 shadow-sm">
         <h2 class="text-sm uppercase tracking-wide text-gray-500 font-bold mb-4">Payment Summary</h2>
         <div class="space-y-3 text-sm">
@@ -300,4 +307,34 @@
     </div>
   </div>
 </div>
+
+<div id="adminCancelModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-[#1E1E1E] border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-2">Confirm Cancellation</h3>
+        <p class="text-gray-400 text-sm mb-6">Are you sure you want to cancel <strong id="cancelItemName" class="text-white"></strong>? This will restock the inventory and update order totals immediately.</p>
+        
+        <div class="flex gap-3">
+             <button onclick="closeAdminModal()" class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancel</button>
+             <a id="confirmCancelBtn" href="#" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-center rounded transition font-medium">Confirm</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmItemCancel(itemId, itemName) {
+        const modal = document.getElementById('adminCancelModal');
+        const nameSpan = document.getElementById('cancelItemName');
+        const confirmBtn = document.getElementById('confirmCancelBtn');
+
+        nameSpan.innerText = itemName;
+        confirmBtn.href = "{% url 'admin_cancel_order_item' 0 %}".replace('0', itemId);
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+        document.getElementById('adminCancelModal').classList.add('hidden');
+    }
+</script>
+
 {% endblock %}

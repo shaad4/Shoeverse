@@ -27,6 +27,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path("adminpanel/", include("adminpanel.urls")),
     path("", include("shop.urls")),
+    path('wallet/', include('wallet.urls')),
+
 
 
 ]

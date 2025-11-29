@@ -717,7 +717,7 @@ def order_success(request, order_id):
 def cancel_order(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
-    if order.status in ["Shipped", "Delivered"]:
+    if order.status in ["Shipped", "Delivered", "Cancelled"]:
         messages.error(request, "Cannot cancel this order. Please contact support.")
         return redirect('order_detail', order_id=order_id)
 
@@ -734,6 +734,58 @@ def cancel_order(request, order_id):
 
     messages.success(request, "Order cancelled successfully")
     return redirect('order_detail', order_id=order_id)
+
+@user_required
+def cancel_order_item(request, item_id):
+    item = get_object_or_404(OrderItem , id = item_id, order__user=request.user)
+    order = item.order
+
+    if order.status in ["Shipped", "Delivered", "Cancelled"]:
+        messages.error(request, "Cannot cancel items at this stage.")
+        return redirect('order_detail', order_id=order.order_id)
+    
+
+    if request.method == "POST":
+        item.status = "Cancelled"
+        item.save()
+
+        item.variant.stock += item.quantity
+        item.variant.save()
+
+        active_items = order.items.exclude(status='Cancelled')
+
+        if not active_items.exists():
+            order.status = "Cancelled"
+            order.cancel_reason = "All items were cancelled individually"
+            order.subtotal = Decimal(0)
+            order.gst = Decimal(0)
+            order.delivery_charge = Decimal(0)
+            order.total_amount = Decimal(0)
+        else:
+            new_subtotal = sum(i.total_price for i in active_items)
+            order.subtotal = new_subtotal
+            order.gst = (new_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+
+            if order.subtotal >= 1000:
+                order.delivery_charge = Decimal(0)
+            else:
+                order.delivery_charge = Decimal(100)
+
+            order.total_amount = order.subtotal + order.gst + order.delivery_charge
+
+        order.save()
+        messages.success(request, "Item cancelled and order total updated.")
+    
+    return redirect('order_detail', order_id=order.order_id)
+
+    
+
+
+
+
+
+
+
 
 
 #return 

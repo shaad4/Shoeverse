@@ -91,10 +91,21 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+
+    ORDER_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Shipped', 'Shipped'),
+        ('Delivered' , 'Delivered'),
+        ('Cancelled' , 'Cancelled'),
+        ('Returned', 'Returned'),
+    ]
+
     order = models.ForeignKey(Order, on_delete=models.CASCADE ,related_name = 'items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default = 0)
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
 
     @property
     def total_price(self):
@@ -103,7 +114,11 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.variant.product.name} - Qty: {self.quantity}"
     
+    
     def is_return_eligible(self):
+        if self.status == "Cancelled":
+            return False
+        
         # 1️⃣ First, check if this item is from a delivered order
         if self.order.status != 'Delivered' or not self.order.delivered_at:
             return False   # Return not allowed

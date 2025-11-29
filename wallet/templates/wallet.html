@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Wallet | Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white relative overflow-hidden">
+
+    <!-- Background Ambient Glow (Positioned absolute to not disrupt flex layout) -->
+    <div class="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-[#366347]/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-[#1a2e22]/30 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="z-20">
+        {% include "users/profile_sidebar.html" %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 lg:p-10 relative z-10">
+        <div class="max-w-5xl mx-auto space-y-8">
+
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">My Wallet</h1>
+                    <p class="text-sm text-gray-400 mt-1">Manage your payments and balance securely.</p>
+                </div>
+                
+                <!-- Add Money Button -->
+                <a href="#" class="group relative inline-flex items-center justify-center px-6 py-2.5 overflow-hidden font-medium text-white transition-all duration-300 bg-[#366347] rounded-xl hover:bg-[#2d523b] shadow-[0_0_20px_rgba(54,99,71,0.3)] hover:shadow-[0_0_30px_rgba(54,99,71,0.5)] border border-[#3d5244]">
+                    <span class="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </span>
+                    <span class="relative text-sm">Add Money</span>
+                </a>
+            </div>
+
+            <!-- Digital Card & Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- The Wallet Card -->
+                <div class="relative w-full h-64 bg-gradient-to-br from-[#1e2923] via-[#15201b] to-black rounded-2xl border border-[#2a3b31] shadow-2xl overflow-hidden group hover:border-[#366347]/50 transition-all duration-500">
+                    
+                    <!-- Card Texture -->
+                    <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.5%22/%3E%3C/svg%3E');"></div>
+                    
+                    <!-- Green Glow Blob -->
+                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-[#366347] rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+                    
+                    <div class="relative h-full p-8 flex flex-col justify-between z-10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase">Current Balance</p>
+                                <h2 class="text-4xl font-bold text-white mt-2 tracking-tight">₹ {{ wallet.balance }}</h2>
+                            </div>
+                            <!-- Icon -->
+                            <div class="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="text-[#366347]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Wallet Holder</p>
+                                <p class="text-sm font-medium text-gray-200 tracking-wider uppercase">{{ request.user.fullName }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-500 uppercase tracking-wider">Last Updated</p>
+                                <p class="text-xs text-gray-300 font-mono mt-1">{{ wallet.updated_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Stats / Info Panel -->
+                <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-8 flex flex-col justify-center gap-6 shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-[#366347]/10 flex items-center justify-center text-[#366347] border border-[#366347]/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-sm">Secure Payment</h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Encrypted 256-bit security standards.</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-px bg-[#2a3b31]"></div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-[#366347]/10 flex items-center justify-center text-[#366347] border border-[#366347]/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-sm">Instant Refunds</h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Refunds are credited directly to wallet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] shadow-xl overflow-hidden">
+                <div class="p-6 border-b border-[#2a3b31] flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">Transaction History</h3>
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-gray-500 bg-[#2a3b31] px-3 py-1 rounded-full">{{ transactions.count }} Records</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#151c19]">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Details</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#2a3b31]">
+                            {% for txn in transactions %}
+                            <tr class="group hover:bg-[#1c2621] transition-colors">
+                                <!-- Description / Icon -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border
+                                            {% if txn.transaction_type == 'credit' %}
+                                                bg-emerald-500/10 border-emerald-500/20 text-emerald-400
+                                            {% else %}
+                                                bg-rose-500/10 border-rose-500/20 text-rose-400
+                                            {% endif %}">
+                                            {% if txn.transaction_type == 'credit' %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">
+                                                {{ txn.description|default:"Transaction" }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 capitalize">{{ txn.transaction_type }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Date & ID -->
+                                <td class="px-6 py-4">
+                                    <p class="text-xs text-gray-400 font-mono mb-1">#{{ txn.id|slice:":8" }}</p>
+                                    <p class="text-xs text-gray-500">{{ txn.created_at|date:"M d, Y" }}</p>
+                                </td>
+
+                                <!-- Amount -->
+                                <td class="px-6 py-4 text-right">
+                                    <span class="text-sm font-bold tracking-wide
+                                        {% if txn.transaction_type == 'credit' %} text-emerald-400 {% else %} text-gray-300 {% endif %}">
+                                        {% if txn.transaction_type == 'credit' %}+{% else %}-{% endif %} ₹{{ txn.amount }}
+                                    </span>
+                                </td>
+
+                                <!-- Status -->
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#366347]/10 text-[#366347] border border-[#366347]/20">
+                                        Completed
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <div class="w-16 h-16 bg-[#2a3b31]/50 rounded-full flex items-center justify-center mb-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-sm font-medium">No transactions yet</p>
+                                        <p class="text-xs text-gray-600 mt-1">Add money to get started</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

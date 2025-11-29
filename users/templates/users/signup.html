@@ -73,9 +73,13 @@
                         type="text" 
                         name="referral"
                         placeholder="Referral Code (Optional)" 
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary
+                            {% if referral_code %} cursor-not-allowed opacity-80 {% endif %}"
+                        value="{{ referral_code|default:'' }}"
+                        {% if referral_code %} readonly {% endif %}
                     >
                 </div>
+
 
                 <!-- Submit Button -->
                 <div class="w-full mb-3">

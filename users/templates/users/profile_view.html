@@ -6,16 +6,11 @@
 {% block content %}
 <div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white">
 
-    <!-- Sidebar (Hidden on mobile, distinct on desktop) -->
-    
-        {% include "users/profile_sidebar.html" %}
-    
+    {% include "users/profile_sidebar.html" %}
 
-    <!-- Main Content -->
     <main class="flex-1 p-4 lg:p-10">
         <div class="max-w-4xl mx-auto space-y-8">
 
-            <!-- Page Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-white tracking-tight">My Profile</h1>
@@ -28,11 +23,9 @@
                 </a>
             </div>
 
-            <!-- Profile Overview Card -->
             <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 md:p-8 shadow-xl shadow-black/20">
                 <div class="flex flex-col md:flex-row items-start gap-8">
                     
-                    <!-- Avatar Section -->
                     <div class="flex-shrink-0 relative group">
                         <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-[#2a3b31] bg-[#121714] shadow-lg">
                             {% if user.profileImage %}
@@ -48,7 +41,6 @@
                         </div>
                     </div>
 
-                    <!-- Info Grid -->
                     <div class="flex-1 w-full">
                         <div class="mb-6">
                             <h2 class="text-2xl font-bold text-white">{{ user.fullName|default:"Shoeverse User" }}</h2>
@@ -57,7 +49,6 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-12 pt-6 border-t border-[#2a3b31]">
                             
-                            <!-- Phone -->
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Phone Number</p>
                                 <p class="text-white font-medium">
@@ -65,7 +56,6 @@
                                 </p>
                             </div>
 
-                            <!-- Gender -->
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Gender</p>
                                 <p class="text-white font-medium capitalize">
@@ -73,7 +63,6 @@
                                 </p>
                             </div>
 
-                            <!-- DOB -->
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Date of Birth</p>
                                 <p class="text-white font-medium">
@@ -81,7 +70,6 @@
                                 </p>
                             </div>
 
-                            <!-- Member Since -->
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Member Since</p>
                                 <p class="text-white font-medium">
@@ -93,40 +81,58 @@
                 </div>
             </div>
 
-            <!-- Referral Section -->
             <div class="relative overflow-hidden bg-gradient-to-br from-[#1c2621] to-[#18211d] rounded-2xl border border-[#2a3b31] p-6 md:p-8 shadow-lg group">
-                <!-- Background Decoration -->
                 <div class="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors duration-500"></div>
 
-                <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
                     
-                    <!-- Text Content -->
                     <div class="max-w-lg">
                         <div class="flex items-center gap-2 mb-2">
                              <span class="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-500/20 uppercase tracking-wide">Rewards</span>
                         </div>
                         <h3 class="text-xl font-bold text-white mb-2">Invite Friends & Earn</h3>
                         <p class="text-gray-400 text-sm leading-relaxed">
-                            Share your unique referral code. When a friend signs up, both of you will receive <span class="text-[#96c4a8] font-bold">₹500</span> in your Shoeverse Wallet!
+                            Share your referral code. You both get <span class="text-[#96c4a8] font-bold">₹500</span> when they sign up!
                         </p>
                     </div>
 
-                    <!-- Code Box -->
-                    <div class="flex-shrink-0 w-full md:w-auto">
-                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase text-center md:text-left">Your Referral Code</label>
-                        <div class="flex items-center gap-2 bg-[#121714] border border-[#2a3b31] p-2 rounded-xl shadow-inner">
-                            <span id="referralCode" class="text-lg font-mono font-bold text-white px-4 tracking-widest select-all">
+                    <div class="flex-shrink-0 w-full lg:w-auto">
+                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase text-center lg:text-left">Your Referral Code</label>
+                        
+                        <div class="flex items-center gap-2 bg-[#121714] border border-[#2a3b31] p-1.5 pr-2 rounded-xl shadow-inner">
+                            <span id="referralCode" class="text-lg font-mono font-bold text-white px-4 tracking-widest select-all flex-grow lg:flex-grow-0 text-center">
                                 {{ user.referralCode|default:"--------" }}
                             </span>
-                            <button onclick="copyReferralCode()" 
-                                    class="p-2 bg-[#2a3b31] hover:bg-[#96c4a8] text-[#96c4a8] hover:text-[#121714] rounded-lg transition-all duration-200 active:scale-95"
-                                    title="Copy Code">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </button>
+                            
+                            <div class="w-px h-6 bg-[#2a3b31] mx-1"></div>
+
+                            <div class="flex items-center gap-1">
+                                <button onclick="copyReferralCode()" 
+                                        class="p-2 text-gray-400 hover:text-white hover:bg-[#2a3b31] rounded-lg transition-colors"
+                                        title="Copy Code">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                </button>
+                                
+                                <button onclick="copyReferralLink()" 
+                                        class="p-2 text-gray-400 hover:text-white hover:bg-[#2a3b31] rounded-lg transition-colors"
+                                        title="Copy Link">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                </button>
+
+                                <button onclick="nativeShare()" 
+                                        class="p-2 bg-[#2a3b31] text-[#96c4a8] hover:bg-[#96c4a8] hover:text-[#121714] rounded-lg transition-all active:scale-95"
+                                        title="Share">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <p id="copySuccess" class="text-emerald-400 text-xs mt-2 text-center opacity-0 transition-opacity duration-300 font-medium flex items-center justify-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Copied to clipboard!
+
+                        <input type="hidden" id="referralLinkHidden" value="{{ referral_link }}">
+
+                        <p id="actionMessage" class="text-emerald-400 text-xs mt-2 text-center opacity-0 transition-opacity duration-300 font-medium h-4">
+                            Action successful!
                         </p>
                     </div>
                 </div>
@@ -137,16 +143,51 @@
 </div>
 
 <script>
+// Helper to show temporary messages
+function showStatus(text) {
+    const msg = document.getElementById("actionMessage");
+    msg.textContent = text;
+    msg.classList.remove("opacity-0");
+    setTimeout(() => {
+        msg.classList.add("opacity-0");
+    }, 2000);
+}
+
 function copyReferralCode() {
     const code = document.getElementById("referralCode").innerText.trim();
     if(code && code !== '--------') {
         navigator.clipboard.writeText(code);
-        const successMsg = document.getElementById("copySuccess");
-        successMsg.classList.remove("opacity-0");
-        
-        setTimeout(() => {
-            successMsg.classList.add("opacity-0");
-        }, 2000);
+        showStatus("Code copied to clipboard!");
+    }
+}
+
+function copyReferralLink() {
+    const link = document.getElementById("referralLinkHidden").value;
+    if(link) {
+        navigator.clipboard.writeText(link);
+        showStatus("Link copied to clipboard!");
+    }
+}
+
+async function nativeShare() {
+    const link = document.getElementById("referralLinkHidden").value;
+    const code = document.getElementById("referralCode").innerText.trim();
+    
+    const shareData = {
+        title: 'Join Shoeverse!',
+        text: `Use my referral code ${code} to get ₹500 off on Shoeverse!`,
+        url: link
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (err) {
+            // User cancelled share, do nothing
+        }
+    } else {
+        // Fallback for desktop/unsupported browsers
+        copyReferralLink();
     }
 }
 </script>
