@@ -5,7 +5,6 @@
 
 <main class="max-w-container mx-auto px-5 md:px-8 py-10 space-y-8">
 
-    <!-- Page title / steps -->
     <section class="space-y-4">
         <p class="text-sm uppercase tracking-[0.3em] text-muted">Cart</p>
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -34,12 +33,11 @@
 
     <section class="grid lg:grid-cols-3 gap-8">
 
-        <!-- Cart list -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-6" id="cart-items-container">
 
             {# In-stock items #}
             {% for item in cart_items %}
-            <article class="glass rounded-card border border-white/5 p-4 md:p-6 cursor-pointer"
+            <article id="item-row-{{ item.id }}" class="glass rounded-card border border-white/5 p-4 md:p-6 cursor-pointer"
                     onclick="window.location.href='{% url 'product_detail' item.variant.product.id %}'">
 
                 <div class="flex items-start gap-4">
@@ -56,10 +54,10 @@
                             </button>
                         </div>
 
-                        <p class="text-sm text-white/70">{{ item.variant.product.category }} • Size: {{ item.variant.size }}</p>
+                        <p class="text-sm text-white/70">{{ item.variant.product.category }}</p>
 
                         <div class="flex flex-wrap gap-4 items-center text-sm">
-                            <label class="flex items-center gap-2 border border-white/15 rounded-full px-4 py-1">
+                            <label class="flex items-center gap-2 border border-white/15 rounded-full px-4 py-1" onclick="event.stopPropagation();">
                                 Size
                                 <select class="bg-dark-green text-white border border-white/15 rounded-full px-2 py-1"
                                         onchange="updateSize('{{ item.id }}', this.value)">
@@ -71,34 +69,40 @@
                                 </select>
                             </label>
 
-                            <div class="flex items-center gap-3 select-none">
+                            <div class="flex items-center gap-3 select-none" onclick="event.stopPropagation();">
                                 <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/10
                                                 text-white/80 hover:bg-white/20 hover:border-white/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                                        onclick="event.stopPropagation(); updateQuantity('{{ item.id }}', {{ item.quantity|add:'-1' }})"
-                                        {% if item.quantity <= 1 %}disabled{% endif %}>
+                                        onclick="updateQuantity('{{ item.id }}', -1)"
+                                        {% if item.quantity <= 1 %}disabled{% endif %}
+                                        id="btn-minus-{{ item.id }}">
                                     −
                                 </button>
 
-                                <span class="min-w-[40px] text-center font-semibold text-white/90">{{ item.quantity }}</span>
+                                <span id="item-qty-{{ item.id }}" class="min-w-[40px] text-center font-semibold text-white/90">
+                                    {{ item.quantity }}
+                                </span>
 
                                 <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/10
                                                 text-white/80 hover:bg-white/20 hover:border-white/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                                        onclick="event.stopPropagation(); updateQuantity('{{ item.id }}', {{ item.quantity|add:'1' }})"
-                                        {% if item.quantity >= item.variant.stock or item.quantity >= 4 %}disabled{% endif %}>
+                                        onclick="updateQuantity('{{ item.id }}', 1)"
+                                        {% if item.quantity >= item.variant.stock or item.quantity >= 4 %}disabled{% endif %}
+                                        id="btn-plus-{{ item.id }}">
                                     +
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <p class="font-semibold text-lg whitespace-nowrap">₹{{ item.total_price }}</p>
+                    <p class="font-semibold text-lg whitespace-nowrap">
+                        ₹<span id="item-total-{{ item.id }}">{{ item.total_price }}</span>
+                    </p>
                 </div>
             </article>
             {% endfor %}
 
             {# Out-of-stock items (separate loop) #}
             {% for out_item in out_of_stock_items %}
-            <article class="glass rounded-card border border-red-500/40 p-4 md:p-6 bg-red-500/5">
+            <article id="out-item-row-{{ out_item.id }}" class="glass rounded-card border border-red-500/40 p-4 md:p-6 bg-red-500/5">
                 <div class="flex items-start gap-4">
                     <div class="w-24 h-24 rounded-xl overflow-hidden opacity-60">
                         <img src="{{ out_item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
@@ -115,58 +119,60 @@
             </article>
             {% endfor %}
 
-            {# If nothing exists #}
-            {% if not cart_items and not out_of_stock_items %}
+            {# Empty Cart Message (Hidden by default if items exist) #}
+            <div id="empty-cart-msg" class="{% if cart_items or out_of_stock_items %}hidden{% endif %}">
                 <p class="text-center text-white/70 py-10">Your cart is empty.</p>
-            {% endif %}
+            </div>
 
         </div>
 
 
-        <!-- Summary card -->
         <aside class="space-y-6">
             <div class="glass rounded-card border border-white/5 p-6 space-y-6">
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-semibold">Order summary</h2>
-                    <span class="text-sm text-white/50">{{ total_items }} items</span>
+                    <span class="text-sm text-white/50"><span id="summary-count">{{ total_items }}</span> items</span>
                 </div>
 
                 <div class="space-y-4 text-sm">
                     <div class="flex justify-between">
                         <span class="text-white/70">Subtotal</span>
-                        <span>₹{{ subtotal }}</span>
+                        <span>₹<span id="summary-subtotal">{{ subtotal }}</span></span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-white/70">GST (18%)</span>
-                        <span>₹{{ gst }}</span>
+                        <span>₹<span id="summary-gst">{{ gst }}</span></span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-white/70">Delivery Charges</span>
+                        <span id="summary-delivery">
                         {% if delivery_charge == 0 %}
                             <span class="text-primary">Free</span>
                         {% else %}
-                            <span>₹{{ delivery_charge }}</span>
+                            ₹{{ delivery_charge }}
                         {% endif %}
+                        </span>
                     </div>
                 </div>
 
                 <div class="border-t border-white/10 pt-4 flex items-center justify-between">
                     <span class="text-sm text-white/70">Total</span>
-                    <span class="text-2xl font-semibold">₹{{ grand_total }}</span>
+                    <span class="text-2xl font-semibold">₹<span id="summary-total">{{ grand_total }}</span></span>
                 </div>
 
                 <div class="space-y-3">
-                    {% if cart_items %}
-                        <a href="{% url 'checkout' %}" 
-                        class="w-full bg-primary text-dark rounded-button-lg py-3 text-center block font-semibold hover:opacity-90">
-                            Proceed to checkout
-                        </a>
-                    {% else %}
-                        <span class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 text-center block cursor-not-allowed">
-                            No valid items to checkout
-                        </span>
-                    {% endif %}
-
+                    <div id="checkout-btn-container">
+                        {% if cart_items %}
+                            <a href="{% url 'checkout' %}" 
+                            class="w-full bg-primary text-dark rounded-button-lg py-3 text-center block font-semibold hover:opacity-90">
+                                Proceed to checkout
+                            </a>
+                        {% else %}
+                            <span class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 text-center block cursor-not-allowed">
+                                No valid items to checkout
+                            </span>
+                        {% endif %}
+                    </div>
 
                     <p class="text-xs text-white/60 text-center">
                         By continuing you agree to the Shoeverse terms and privacy policy.
@@ -178,7 +184,6 @@
 </main>
 
 
-<!-- Delete Confirmation Modal -->
 <div id="removeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
     <div class="bg-dark-green rounded-card p-6 text-white w-[90%] max-w-md">
         
@@ -207,30 +212,90 @@
 
 <script>
 
-    // quantity counter
-function updateQuantity(itemId, qty) {
-    fetch(`/cart/update/${itemId}/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ quantity: qty }),
-    }).then(() => location.reload());
-}
+    /**
+     * Updates cart summary in the right sidebar
+     */
+    function updateCartUI(cartData) {
+        // Update summary numbers
+        document.getElementById('summary-subtotal').innerText = cartData.subtotal;
+        document.getElementById('summary-gst').innerText = cartData.gst;
+        document.getElementById('summary-total').innerText = cartData.grand_total;
+        document.getElementById('summary-count').innerText = cartData.total_items;
 
-// function updateSize(itemId, newVariantId) {
-//     fetch(`/cart/update-size/${itemId}/`, {
-//         method: "POST",
-//         headers: {
-//             "X-CSRFToken": "{{ csrf_token }}",
-//             "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ variant_id: newVariantId }),
-//     }).then(() => location.reload());
-// }
+        // Update Delivery Text
+        const deliveryEl = document.getElementById('summary-delivery');
+        if (parseFloat(cartData.delivery_charge) === 0) {
+            deliveryEl.innerHTML = '<span class="text-primary">Free</span>';
+        } else {
+            deliveryEl.innerText = '₹' + cartData.delivery_charge;
+        }
 
-//   size update
+        // Handle Empty Cart State
+        if (cartData.total_items === 0) {
+            document.getElementById('empty-cart-msg').classList.remove('hidden');
+            // Disable checkout button visually
+            const btnContainer = document.getElementById('checkout-btn-container');
+            btnContainer.innerHTML = `
+                <span class="w-full bg-gray-600 text-gray-300 rounded-button-lg py-3 text-center block cursor-not-allowed">
+                    No valid items to checkout
+                </span>`;
+        }
+    }
+
+    /**
+     * Handles Quantity Update (+ or -)
+     */
+    function updateQuantity(itemId, change) {
+        const qtyEl = document.getElementById(`item-qty-${itemId}`);
+        let currentQty = parseInt(qtyEl.innerText);
+        let newQty = currentQty + change;
+
+        // Optimistic UI check (optional, but good for UX to prevent negative calls)
+        if (newQty < 0) return; 
+
+        fetch(`/cart/update/${itemId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ quantity: newQty }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.removed) {
+                    // Item was removed (qty became 0)
+                    const row = document.getElementById(`item-row-${itemId}`);
+                    if(row) row.remove();
+                } else {
+                    // Update item specific UI
+                    qtyEl.innerText = data.item_qty; // Ensure we use server returned qty
+                    document.getElementById(`item-total-${itemId}`).innerText = data.item_total;
+
+                    // Toggle Button States
+                    const minusBtn = document.getElementById(`btn-minus-${itemId}`);
+                    const plusBtn = document.getElementById(`btn-plus-${itemId}`);
+                    
+                    if (minusBtn) minusBtn.disabled = (data.item_qty <= 1);
+                    // Assuming max stock is passed or we just rely on error handling. 
+                    // Ideally, we re-enable plus button if we came down from max.
+                    if (plusBtn) plusBtn.disabled = (data.item_qty >= 4); 
+                }
+                
+                // Update Global Summary
+                updateCartUI(data.cart_totals);
+
+            } else {
+                alert(data.error || "Could not update quantity");
+            }
+        })
+        .catch(err => console.error("Error:", err));
+    }
+
+    /**
+     * Handles Size Update
+     */
     function updateSize(itemId, variantId) {
         fetch(`/cart/update-size/${itemId}/`, {
             method: "POST",
@@ -243,19 +308,25 @@ function updateQuantity(itemId, qty) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Reload to show updated size and price
+                // Update item price
+                if(document.getElementById(`item-total-${itemId}`)) {
+                    document.getElementById(`item-total-${itemId}`).innerText = data.item_total;
+                }
+                // Update Global Summary
+                updateCartUI(data.cart_totals);
             } else {
                 alert(data.error || "Failed to update size");
+                // Optional: Reload to reset selection
+                location.reload();
             }
         });
     }
 
-    // delete modal
+    // --- Modal Logic (Remains mostly same) ---
     function openRemoveModal(itemId) {
         const modal = document.getElementById('removeModal');
         const form = document.getElementById('confirmRemoveForm');
-
-        form.action = `/cart/remove/${itemId}/`;  // Your remove URL
+        form.action = `/cart/remove/${itemId}/`; 
         modal.classList.remove('hidden');
     }
 
@@ -263,11 +334,6 @@ function updateQuantity(itemId, qty) {
         document.getElementById('removeModal').classList.add('hidden');
     }
 
-
-
-    
-
 </script>
-
 
 {% endblock %}

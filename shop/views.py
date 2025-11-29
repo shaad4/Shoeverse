@@ -382,10 +382,22 @@ def update_size(request, item_id):
         if new_variant.product != cart_item.variant.product:
             return JsonResponse({"error": "Invalid size selection"}, status=400)
         
+        if new_variant.stock <= 0:
+            return JsonResponse({"success":False, "error": "Selected size is out of stock"}, status=400)
+        
         cart_item.variant = new_variant
+        # Reset quantity to 1 if new size has less stock than current quantity
+        if cart_item.quantity > new_variant.stock:
+            cart_item.quantity = new_variant.stock
         cart_item.save()
 
-        return JsonResponse({"success": True})
+        cart_data = get_cart_data(request.user)
+
+        return JsonResponse({
+            "success": True,
+            "item_total": cart_item.total_price,
+            "cart_data": cart_data       
+        })
 
     except CartItem.DoesNotExist:
         return JsonResponse({"error": "cart item not found"}, status=404)
@@ -394,8 +406,26 @@ def update_size(request, item_id):
         return JsonResponse({"error": "Variant not found"}, status=404)
 
 
+def get_cart_data(user):
+    cart_items = CartItem.objects.filter(user=user, variant__stock__gt=0, variant__is_active=True)
 
+    if cart_items.exists():
+        subtotal = sum(item.total_price for item in cart_items)
+        gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+        delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
+        grand_total = subtotal + gst + delivery_charge
+        total_items = sum(item.quantity for item in cart_items)
+    else:
+        subtotal = gst = delivery_charge = grand_total = Decimal('0')
+        total_items = 0
 
+    return {
+        "subtotal": subtotal,
+        "gst": gst,
+        "delivery_charge": delivery_charge,
+        "grand_total": grand_total,
+        "total_items": total_items
+    }
 
 @user_required
 @require_POST
@@ -405,30 +435,48 @@ def update_cart_quantity(request, item_id):
 
     try:
         data = json.loads(request.body)
-        new_qty = int(data.get("quantity", 1))
+
+        # Handle null/undefined quantity
+        qty_param = data.get("quantity")
+        if qty_param is None:
+            new_qty = 1 
+        else:
+            new_qty = int(qty_param)
 
         cart_item = CartItem.objects.get(id=item_id, user=request.user)
-
-        # Max quantity limit: min(stock, 4)
         max_allowed = min(cart_item.variant.stock, 4)
 
+        # --- REMOVE ITEM LOGIC ---
         if new_qty < 1:
             cart_item.delete()
-            return JsonResponse({"success": True, "removed": True})
+            cart_data = get_cart_data(request.user) # Ensure this helper exists
+            
+            return JsonResponse({
+                "success": True, 
+                "removed": True, 
+                "cart_totals": cart_data  # CHANGED: "cart_data" -> "cart_totals"
+            })
 
+        # --- MAX LIMIT LOGIC ---
         if new_qty > max_allowed:
             return JsonResponse({
                 "success": False,
                 "error": f"Max quantity allowed is {max_allowed}"
             }, status=400)
 
+        # --- UPDATE LOGIC ---
         cart_item.quantity = new_qty
         cart_item.save()
+        
+        cart_data = get_cart_data(request.user)
 
         return JsonResponse({
             "success": True,
-            "quantity": cart_item.quantity,
-            "total_price": float(cart_item.total_price)
+            "removed": False,
+            # Keys now match JavaScript expectations
+            "item_qty": cart_item.quantity,          # was "quantity"
+            "item_total": float(cart_item.total_price), # was "total_price"
+            "cart_totals": cart_data,                # was "cart_data"
         })
 
     except CartItem.DoesNotExist:
@@ -436,7 +484,6 @@ def update_cart_quantity(request, item_id):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
-
 
 #wishlist
 @user_required

@@ -554,6 +554,7 @@ def admin_category_delete(request, id):
 
 
 # order list
+@admin_required
 def admin_order_list(request):
     search_query = request.GET.get('search',"")
     status_filter = request.GET.get("status","")
@@ -599,13 +600,13 @@ def admin_order_list(request):
     return render(request, 'adminpanel/order_list.html', context)
 
 #order detail
-
+@admin_required
 def admin_order_detail(request, order_id):
     order = get_object_or_404(Order, order_id = order_id)
 
     return render(request, 'adminpanel/order_detail.html', {"order":order})
 
-
+@admin_required
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, order_id=order_id)
 
@@ -630,6 +631,7 @@ def update_order_status(request, order_id):
     return redirect('admin_order_detail', order_id=order.order_id)
 
 #return 
+@admin_required
 def admin_return_list(request):
     returns = ReturnRequest.objects.select_related(
         'order_item__order',
@@ -675,7 +677,7 @@ def admin_return_list(request):
     return render(request, 'adminpanel/returns_list.html', context)
 
 
-
+@admin_required
 def admin_return_detail(request, return_id):
     return_request = get_object_or_404(
         ReturnRequest.objects.select_related(
