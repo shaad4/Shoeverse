@@ -15,6 +15,8 @@ from .decorator import admin_required
 from django.utils.timezone import now
 from decimal import Decimal
 from django.utils.timezone import now
+from django.db import transaction
+from wallet.models import Wallet, WalletTransaction
 
 logger = logging.getLogger("users")
 User = get_user_model()
@@ -752,24 +754,53 @@ def admin_return_detail(request, return_id):
         refund_mode = request.POST.get("refund_mode", "")
         pickup_date = request.POST.get("pickup_date", "")
 
-        return_request.status = new_status
+        try:
+            with transaction.atomic():
 
-        if pickup_date:
-            return_request.pickup_date = pickup_date
+                previous_status = return_request.status
 
-        if refund_mode and new_status in ["REFUND_INITIATED", "REFUNDED"]:
-            return_request.refund_mode = refund_mode
+                return_request.status = new_status
 
-        if admin_comments:
-            return_request.comments = admin_comments
+                if pickup_date:
+                    return_request.pickup_date = pickup_date
 
-        if new_status == "REFUND_INITIATED":
-            return_request.refund_amount = return_request.calculate_refund_amount()
-            messages.info(request, f"Refund Initiated for ₹{return_request.refund_amount}")
+                if admin_comments:
+                    return_request.comments = admin_comments
 
-        return_request.save()
+                if refund_mode:
+                    return_request.refund_mode = refund_mode
 
-        messages.success(request, "Return request updated successfully.")
+                if not return_request.refund_amount:
+                    return_request.refund_amount = return_request.calculate_refund_amount()
+
+                if new_status == "REFUNDED" and previous_status != "REFUNDED":
+
+                    wallet,_ = Wallet.objects.get_or_create(user=return_request.user)
+
+                    balance_before = wallet.balance
+                    wallet.balance += return_request.refund_amount
+                    wallet.save()
+
+                    balance_after = wallet.balance
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        amount=return_request.refund_amount,
+                        transaction_type = "credit",
+                        description=f"Refund for Return #{return_request.id} (Item:{return_request.order_item.variant.product.name})",
+                        balance_before = balance_before,
+                        balance_after = balance_after,
+                    )
+
+                    messages.success(request, f"Refund of ₹{return_request.refund_amount} credited to user's wallet.")
+
+                return_request.save()
+
+                messages.success(request, f"Return status updated to {new_status}.")
+        except Exception as e:
+            messages.error(request, f"Error updating return: {str(e)}")
+            return redirect("admin_return_detail", return_id = return_id)
+        
         return redirect("admin_return_detail", return_id=return_id)
     
     context = {

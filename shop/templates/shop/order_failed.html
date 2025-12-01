@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} Shoeverse | Order Failed {% endblock %}
+{% block title %} Shoeverse | Payment Failed {% endblock %}
 
 {% block content %}
 <main class="pt-24 pb-16">
     <div class="max-w-container mx-auto px-5 md:px-10 lg:px-20">
         <div class="grid lg:grid-cols-[1.3fr_0.7fr] gap-10 items-start">
 
-            <!-- Failed Banner Section -->
             <section class="relative overflow-hidden rounded-card bg-black/40 shadow-soft border border-red-600/30">
-                <img src="{% static 'images/payment-failed.jpg' %}" alt="Payment Failed" 
+                <img src="{% static 'images/order-failed.png' %}" alt="Payment Failed" 
                      class="absolute inset-0 h-full w-full object-cover opacity-50">
                 <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
@@ -20,13 +19,12 @@
                         </span>
                         <p class="uppercase tracking-[0.3em] text-small text-muted">Failed</p>
                         <h1 class="text-display font-black text-red-400">Payment Failed</h1>
+                        
                         <p class="text-body max-w-2xl text-muted">
-                            Oops! Something went wrong while processing your payment.
-                            Don’t worry, you can try again or choose another payment method.
+                            {{ error_description|default:"Oops! Something went wrong while processing your payment." }}
                         </p>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-4 justify-center w-full">
                         <a href="{% url 'checkout' %}"
                             class="flex-1 min-w-[200px] bg-primary text-dark font-semibold py-3 rounded-button text-center">
@@ -37,7 +35,7 @@
                            class="flex-1 min-w-[200px] bg-white/10 text-white font-semibold py-3 rounded-button border border-white/20 text-center">
                             Back to Cart
                         </a>
-                        <a href="{% url 'support' %}" 
+                        <a href="{# url 'support' #}" 
                            class="flex-1 min-w-[200px] bg-transparent text-white font-semibold py-3 rounded-button border border-white/20 text-center">
                             Contact Support
                         </a>
@@ -45,7 +43,6 @@
                 </div>
             </section>
 
-            <!-- Failure Details Section -->
             <aside class="bg-card border border-white/10 rounded-card p-6 space-y-6">
                 <div>
                     <p class="text-sm uppercase tracking-[0.2em] text-muted mb-2">Payment Info</p>
@@ -54,8 +51,14 @@
 
                 <div class="space-y-4 text-body text-muted">
                     <div class="flex items-start justify-between gap-6">
-                        <p class="text-white font-medium">Order ID</p>
-                        <p>#{{ order.order_id }}</p>
+                        <p class="text-white font-medium">Reference ID</p>
+                        <p>
+                            {% if order %}
+                                #{{ order.order_id }}
+                            {% else %}
+                                #{{ order_id_display|default:"Unknown" }}
+                            {% endif %}
+                        </p>
                     </div>
 
                     <div class="h-px bg-white/10"></div>
@@ -64,6 +67,13 @@
                         <p class="text-white font-medium">Payment Status</p>
                         <p class="text-red-400 font-semibold">Failed</p>
                     </div>
+                    
+                    {% if order %}
+                    <div class="flex items-start justify-between gap-6">
+                        <p class="text-white font-medium">Amount</p>
+                        <p>₹{{ order.total_amount }}</p>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <p class="mt-4 text-sm text-muted">
@@ -71,10 +81,17 @@
                 </p>
 
                 <div class="mt-6">
-                    <a href="{% url 'payment' order_id %}"
-                    class="flex justify-center w-full mt-6 py-3 rounded-xl bg-primary text-dark font-semibold hover:bg-primary/90 transition">
-                        Try Again
-                    </a>
+                    {% if address_id %}
+                        <a href="{% url 'payment' address_id %}"
+                        class="flex justify-center w-full mt-6 py-3 rounded-xl bg-primary text-dark font-semibold hover:bg-primary/90 transition">
+                            Try Again
+                        </a>
+                    {% else %}
+                        <a href="{% url 'checkout' %}"
+                        class="flex justify-center w-full mt-6 py-3 rounded-xl bg-primary text-dark font-semibold hover:bg-primary/90 transition">
+                            Try Again
+                        </a>
+                    {% endif %}
                 </div>
             </aside>
         </div>

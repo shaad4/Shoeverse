@@ -886,22 +886,46 @@ def order_success(request, order_id):
 
 @user_required
 def order_failed_view(request, order_id):
+    order = None
+    address_id = None
 
     try:
         order = Order.objects.get(id =order_id, user=request.user)
-        address = order.address
+        address_id = order.address.id
     except Order.DoesNotExist:
         order = None
-        address = None
 
+        address_id = request.GET.get('address_id')
+
+    error_description = request.GET.get('description', 'Transaction failed')
+        
 
     return render(request, "shop/order_failed.html",{
         "order":order,
         "order_id_display": order_id,
-        # "address_id":order.address.id,
+        "address_id": address_id,
+        "error_description": error_description,
     })
 
+@user_required
+def razorpay_payment_failed(request):
+    order_id = request.GET.get('order_id')
+    error_description = request.GET.get('description')
+    address_id = request.GET.get('address_id')
+
+    payment = Payment.objects.filter(razorpay_order_id=order_id).first()
     
+    if payment:
+        payment.status = "FAILED"
+        payment.save()
+
+    return render(request, "shop/order_failed.html", {
+        "payment": payment,
+        "order_id_display": order_id,
+        "error_description": error_description,
+        "address_id": address_id
+    })
+
 
 
 @user_required

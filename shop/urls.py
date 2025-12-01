@@ -31,7 +31,7 @@ urlpatterns = [
    path('place-order/', views.place_order, name='place_order'),
    path('order-success/<int:order_id>/', views.order_success, name='order_success'),
    path("payment/failed/<int:order_id>/", views.order_failed_view, name="payment_failed"),
-
+   path('payment/failure/', views.razorpay_payment_failed, name='razorpay_payment_failed'),
    # Razorpay Verify (success)
    path('payment/verify/', views.razorpay_payment_verify, name='razorpay_payment_verify'),
 

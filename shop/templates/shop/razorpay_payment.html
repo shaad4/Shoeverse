@@ -1,36 +1,102 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} Shoeverse | Razorpay Checkout {% endblock %}
+{% block title %} Shoeverse | Secure Payment {% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen items-center justify-center bg-[#121714] text-gray-200 px-4">
+<div class="relative flex min-h-screen items-center justify-center bg-[#050b08] overflow-hidden px-4 py-12">
+    
+    <div class="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-primary/20 blur-[128px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-[128px] pointer-events-none"></div>
 
-    <div class="w-full max-w-md bg-[#18211d] rounded-2xl p-8 text-center shadow-lg border border-[#2a3b31]">
+    <div class="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl">
         
-        <h2 class="text-2xl font-bold mb-4">Secure Payment</h2>
-        <p class="text-gray-400 mb-6">Order Payment - ₹{{ amount }}</p>
+        <div class="border-b border-white/10 bg-white/5 p-6 text-center">
+            <h2 class="text-xl font-bold tracking-widest text-white uppercase">Shoeverse</h2>
+            <p class="mt-1 text-xs text-white/50 tracking-wider">SECURE CHECKOUT</p>
+        </div>
 
-        <button id="rzp-button" class="w-full py-3 rounded-lg bg-[#366347] hover:bg-[#2d523b] transition text-white font-bold">
-            Pay Now with Razorpay
-        </button>
+        <div class="p-8">
+            <div class="mb-8 flex flex-col items-center justify-center">
+                <span class="text-sm font-medium text-white/60">Total Payable Amount</span>
+                <div class="mt-2 flex items-baseline gap-1">
+                    <span class="text-4xl font-bold text-white">₹{{ amount }}</span>
+                    <span class="text-sm text-white/40">INR</span>
+                </div>
+            </div>
 
-        <p class="text-xs text-gray-500 mt-4">Payments secured with 256-bit SSL Encryption</p>
+            <div class="mb-8 space-y-4 rounded-xl bg-black/20 p-5 border border-white/5">
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/60">Order Reference</span>
+                    <span class="font-mono text-white/90">#{{ razorpay_order.id }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/60">Billed to</span>
+                    <span class="font-medium text-white/90 text-right">{{ user.email }}</span>
+                </div>
+                {% if address %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-white/60">Delivery to</span>
+                    <span class="font-medium text-white/90 text-right truncate max-w-[150px]">{{ address.city }}, {{ address.pincode }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-8">
+                <p class="mb-3 text-center text-xs font-medium uppercase tracking-wider text-white/40">Supported Payment Methods</p>
+                <div class="flex justify-center gap-4 opacity-70 grayscale transition-all hover:grayscale-0 hover:opacity-100">
+                    <div class="flex h-10 w-14 items-center justify-center rounded bg-white/10 border border-white/10" title="UPI">
+                        <span class="text-[10px] font-bold text-white">UPI</span>
+                    </div>
+                    <div class="flex h-10 w-14 items-center justify-center rounded bg-white/10 border border-white/10" title="Cards">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                    </div>
+                    <div class="flex h-10 w-14 items-center justify-center rounded bg-white/10 border border-white/10" title="Netbanking">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                </div>
+            </div>
+
+            <button id="rzp-button" class="group relative w-full overflow-hidden rounded-xl bg-primary py-4 font-bold text-dark shadow-[0_0_20px_rgba(74,222,128,0.3)] transition-all hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] active:scale-[0.98]">
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Pay ₹{{ amount }} Securely
+                </span>
+                <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:animate-[shimmer_1.5s_infinite]"></div>
+            </button>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'checkout' %}" class="text-sm text-white/40 hover:text-white transition-colors">Cancel and return to checkout</a>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 bg-black/40 p-3 text-[10px] text-white/30">
+            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            <span>Guaranteed Safe & Secure Checkout with 256-bit Encryption</span>
+        </div>
     </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     var options = {
-        "key": "{{ razorpay_key }}",
-        "amount": "{{ razorpay_order.amount }}",
+        // FIXED VARIABLES BELOW:
+        "key": "{{ razorpay_key }}",               // From View: context['razorpay_key']
+        "amount": "{{ razorpay_order.amount }}",    // From View: context['razorpay_order']['amount']
         "currency": "INR",
         "name": "Shoeverse",
-        "description": "Payment for Order",
-        "order_id": "{{ razorpay_order.id }}",
+        "description": "Order #{{ razorpay_order.id }}",
+        "image": "{% static 'images/logo-icon.png' %}", 
+        "order_id": "{{ razorpay_order.id }}",      // From View: context['razorpay_order']['id']
 
         "handler": function (response) {
-           
+            var btn = document.getElementById('rzp-button');
+            btn.innerHTML = 'Verifying Payment...';
+            btn.classList.add('opacity-75', 'cursor-wait');
+            
+            // NOTE: address.id must be available in context
             window.location.href = `/payment/verify/?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}&address_id={{ address.id }}`;
         },
 
@@ -39,14 +105,34 @@
             "email": "{{ user.email }}",
             "contact": "{{ user.phoneNumber|default:'' }}"
         },
-        "theme": { "color": "#366347" }
+        "theme": { 
+            "color": "#4ade80", 
+            "backdrop_color": "#121714"
+        },
+        
+        "modal": {
+            "ondismiss": function(){
+                console.log('Payment modal closed');
+            }
+        }
     };
 
     var rzp1 = new Razorpay(options);
+
+    rzp1.on('payment.failed', function (response){
+        // Redirect to failure page
+        window.location.href = `/payment/failure/?order_id=${response.error.metadata.order_id}&description=${response.error.description}&address_id={{ address.id }}`;
+    });
+
     document.getElementById('rzp-button').onclick = function(e){
         e.preventDefault();
         rzp1.open();
     }
 </script>
 
+<style>
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+</style>
 {% endblock %}
