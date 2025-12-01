@@ -773,7 +773,7 @@ def place_order(request):
                 delivery_charge= delivery_charge,
                 total_amount = grand_total,
                 payment_method = payment_method,
-                status = 'Confirmed' if payment_status == "SUCCESS" else "Pending",
+                status = 'Processing' if payment_status == "SUCCESS" else "Pending",
             )
 
             for item in cart_items:
@@ -846,7 +846,7 @@ def razorpay_payment_verify(request):
                 delivery_charge = delivery_charge,
                 total_amount = grand_total,
                 payment_method="Razorpay",
-                status='Confirmed'
+                status='Processing'
             )
 
             # Create Order Items & reduce stock
@@ -912,18 +912,57 @@ def cancel_order(request, order_id):
         messages.error(request, "Cannot cancel this order. Please contact support.")
         return redirect('order_detail', order_id=order_id)
 
+    # if request.method == "POST":
+    #     reason = request.POST.get("cancel_reason")
+    #     order.status = "Cancelled"
+    #     order.cancel_reason = reason
+    #     order.save()
+
+    # order_items = OrderItem.objects.filter(order=order)
+    # for item in order_items:
+    #     item.variant.stock += item.quantity
+    #     item.variant.save()
+
+    # messages.success(request, "Order cancelled successfully")
+    # return redirect('order_detail', order_id=order_id)
+
     if request.method == "POST":
         reason = request.POST.get("cancel_reason")
-        order.status = "Cancelled"
-        order.cancel_reason = reason
-        order.save()
 
-    order_items = OrderItem.objects.filter(order=order)
-    for item in order_items:
-        item.variant.stock += item.quantity
-        item.variant.save()
+        try:
+            with transaction.atomic():
+                order_items = OrderItem.objects.filter(order=order)
+                for item in order_items:
+                    item.variant.stock += item.quantity
+                    item.variant.save()
 
-    messages.success(request, "Order cancelled successfully")
+                if order.payment_method in ["wallet","razorpay","Razorpay"]:
+                    wallet,_ = Wallet.objects.get_or_create(user=request.user)
+                    refund_amount = order.total_amount
+
+                    balance_before = wallet.balance
+                    wallet.balance += refund_amount
+                    wallet.save()
+                    balance_after = wallet.balance
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        amount=refund_amount,
+                        transaction_type="credit",
+                        description = f"Refund for Order #{order.order_id}",
+                        balance_before =balance_before,
+                        balance_after = balance_after
+                    )
+                    messages.success(request, f"Order cancelled. ₹{refund_amount} refunded to wallet.")
+                else:
+                    messages.success(request, "Order cancelled successfully.")
+
+                    order.status = "Cancelled"
+                    order.cancel_reason = reason
+                    order.save()
+        except Exception as e:
+            messages.error(request, f"Error cancelling order: {e}")
+
     return redirect('order_detail', order_id=order_id)
 
 @user_required
@@ -937,45 +976,66 @@ def cancel_order_item(request, item_id):
     
 
     if request.method == "POST":
-        item.status = "Cancelled"
-        item.save()
+        try:
+            with transaction.atomic():
+                old_grand_total = order.total_amount
 
-        item.variant.stock += item.quantity
-        item.variant.save()
+                item.status = "Cancelled"
+                item.save()
 
-        active_items = order.items.exclude(status='Cancelled')
+                item.variant.stock += item.quantity
+                item.variant.save()
+                
+                active_items = order.items.exclude(status='Cancelled')
 
-        if not active_items.exists():
-            order.status = "Cancelled"
-            order.cancel_reason = "All items were cancelled individually"
-            order.subtotal = Decimal(0)
-            order.gst = Decimal(0)
-            order.delivery_charge = Decimal(0)
-            order.total_amount = Decimal(0)
-        else:
-            new_subtotal = sum(i.total_price for i in active_items)
-            order.subtotal = new_subtotal
-            order.gst = (new_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+                if not active_items.exists():
 
-            if order.subtotal >= 1000:
-                order.delivery_charge = Decimal(0)
-            else:
-                order.delivery_charge = Decimal(100)
+                    order.status = "Cancelled"
+                    order.cancel_reason = "All items were cancelled individually"
+                    order.subtotal = Decimal(0)
+                    order.gst = Decimal(0)
+                    order.delivery_charge = Decimal(0)
+                    order.total_amount = Decimal(0)
+                else:
+                    new_subtotal = sum(i.total_price for i in active_items)
+                    order.subtotal = new_subtotal
+                    order.gst = (new_subtotal * Decimal('0.18')).quantize(Decimal('0.01')) 
+                    
+                    if order.subtotal >= 1000:
+                        order.delivery_charge = Decimal(0)
+                    else:
+                        order.delivery_charge = Decimal(100)
 
-            order.total_amount = order.subtotal + order.gst + order.delivery_charge
+                    order.total_amount = order.subtotal + order.gst + order.delivery_charge
 
-        order.save()
-        messages.success(request, "Item cancelled and order total updated.")
-    
+                order.save()
+
+                refund_amount = old_grand_total - order.total_amount
+
+                if refund_amount > 0 and order.payment_method in ["wallet", "razorpay", "Razorpay"]:
+                    wallet,_ = Wallet.objects.get_or_create(user=request.user)
+
+                    balance_before = wallet.balance
+                    wallet.balance += refund_amount
+                    wallet.save()
+                    balance_after = wallet.balance
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        amount=refund_amount,
+                        transaction_type="credit",
+                        description=f"Refund for Item: {item.variant.product.name}",
+                        balance_before=balance_before,
+                        balance_after=balance_after
+                    )
+                    messages.success(request, f"Item cancelled. ₹{refund_amount} refunded to wallet.")
+                else:
+                    messages.success(request, "Item cancelled and order updated.")
+
+        except Exception as e:
+            messages.error(request, f"Error cancelling item: {e}")
+
     return redirect('order_detail', order_id=order.order_id)
-
-    
-
-
-
-
-
-
 
 
 
