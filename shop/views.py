@@ -2,7 +2,7 @@ from django.shortcuts import render,  get_object_or_404, redirect
 from products.models import Product, SubCategory, ProductReview
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, Avg
-
+from django.views.decorators.csrf import csrf_exempt
 from products.models import Product, ProductVariant
 from django.contrib import messages
 from .models import CartItem, Wishlist, Address
@@ -16,6 +16,11 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.timezone import now
 from users.decorator import user_required
+from wallet.models import Wallet, WalletTransaction
+import razorpay
+from django.conf import settings
+from payments.models import Payment
+from django.db import transaction
 
 import logging
 
@@ -640,6 +645,17 @@ def payment_view(request, address_id):
     delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
     grand_total = subtotal + gst + delivery_charge
 
+    # wallet
+    wallet,_ = Wallet.objects.get_or_create(user=request.user)
+    wallet_balance = wallet.balance
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    razorpay_order = client.order.create({
+        "amount":int(grand_total * 100),
+        "currency" :"INR",
+        "payment_capture":1,
+    })
+
     context = {
         'address': address,
         'cart_items': cart_items,
@@ -647,6 +663,12 @@ def payment_view(request, address_id):
         'gst': gst,
         'delivery_charge': delivery_charge,
         'grand_total': grand_total,
+        'wallet_balance' : wallet_balance,
+
+        "rzp_key_id": settings.RAZORPAY_KEY_ID,
+        "rzp_order_id": razorpay_order["id"],
+        "rzp_amount": int(grand_total * 100),
+        "order_number": razorpay_order["id"],
     }
 
     return render(request, 'shop/payment.html', context)
@@ -657,6 +679,8 @@ def place_order(request):
         return redirect('checkout')
     
     address_id = request.POST.get('address_id')
+    payment_method = request.POST.get("payment_method")
+
     if not address_id:
         messages.error(request, "Please select a delivery address.")
         return redirect("checkout")
@@ -669,41 +693,188 @@ def place_order(request):
         messages.error(request, "Your cart is empty")
         return redirect("cart")
     
+    for item in cart_items:
+        if item.quantity > item.variant.stock:
+            messages.error(request, f"{item.variant.product.name} is out of stock")
+            return redirect('checkout')
+    
     subtotal = sum(item.total_price for item in cart_items)
     gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
     delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
     grand_total = subtotal + gst + delivery_charge
 
-    order = Order.objects.create(
-        user = request.user,
-        address = address,
-        subtotal = subtotal,
-        gst=gst,
-        delivery_charge= delivery_charge,
-        total_amount = grand_total,
-        payment_method = 'COD',
-        status = 'Pending',
-    )
+    #razorpay 
+    if payment_method == "razorpay":
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        razorpay_order = client.order.create({
+            "amount":int(grand_total * 100),
+            "currency" : "INR",
+            "payment_capture" : 1,
+        })
 
-    for item in cart_items:
-        if item.quantity > item.variant.stock:
-            messages.error(request, f"{item.variant.product.name} is out of stock")
-            return redirect('checkout')
-        
-        OrderItem.objects.create(
-            order=order,
-            variant=item.variant,
-            quantity = item.quantity,
-            price = item.variant.product.price,
+        payment = Payment.objects.create(
+            user=request.user,
+            amount=grand_total,
+            purpose="order_payment",
+            razorpay_order_id = razorpay_order['id'],
+            status="pending",
         )
-        item.variant.stock -= item.quantity
-        item.variant.save()
-
-    cart_items.delete()
-
-    return redirect('order_success',order_id=order.id)
 
 
+        return render(request, "shop/razorpay_payment.html",{
+            "razorpay_order": razorpay_order,
+            "razorpay_key": settings.RAZORPAY_KEY_ID,
+            "payment": payment,
+            "amount": grand_total,
+            "address": address,
+        })
+    
+    try:
+        with transaction.atomic():
+            payment_status = "PENDING"
+
+            if payment_method == "wallet":
+                wallet, _ = Wallet.objects.get_or_create(user=request.user)
+                #lock the wallet row
+                wallet = Wallet.objects.select_for_update().get(user=request.user)
+
+                if wallet.balance >= grand_total:
+                    balance_before = wallet.balance
+
+                    wallet.balance -= grand_total
+                    wallet.save()
+
+                    balance_after = wallet.balance
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        amount=grand_total,
+                        transaction_type="debit",
+                        description="Order Payment from Wallet",
+                        balance_before = balance_before,
+                        balance_after = balance_after
+                    )
+                    payment_status = "SUCCESS"
+                else:
+                    messages.error(request, "Insufficent wallet balance")
+                    return redirect("payment", address_id=address_id)
+            elif payment_method == "cod":
+                payment_status = "PENDING"
+            else:
+                messages.error(request, "Invalid payment option")
+                return redirect("payment", address_id=address_id)
+
+
+            order = Order.objects.create(
+                user = request.user,
+                address = address,
+                subtotal = subtotal,
+                gst=gst,
+                delivery_charge= delivery_charge,
+                total_amount = grand_total,
+                payment_method = payment_method,
+                status = 'Confirmed' if payment_status == "SUCCESS" else "Pending",
+            )
+
+            for item in cart_items:
+                if item.quantity > item.variant.stock:
+                    messages.error(request, f"{item.variant.product.name} is out of stock")
+                    return redirect('checkout')
+                
+                OrderItem.objects.create(
+                    order=order,
+                    variant=item.variant,
+                    quantity = item.quantity,
+                    price = item.variant.product.price,
+                )
+                item.variant.stock -= item.quantity
+                item.variant.save()
+
+            cart_items.delete()
+
+            return redirect('order_success',order_id=order.id)
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect('cart')
+
+@csrf_exempt
+@user_required
+def razorpay_payment_verify(request):
+    payment_id = request.GET.get("payment_id")
+    order_id = request.GET.get("order_id")
+    signature = request.GET.get("signature")
+    address_id = request.GET.get("address_id")
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+    try:
+        client.utility.verify_payment_signature({
+            "razorpay_order_id": order_id,
+            "razorpay_payment_id": payment_id,
+            "razorpay_signature": signature,
+        })
+
+        with transaction.atomic():
+
+            #upafte payment table
+            payment = get_object_or_404(Payment, razorpay_order_id=order_id)
+            payment.status = "SUCCESS"
+            payment.razorpay_payment_id = payment_id
+            payment.save()
+
+            address = get_object_or_404(Address, id=address_id, user=request.user)
+
+            # Cart items
+            cart_items = CartItem.objects.filter(user=request.user)
+
+       
+            if not cart_items.exists():
+                messages.error(request, "Your cart is empty")
+                return redirect("cart")
+        
+            # Price calculation
+            subtotal = sum(item.total_price for item in cart_items)
+            gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+            delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
+            grand_total = subtotal + gst + delivery_charge
+
+            order = Order.objects.create(
+                user=request.user,
+                address=address,
+                subtotal=subtotal,
+                gst = gst,
+                delivery_charge = delivery_charge,
+                total_amount = grand_total,
+                payment_method="Razorpay",
+                status='Confirmed'
+            )
+
+            # Create Order Items & reduce stock
+            for item in cart_items:
+                
+                OrderItem.objects.create(
+                    order=order,
+                    variant=item.variant,
+                    quantity=item.quantity,
+                    price=item.variant.product.price,
+                )
+                item.variant.stock -= item.quantity
+                item.variant.save()
+
+            # Clear cart after ordering
+            cart_items.delete()
+
+        return redirect('order_success', order_id=order.id)
+
+
+    except razorpay.errors.SignatureVerificationError:
+        payment = Payment.objects.filter(razorpay_order_id=order_id).first()
+        messages.error(request, "Payment verification failed.")
+        return redirect('payment_failed', order_id=payment.id if payment else 0)
+    except Exception as e:
+        messages.error(request, "An error occurred during order creation.")
+        print(e)
+        return redirect("cart")
 
 @user_required
 def order_success(request, order_id):
@@ -712,6 +883,26 @@ def order_success(request, order_id):
 
 
     return render(request, 'shop/order_success.html',{'order': order, "estimated_delivery_date" : estimated_delivery_date })
+
+@user_required
+def order_failed_view(request, order_id):
+
+    try:
+        order = Order.objects.get(id =order_id, user=request.user)
+        address = order.address
+    except Order.DoesNotExist:
+        order = None
+        address = None
+
+
+    return render(request, "shop/order_failed.html",{
+        "order":order,
+        "order_id_display": order_id,
+        # "address_id":order.address.id,
+    })
+
+    
+
 
 @user_required
 def cancel_order(request, order_id):

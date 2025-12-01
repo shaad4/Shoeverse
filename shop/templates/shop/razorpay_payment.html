@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Shoeverse | Razorpay Checkout {% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen items-center justify-center bg-[#121714] text-gray-200 px-4">
+
+    <div class="w-full max-w-md bg-[#18211d] rounded-2xl p-8 text-center shadow-lg border border-[#2a3b31]">
+        
+        <h2 class="text-2xl font-bold mb-4">Secure Payment</h2>
+        <p class="text-gray-400 mb-6">Order Payment - ₹{{ amount }}</p>
+
+        <button id="rzp-button" class="w-full py-3 rounded-lg bg-[#366347] hover:bg-[#2d523b] transition text-white font-bold">
+            Pay Now with Razorpay
+        </button>
+
+        <p class="text-xs text-gray-500 mt-4">Payments secured with 256-bit SSL Encryption</p>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ razorpay_order.amount }}",
+        "currency": "INR",
+        "name": "Shoeverse",
+        "description": "Payment for Order",
+        "order_id": "{{ razorpay_order.id }}",
+
+        "handler": function (response) {
+           
+            window.location.href = `/payment/verify/?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}&address_id={{ address.id }}`;
+        },
+
+        "prefill": {
+            "name": "{{ user.fullName }}",
+            "email": "{{ user.email }}",
+            "contact": "{{ user.phoneNumber|default:'' }}"
+        },
+        "theme": { "color": "#366347" }
+    };
+
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button').onclick = function(e){
+        e.preventDefault();
+        rzp1.open();
+    }
+</script>
+
+{% endblock %}
