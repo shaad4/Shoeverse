@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
-from products.models import Product, ProductVariant, ProductImage, SubCategory
+from products.models import Product, ProductVariant, ProductImage, SubCategory, Offer
 from products.forms import ProductForm, ProductVarientForm
 from shop.models import  Order, ReturnRequest, OrderItem
 from .decorator import admin_required
@@ -17,6 +17,9 @@ from decimal import Decimal
 from django.utils.timezone import now
 from django.db import transaction
 from wallet.models import Wallet, WalletTransaction
+from datetime import datetime
+from django.utils import timezone
+
 
 logger = logging.getLogger("users")
 User = get_user_model()
@@ -811,3 +814,97 @@ def admin_return_detail(request, return_id):
 
 
     return render(request, 'adminpanel/return_detail.html', context)
+
+
+#offers (Product and Category)
+
+def offer_list_view(request):
+    offers = Offer.objects.all().order_by("-created_at")
+    products = Product.objects.filter(is_active=True)
+    subcategories_data = list(SubCategory.objects.filter(is_active=True).values('id', 'name', 'category'))
+    main_categories =  Product.CATEGORY_CHOICE
+
+    context = {
+        "offers" : offers,
+        "products" :  products,
+        "subcategories" : subcategories_data,
+        "active_page": "offers",
+        "main_categories": main_categories,
+
+    }
+
+    return render(request, "adminpanel/offer_list.html", context)
+
+
+def admin_offer_add(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        offer_type = request.POST.get("offer_type")
+        discount = request.POST.get("discount")
+
+        start_date_str = request.POST.get("start_date")
+        end_date_str = request.POST.get("end_date")
+
+        if not start_date_str or not end_date_str:
+            messages.error(request, "Start and End date are required")
+            return redirect("admin_offers")
+        
+        try:
+            start_date_naive = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M")
+            end_date_naive = datetime.strptime(end_date_str, "%Y-%m-%d %H:%M")
+
+            start_date = timezone.make_aware(start_date_naive)
+            end_date = timezone.make_aware(end_date_naive)
+        except ValueError:
+            messages.error(request, "Invalid date format")
+            return redirect("admin_offers")
+        
+        if offer_type == "product":
+            product_ids  = request.POST.getlist("product_id")
+
+
+            if not product_ids:
+                messages.error(request, "Please select atleast one product")
+                return redirect("admin_offers")
+            
+    
+            offer = Offer.objects.create(
+                title=title,
+                offer_type="product",
+                discount_percent = discount,
+                start_date = start_date,
+                end_date = end_date,
+            )
+
+            offer.product.set(product_ids)
+                
+            messages.success(request, f"Successfully created offers for {len(product_ids)} products.")
+            return redirect("admin_offers")
+           
+        
+        elif offer_type == "category":
+            subcategory_ids = request.POST.getlist("subcategory")
+
+            if not subcategory_ids:
+                messages.error(request, "Please select at least one subcategory")
+                return redirect("admin_offers")
+            
+           
+
+            offer = Offer.objects.create(
+                    title =  title,
+                    offer_type = "category",
+                    discount_percent = discount,
+                    start_date = start_date,
+                    end_date = end_date,
+                )
+
+                
+            offer.subcategory.set(subcategory_ids)
+            messages.success(request,  f"Successfully created offers for {len(subcategory_ids)} subcategories")
+            return redirect("admin_offers")
+            
+        
+    return redirect("admin_offers")
+
+

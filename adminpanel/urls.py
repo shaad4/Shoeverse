@@ -35,6 +35,10 @@ urlpatterns = [
 
     path('returns/',views.admin_return_list, name='admin_return_list'),
     path('returns/<int:return_id>/', views.admin_return_detail, name='admin_return_detail'),
+
+    path('offers/',views.offer_list_view,  name="admin_offers"),
+    path('offers/add/', views.admin_offer_add,name = "admin_offer_add"),
+
     path("logout/", views.admin_logout_view, name="admin_logout"),
 
 

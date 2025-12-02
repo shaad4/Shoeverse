@@ -4,6 +4,9 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
+from decimal import Decimal
+
 # Create your models here.
 
 class Product(models.Model):
@@ -36,6 +39,26 @@ class Product(models.Model):
     def get_first_available_variant(self):
         """Returns the first active variant with stock > 0"""
         return self.variants.filter(stock__gt=0, is_active=True).first()
+    
+    def get_best_offer(self):
+        product_offer = self.offers.filter(is_active=True, offer_type="PRODUCT").first()
+        category_offer  = self.offers.filter(is_active=True, offer_type = "CATEGORY").first()
+
+        if product_offer  and  category_offer :
+            return  product_offer if product_offer.discount_percentage >= category_offer.discount_percentage else category_offer
+        return product_offer or category_offer
+    
+    def final_price(self):
+        best_offer = self.get_best_offer()
+        if not best_offer:
+            return self.price
+        
+        discount = (self.price *  Decimal(best_offer.discount_percentage) / 100)
+        return (self.price - discount).quantize(Decimal("0.01"))
+    
+    def offer_percentage(self):
+        best_offer = self.get_best_offer()
+        return best_offer.discount_percentage  if  best_offer else 0
     
 
 class ProductVariant(models.Model):
@@ -105,3 +128,37 @@ class ProductReview(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.product.name} ({self.rating} stars)"
+    
+
+
+
+class Offer(models.Model):
+    OFFER_TYPES = [
+        ("product", "Product Offer"),
+        ("category", "Category Offer"),
+    ]
+    title = models.CharField(max_length=255)
+    offer_type = models.CharField(max_length=20, choices=OFFER_TYPES)
+    discount_percent = models.PositiveIntegerField()
+
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+
+    product = models.ManyToManyField(Product, null=True, blank=True, related_name= "product_offers")
+    main_category = models.CharField(max_length=10, choices=Product.CATEGORY_CHOICE, null=True, blank=True)
+    subcategory = models.ManyToManyField(SubCategory, null=True, blank=True, related_name = "category_offers")
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def is_valid(self):
+        now = timezone.now()
+        return (
+            self.is_active and self.start_date <= now <= self.end_date
+        )
+    
+    def __str__(self):
+        return self.title
+    
