@@ -38,6 +38,10 @@ urlpatterns = [
 
     path('offers/',views.offer_list_view,  name="admin_offers"),
     path('offers/add/', views.admin_offer_add,name = "admin_offer_add"),
+    path('offers/edit/<int:offer_id>/', views.admin_offer_edit, name='admin_offer_edit'),
+    path("offers/toggle/<int:offer_id>/", views.admin_offer_toggle, name="admin_offer_toggle"),
+    path("offers/delete/<int:offer_id>/", views.admin_offer_delete, name="admin_offer_delete"),
+
 
     path("logout/", views.admin_logout_view, name="admin_logout"),
 

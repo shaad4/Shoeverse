@@ -7,6 +7,32 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<style>
+    [x-cloak] { display:none !important; }
+    /* Checkbox Styling */
+    input[type="checkbox"]:checked {
+        background-color: #2563eb; /* Blue-600 */
+        border-color: #2563eb;
+    }
+    .pro-input, .pro-select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        background-color: #09090b;
+        border: 1px solid #27272a;
+        border-radius: 0.5rem;
+        color: white;
+        font-size: 0.875rem;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .pro-input:focus, .pro-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+</style>
 
 {{ subcategories|json_script:"subcat_data" }}
 <script id="product_data" type="application/json">
@@ -26,7 +52,9 @@
             <p class="text-zinc-400 text-sm mt-1">Manage discounts, seasonal sales, and category promotions.</p>
         </div>
         <button @click="openAddModal()" class="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg border border-blue-500/50">
-            <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
             <span class="font-medium">Create Offer</span>
         </button>
     </div>
@@ -35,12 +63,18 @@
         <div class="flex flex-col lg:flex-row gap-4 justify-between p-3">
             <form method="get" class="relative flex-1 max-w-lg group">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-zinc-500 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <svg class="h-5 w-5 text-zinc-500 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
                 </div>
-                <input type="text" name="search" value="{{ request.GET.search }}" class="block w-full pl-10 pr-3 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none" placeholder="Search by offer title...">
+                <input type="text" name="search" value="{{ request.GET.search }}"
+                       class="block w-full pl-10 pr-3 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                       placeholder="Search by offer title...">
             </form>
             <div class="flex gap-3">
-                 <a href="{% url 'admin_offers' %}" class="flex items-center justify-center px-4 py-2.5 border border-zinc-700 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">Reset</a>
+                <a href="{% url 'admin_offers' %}" class="flex items-center justify-center px-4 py-2.5 border border-zinc-700 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all">
+                    Reset
+                </a>
             </div>
         </div>
     </div>
@@ -51,7 +85,6 @@
                 <thead class="text-xs text-zinc-400 uppercase bg-zinc-900/50 border-b border-zinc-800">
                     <tr>
                         <th class="px-6 py-4 font-medium tracking-wider">Offer Details</th>
-                        <th class="px-6 py-4 font-medium tracking-wider">Target</th>
                         <th class="px-6 py-4 font-medium tracking-wider">Discount</th>
                         <th class="px-6 py-4 font-medium tracking-wider">Validity</th>
                         <th class="px-6 py-4 font-medium tracking-wider">Status</th>
@@ -63,54 +96,109 @@
                     <tr class="group hover:bg-white/[0.02] transition-colors duration-150">
                         <td class="px-6 py-4">
                             <div class="flex items-center">
-                                <div class="h-10 w-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-blue-500 font-bold shadow-sm">{{ offer.title|slice:"1"|upper }}</div>
+                                <div class="h-10 w-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-blue-500 font-bold shadow-sm">
+                                    {{ offer.title|slice:"1"|upper }}
+                                </div>
                                 <div class="ml-4">
                                     <p class="text-white font-medium group-hover:text-blue-400 transition-colors">{{ offer.title }}</p>
                                     <p class="text-xs mt-0.5 inline-flex items-center gap-1">
-                                        {% if offer.offer_type == "product" %} <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> <span class="text-zinc-500">Product</span>
-                                        {% else %} <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span> <span class="text-zinc-500">Category</span> {% endif %}
+                                        {% if offer.offer_type == "product" %}
+                                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                                            <span class="text-zinc-500">Product</span>
+                                        {% else %}
+                                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                                            <span class="text-zinc-500">Category</span>
+                                        {% endif %}
                                     </p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-zinc-300">
-                            {% if offer.offer_type == "product" %} {{ offer.product.name|truncatechars:25 }}
-                            {% else %} {{ offer.category.name }} {% endif %}
-                        </td>
-                        <td class="px-6 py-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">{{ offer.discount_percent }}% OFF</span></td>
-                        <td class="px-6 py-4 text-xs font-mono text-zinc-500">
-                           <div class="flex flex-col"><span>Start: {{ offer.start_date|date:"d M Y" }}</span><span>End: &nbsp;{{ offer.end_date|date:"d M Y" }}</span></div>
-                        </td>
+
                         <td class="px-6 py-4">
-                            <a href="{# url 'admin_offer_toggle' offer.id #}" class="px-3 py-1 rounded-full text-xs font-medium border {% if offer.is_active %} bg-emerald-500/10 text-emerald-400 border-emerald-500/20 {% else %} bg-red-500/10 text-red-400 border-red-500/20 {% endif %}">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                {{ offer.discount_percent }}% OFF
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-xs font-mono text-zinc-500">
+                            <div class="flex flex-col">
+                                <span>Start: {{ offer.start_date|date:"d M Y" }}</span>
+                                <span>End: &nbsp;{{ offer.end_date|date:"d M Y" }}</span>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <a href="{% url 'admin_offer_toggle' offer.id %}"
+                               class="px-3 py-1 rounded-full text-xs font-medium border
+                                      {% if offer.is_active %}
+                                         bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                      {% else %}
+                                         bg-red-500/10 text-red-400 border-red-500/20
+                                      {% endif %}">
                                 {{ offer.is_active|yesno:"Active,Inactive" }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                             <button @click="confirmDelete('{# url 'admin_offer_delete' offer.id #}')" class="p-1.5 bg-zinc-800 hover:bg-red-600 hover:text-white text-zinc-400 rounded-md transition-colors border border-zinc-700 hover:border-red-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+
+                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                            
+                            <button
+                                @click="openEditModal({
+                                    id: {{ offer.id }},
+                                    title: '{{ offer.title|escapejs }}',
+                                    discount_percent: {{ offer.discount_percent }},
+                                    offer_type: '{{ offer.offer_type }}',
+                                    start_date: '{{ offer.start_date|date:"Y-m-d H:i" }}',
+                                    end_date: '{{ offer.end_date|date:"Y-m-d H:i" }}',
+                                    products: [
+                                        {% for p in offer.products.all %}
+                                            '{{ p.id }}'{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    ],
+                                    subcategories: [
+                                        {% for c in offer.subcategories.all %}
+                                            '{{ c.id }}'{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    ]
+                                })"
+                                class="p-1.5 bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-400
+                                       rounded-md transition-colors border border-zinc-700 hover:border-blue-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+
+                            <button
+                                @click="confirmDelete('{% url 'admin_offer_delete' offer.id %}')"
+                                class="p-1.5 bg-zinc-800 hover:bg-red-600 hover:text-white text-zinc-400
+                                       rounded-md transition-colors border border-zinc-700 hover:border-red-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
                             </button>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center py-12 text-zinc-500">No offers found.</td></tr>
+                    <tr><td colspan="5" class="text-center py-12 text-zinc-500">No offers found.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div x-cloak x-show="isAddOpen" 
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-
-        <div @click.away="isAddOpen = false"
-             class="bg-[#18181b] w-full max-w-lg rounded-2xl border border-zinc-700 shadow-2xl overflow-visible">
-
+    <!-- ADD MODAL -->
+    <div x-cloak x-show="isAddOpen"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+         <div @click.away="isAddOpen = false" class="bg-[#18181b] w-full max-w-lg rounded-2xl border border-zinc-700 shadow-2xl">
             <div class="px-6 py-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50 rounded-t-2xl">
                 <h2 class="text-lg font-semibold text-white">Create New Offer</h2>
-                <button @click="isAddOpen = false" class="text-zinc-500 hover:text-white"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                <button @click="isAddOpen = false" class="text-zinc-500 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
-
             <div class="p-6">
                 <form method="POST" action="{% url 'admin_offer_add' %}">
                     {% csrf_token %}
@@ -119,7 +207,6 @@
                             <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Offer Title</label>
                             <input type="text" name="title" class="pro-input" placeholder="e.g. Summer Sale" required>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Type</label>
@@ -133,37 +220,43 @@
                                 <input type="number" name="discount" min="1" max="99" class="pro-input" placeholder="0" required>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Start Date</label>
-                                <input type="text" name="start_date" class="pro-input datetime-picker" placeholder="Select Date & Time" required>
+                                <input type="text" name="start_date" class="pro-input datetime-picker" required>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">End Date</label>
-                                <input type="text" name="end_date" class="pro-input datetime-picker" placeholder="Select Date & Time" required>
+                                <input type="text" name="end_date" class="pro-input datetime-picker" required>
                             </div>
                         </div>
-
+                        
+                        <!-- ADD PRODUCT MULTISELECT -->
                         <div x-show="addType === 'product'" x-collapse class="space-y-4">
                             <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Select Products</label>
                             <div x-data="multiSelect({items: allProducts, fieldName: 'product_id'})" class="relative" @click.away="open = false">
-                                
                                 <template x-for="id in selected" :key="id">
                                     <input type="hidden" :name="fieldName" :value="id">
                                 </template>
-
                                 <button type="button" @click="open = !open" class="pro-select text-left flex justify-between items-center w-full">
-                                    <span x-text="selected.length ? selected.length + ' Product(s) Selected' : 'Select Products...'" :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
-                                    <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    <span x-text="selected.length ? selected.length + ' Product(s) Selected' : 'Select Products...'"
+                                          :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
+                                    <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
                                 </button>
-                                
                                 <div x-show="open" x-transition class="absolute z-20 w-full mt-1 bg-[#18181b] border border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
-                                    <div class="p-2 border-b border-zinc-700 bg-zinc-900"><input type="text" x-model="search" placeholder="Search..." class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none"></div>
+                                    <div class="p-2 border-b border-zinc-700 bg-zinc-900">
+                                        <input type="text" x-model="search" placeholder="Search..."
+                                               class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none">
+                                    </div>
                                     <div class="overflow-y-auto p-1 space-y-1 custom-scrollbar">
                                         <template x-for="item in filteredItems" :key="item.id">
                                             <label class="flex items-center px-2 py-2 hover:bg-zinc-800 rounded cursor-pointer">
-                                                <input type="checkbox" :value="item.id" x-model="selected" class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
+                                                <input type="checkbox"
+                                                       :value="String(item.id)"
+                                                       x-model="selected"
+                                                       class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
                                                 <span class="ml-2 text-sm text-zinc-300" x-text="item.name"></span>
                                             </label>
                                         </template>
@@ -173,32 +266,49 @@
                             </div>
                         </div>
 
+                        <!-- ADD CATEGORY MULTISELECT -->
                         <div x-show="addType === 'category'" x-collapse class="space-y-4 bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Main Category</label>
                                 <select name="main_category" class="pro-select" x-model="selectedMainCategory">
                                     <option value="">Select Category</option>
-                                    {% for code, name in main_categories %} <option value="{{ code }}">{{ name }}</option> {% endfor %}
+                                    {% for code, name in main_categories %}
+                                        <option value="{{ code }}">{{ name }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Subcategories</label>
-                                <div x-data="multiSelect({items: [], fieldName: 'subcategory'})" x-effect="items = $data.filteredSubcategories; selected = []" class="relative" @click.away="open = false">
-                                    
+                                <div x-data="multiSelect({items: [], fieldName: 'subcategory'})"
+                                     x-effect="items = $data.filteredSubcategories; selected = []"
+                                     class="relative" @click.away="open = false">
                                     <template x-for="id in selected" :key="id">
                                         <input type="hidden" :name="fieldName" :value="id">
                                     </template>
-
-                                    <button type="button" @click="if(items.length) open = !open" :disabled="items.length === 0" class="pro-select text-left flex justify-between items-center w-full disabled:opacity-50">
-                                        <span x-text="selected.length ? selected.length + ' Selected' : (items.length ? 'Select Subcategories...' : 'Select Main Category First')" :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
-                                        <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    <button type="button"
+                                            @click="if(items.length) open = !open"
+                                            :disabled="items.length === 0"
+                                            class="pro-select text-left flex justify-between items-center w-full disabled:opacity-50">
+                                        <span x-text="selected.length
+                                                      ? selected.length + ' Selected'
+                                                      : (items.length ? 'Select Subcategories...' : 'Select Main Category First')"
+                                              :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
+                                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
                                     </button>
-                                    <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" class="absolute bottom-full mb-1 z-50 w-full bg-[#18181b] border border-zinc-700 rounded-lg shadow-xl max-h-60 flex flex-col origin-bottom">
-                                        <div class="p-2 border-b border-zinc-700 bg-zinc-900 rounded-t-lg"><input type="text" x-model="search" placeholder="Search..." class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none"></div>
+                                    <div x-show="open" x-transition class="absolute bottom-full mb-1 z-50 w-full bg-[#18181b] border border-zinc-700 rounded-lg shadow-xl max-h-60 flex flex-col origin-bottom">
+                                        <div class="p-2 border-b border-zinc-700 bg-zinc-900">
+                                            <input type="text" x-model="search" placeholder="Search..."
+                                                   class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none">
+                                        </div>
                                         <div class="overflow-y-auto p-1 space-y-1 custom-scrollbar">
                                             <template x-for="item in filteredItems" :key="item.id">
                                                 <label class="flex items-center px-2 py-2 hover:bg-zinc-800 rounded cursor-pointer">
-                                                    <input type="checkbox" :value="item.id" x-model="selected" class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
+                                                    <input type="checkbox"
+                                                           :value="String(item.id)"
+                                                           x-model="selected"
+                                                           class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
                                                     <span class="ml-2 text-sm text-zinc-300" x-text="item.name"></span>
                                                 </label>
                                             </template>
@@ -208,17 +318,152 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="mt-8 pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                            <button type="button" @click="isAddOpen = false" class="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all">Create Offer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+         </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div x-cloak x-show="isEditOpen"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+
+        <div @click.away="isEditOpen = false"
+             class="bg-[#18181b] w-full max-w-lg rounded-2xl border border-zinc-700 shadow-2xl overflow-visible">
+
+            <div class="px-6 py-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50 rounded-t-2xl">
+                <h2 class="text-lg font-semibold text-white">Edit Offer</h2>
+                <button @click="isEditOpen = false" class="text-zinc-500 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <form method="POST" :action="`/adminpanel/offers/edit/${editOffer.id}/`">
+                    {% csrf_token %}
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Offer Title</label>
+                            <input type="text" name="title" x-model="editOffer.title" class="pro-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Discount (%)</label>
+                            <input type="number" name="discount" min="1" max="99" x-model="editOffer.discount_percent" class="pro-input">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Start Date</label>
+                                <input type="text" name="start_date" class="pro-input datetime-picker" :value="editOffer.start_date">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">End Date</label>
+                                <input type="text" name="end_date" class="pro-input datetime-picker" :value="editOffer.end_date">
+                            </div>
+                        </div>
+
+                        <!-- EDIT PRODUCT MULTISELECT -->
+                        <template x-if="editOffer.offer_type === 'product'">
+                            <div class="space-y-4">
+                                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Products</label>
+                                
+                                <div x-data="multiSelect({items: allProducts, fieldName: 'product_id', preselected: selectedProducts})"
+                                     class="relative" @click.away="open = false">
+                                    
+                                    <template x-for="id in selected" :key="id">
+                                        <input type="hidden" :name="fieldName" :value="id">
+                                    </template>
+
+                                    <button type="button" @click="open = !open" class="pro-select text-left flex justify-between items-center w-full">
+                                        <span x-text="selected.length ? selected.length + ' Product(s) Selected' : 'Select Products...'"
+                                              :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
+                                        <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+
+                                    <div x-show="open" x-transition class="absolute z-20 w-full mt-1 bg-[#18181b] border border-zinc-700 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+                                        <div class="p-2 border-b border-zinc-700 bg-zinc-900">
+                                            <input type="text" x-model="search" placeholder="Search..."
+                                                   class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none">
+                                        </div>
+                                        <div class="overflow-y-auto p-1 space-y-1 custom-scrollbar">
+                                            <template x-for="item in filteredItems" :key="item.id">
+                                                <label class="flex items-center px-2 py-2 hover:bg-zinc-800 rounded cursor-pointer">
+                                                    <input type="checkbox"
+                                                           :value="String(item.id)"
+                                                           x-model="selected"
+                                                           class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
+                                                    <span class="ml-2 text-sm text-zinc-300" x-text="item.name"></span>
+                                                </label>
+                                            </template>
+                                            <div x-show="filteredItems.length === 0" class="p-2 text-center text-xs text-zinc-500">No matches found</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- EDIT CATEGORY MULTISELECT -->
+                        <template x-if="editOffer.offer_type === 'category'">
+                            <div class="space-y-4">
+                                <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Subcategories</label>
+                                
+                                <div x-data="multiSelect({items: allSubcategories, fieldName: 'subcategory', preselected: selectedSubcategories})"
+                                     class="relative" @click.away="open = false">
+                                    
+                                    <template x-for="id in selected" :key="id">
+                                        <input type="hidden" :name="fieldName" :value="id">
+                                    </template>
+
+                                    <button type="button" @click="open = !open" class="pro-select text-left flex justify-between items-center w-full">
+                                        <span x-text="selected.length ? selected.length + ' Selected' : 'Select Subcategories...'"
+                                              :class="selected.length ? 'text-white' : 'text-zinc-500'"></span>
+                                        <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+
+                                    <div x-show="open" x-transition class="absolute bottom-full mb-1 z-50 w-full bg-[#18181b] border border-zinc-700 rounded-lg shadow-xl max-h-60 flex flex-col origin-bottom">
+                                        <div class="p-2 border-b border-zinc-700 bg-zinc-900 rounded-t-lg">
+                                            <input type="text" x-model="search" placeholder="Search..."
+                                                   class="w-full bg-zinc-800 border border-zinc-700 text-sm text-white rounded px-2 py-1 focus:border-blue-500 outline-none">
+                                        </div>
+                                        <div class="overflow-y-auto p-1 space-y-1 custom-scrollbar">
+                                            <template x-for="item in filteredItems" :key="item.id">
+                                                <label class="flex items-center px-2 py-2 hover:bg-zinc-800 rounded cursor-pointer">
+                                                    <input type="checkbox"
+                                                           :value="String(item.id)"
+                                                           x-model="selected"
+                                                           class="w-4 h-4 rounded bg-zinc-700 border-zinc-600 text-blue-600 focus:ring-offset-zinc-900">
+                                                    <span class="ml-2 text-sm text-zinc-300" x-text="item.name"></span>
+                                                </label>
+                                            </template>
+                                            <div x-show="filteredItems.length === 0" class="p-2 text-center text-xs text-zinc-500">No matches found</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     <div class="mt-8 pt-4 border-t border-zinc-800 flex justify-end gap-3">
-                        <button type="button" @click="isAddOpen = false" class="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all">Create Offer</button>
+                        <button type="button" @click="isEditOpen = false" class="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- DELETE MODAL -->
     <div x-cloak x-show="isDeleteOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
         <div class="bg-[#18181b] w-full max-w-md rounded-2xl border border-zinc-800 p-6 shadow-2xl" @click.away="isDeleteOpen = false">
             <h3 class="text-lg font-semibold text-white text-center">Delete Offer?</h3>
@@ -228,16 +473,8 @@
             </div>
         </div>
     </div>
-</div>
 
-<style>
-    [x-cloak] { display:none !important; }
-    .pro-input, .pro-select { width: 100%; padding: 0.625rem 0.875rem; background-color: #09090b; border: 1px solid #27272a; border-radius: 0.5rem; color: white; font-size: 0.875rem; outline: none; }
-    .pro-input:focus, .pro-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-</style>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
@@ -252,19 +489,91 @@
 
     function multiSelect(config) {
         return {
-            items: config.items || [], fieldName: config.fieldName || 'selected_ids', selected: [], search: '', open: false,
-            get filteredItems() { return this.search === '' ? this.items : this.items.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase())); }
+            items: config.items || [],
+            fieldName: config.fieldName || 'selected_ids',
+            preselected: config.preselected || [],
+            selected: [],
+            search: '',
+            open: false,
+
+            init() {
+                if (this.preselected && Array.isArray(this.preselected)) {
+                    this.selected = this.preselected.map(id => String(id));
+                }
+            },
+
+            get filteredItems() {
+                return this.search === ''
+                    ? this.items
+                    : this.items.filter(item =>
+                        item.name.toLowerCase().includes(this.search.toLowerCase())
+                    );
+            }
         }
     }
 
     function offerPage() {
         return {
-            isAddOpen: false, isDeleteOpen: false, deleteUrl: '', addType: 'product', selectedMainCategory: "",
-            get allProducts() { try { return JSON.parse(document.getElementById("product_data").textContent); } catch (e) { return []; } },
-            get allSubcategories() { try { return JSON.parse(document.getElementById("subcat_data").textContent); } catch (e) { return []; } },
-            get filteredSubcategories() { if (!this.selectedMainCategory) return []; return this.allSubcategories.filter(x => x.category == this.selectedMainCategory); },
-            openAddModal() { this.isAddOpen = true; },
-            confirmDelete(url) { this.deleteUrl = url; this.isDeleteOpen = true; }
+            isAddOpen: false,
+            isEditOpen: false,
+            isDeleteOpen: false,
+            deleteUrl: '',
+            addType: 'product',
+            selectedMainCategory: '',
+
+            editOffer: {
+                id: null,
+                title: '',
+                discount_percent: 0,
+                offer_type: 'product',
+                start_date: '',
+                end_date: ''
+            },
+
+            selectedProducts: [],
+            selectedSubcategories: [],
+
+            get allProducts() {
+                try { return JSON.parse(document.getElementById("product_data").textContent); }
+                catch (e) { return []; }
+            },
+            get allSubcategories() {
+                try { return JSON.parse(document.getElementById("subcat_data").textContent); }
+                catch (e) { return []; }
+            },
+            get filteredSubcategories() {
+                if (!this.selectedMainCategory) return [];
+                return this.allSubcategories.filter(x => x.category == this.selectedMainCategory);
+            },
+
+            openAddModal() {
+                this.isAddOpen = true;
+            },
+
+            openEditModal(offer) {
+                // basic offer fields
+                this.editOffer = offer;
+
+                // reset arrays
+                this.selectedProducts = [];
+                this.selectedSubcategories = [];
+
+                // fill from offer (strings)
+                if (offer.products && Array.isArray(offer.products)) {
+                    this.selectedProducts = offer.products.map(id => String(id));
+                }
+                
+                if (offer.subcategories && Array.isArray(offer.subcategories)) {
+                    this.selectedSubcategories = offer.subcategories.map(id => String(id));
+                }
+
+                this.isEditOpen = true;
+            },
+
+            confirmDelete(url) {
+                this.deleteUrl = url;
+                this.isDeleteOpen = true;
+            }
         }
     }
 </script>

@@ -824,6 +824,11 @@ def offer_list_view(request):
     subcategories_data = list(SubCategory.objects.filter(is_active=True).values('id', 'name', 'category'))
     main_categories =  Product.CATEGORY_CHOICE
 
+    search_query = request.GET.get("search")
+
+    if search_query:
+        offers = offers.filter(title__icontains = search_query)
+
     context = {
         "offers" : offers,
         "products" :  products,
@@ -876,7 +881,7 @@ def admin_offer_add(request):
                 end_date = end_date,
             )
 
-            offer.product.set(product_ids)
+            offer.products.set(product_ids)
                 
             messages.success(request, f"Successfully created offers for {len(product_ids)} products.")
             return redirect("admin_offers")
@@ -900,11 +905,70 @@ def admin_offer_add(request):
                 )
 
                 
-            offer.subcategory.set(subcategory_ids)
+            offer.subcategories.set(subcategory_ids)
             messages.success(request,  f"Successfully created offers for {len(subcategory_ids)} subcategories")
             return redirect("admin_offers")
             
         
     return redirect("admin_offers")
 
+def admin_offer_edit(request, offer_id):
+    offer = get_object_or_404(Offer, id=offer_id)
+
+    products = Product.objects.filter(is_active = True)
+    subcategories = SubCategory.objects.all()
+    main_categories = Product.CATEGORY_CHOICE
+
+    if request.method == "POST":
+        offer.title = request.POST.get("title")
+        offer.discount_percent = request.POST.get("discount")
+        offer.is_active = request.POST.get("is_active") == "on"
+
+        start = request.POST.get("start_date")
+        end = request.POST.get("end_date")
+
+        offer.start_date = timezone.make_aware(datetime.strptime(start, "%Y-%m-%d %H:%M"))
+        offer.end_date = timezone.make_aware(datetime.strptime(end, "%Y-%m-%d %H:%M"))
+
+        if  offer.offer_type  == "product":
+            product_ids = request.POST.getlist("product_id")
+            offer.products.set(product_ids)
+
+        if offer.offer_type == "category":
+            sub_ids = request.POST.getlist("subcategory")
+            offer.subcategories.set(sub_ids)
+
+        offer.save()
+        messages.success(request, "Offer updated successfully")
+        return redirect("admin_offers")
+    
+    context = {
+        "offer" :  offer,
+        "products" : products,
+        "subcategories" : subcategories,
+        "main_categories" : main_categories,
+    }
+
+    return redirect("admin_offers")
+
+
+def admin_offer_toggle(request, offer_id):
+    offer  = get_object_or_404(Offer, id=offer_id)
+
+    offer.is_active = not offer.is_active
+    offer.save()
+
+    messages.success(request, f"Offer {offer.title} is now {'Active' if offer.is_active else "Inactive"}")
+
+    return redirect("admin_offers")
+
+
+def admin_offer_delete(request, offer_id):
+    offer = get_object_or_404(Offer, id=offer_id)
+
+    title = offer.title
+    offer.delete()
+
+    messages.success(request, f"Offer '{title}' deleted successfully")
+    return redirect("admin_offers")
 
