@@ -29,7 +29,12 @@ class CartItem(models.Model):
     @property
     def total_price(self):
         quantity = min(self.quantity, 4)
-        return self.variant.product.price * quantity
+        return self.variant.product.final_price * quantity
+    
+    @property
+    def unit_price(self):
+        return self.variant.product.final_price
+
 
 
 class Wishlist(models.Model):

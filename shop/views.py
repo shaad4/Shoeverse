@@ -338,13 +338,24 @@ def cart_view(request):
             
         }
         return render(request, "shop/cart.html", context)
+    
+    subtotal = Decimal("0")
+    total_items = 0
 
-    if in_stock_items.exists():
-        subtotal = sum(item.total_price for item in in_stock_items)
-        total_items = sum(item.quantity for item in in_stock_items)
-    else:
-        subtotal = Decimal('0')
-        total_items = 0
+    # if in_stock_items.exists():
+    #     subtotal = sum(item.total_price for item in in_stock_items)
+    #     total_items = sum(item.quantity for item in in_stock_items)
+    # else:
+    #     subtotal = Decimal('0')
+    #     total_items = 0
+
+    for item in in_stock_items:
+        product = item.variant.product
+        item_final_price  = product.final_price
+        subtotal += item_final_price * item.quantity
+        total_items += item.quantity
+
+    subtotal = subtotal.quantize(Decimal("0.01"))
         
     gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
 
@@ -400,7 +411,7 @@ def update_size(request, item_id):
 
         return JsonResponse({
             "success": True,
-            "item_total": cart_item.total_price,
+            "item_total": float(cart_item.variant.product.final_price * cart_item.quantity),
             "cart_data": cart_data       
         })
 
@@ -415,7 +426,7 @@ def get_cart_data(user):
     cart_items = CartItem.objects.filter(user=user, variant__stock__gt=0, variant__is_active=True)
 
     if cart_items.exists():
-        subtotal = sum(item.total_price for item in cart_items)
+        subtotal = sum(item.variant.product.final_price * item.quantity for item in cart_items)
         gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
         delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
         grand_total = subtotal + gst + delivery_charge
@@ -480,7 +491,7 @@ def update_cart_quantity(request, item_id):
             "removed": False,
             # Keys now match JavaScript expectations
             "item_qty": cart_item.quantity,          # was "quantity"
-            "item_total": float(cart_item.total_price), # was "total_price"
+            "item_total": float(cart_item.variant.product.final_price * cart_item.quantity), # was "total_price"
             "cart_totals": cart_data,                # was "cart_data"
         })
 
@@ -600,8 +611,17 @@ def checkout_view(request):
     
     addresses = Address.objects.filter(user=request.user)
 
+    subtotal = Decimal("0")
+    total_items = 0
+
+    for item in cart_items:
+        product = item.variant.product
+        final_price = product.final_price
+        subtotal += final_price * item.quantity
+        total_items += item.quantity
+
     
-    subtotal = sum(item.total_price for item in cart_items)
+    subtotal = subtotal.quantize(Decimal("0.01"))
     gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
     delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
     grand_total = subtotal + gst + delivery_charge
@@ -785,7 +805,7 @@ def place_order(request):
                     order=order,
                     variant=item.variant,
                     quantity = item.quantity,
-                    price = item.variant.product.price,
+                    price = item.variant.product.final_price,
                 )
                 item.variant.stock -= item.quantity
                 item.variant.save()
@@ -856,7 +876,7 @@ def razorpay_payment_verify(request):
                     order=order,
                     variant=item.variant,
                     quantity=item.quantity,
-                    price=item.variant.product.price,
+                    price=item.variant.product.final_price,
                 )
                 item.variant.stock -= item.quantity
                 item.variant.save()

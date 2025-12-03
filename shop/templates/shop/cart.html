@@ -93,9 +93,33 @@
                         </div>
                     </div>
 
-                    <p class="font-semibold text-lg whitespace-nowrap">
-                        ₹<span id="item-total-{{ item.id }}">{{ item.total_price }}</span>
-                    </p>
+                    <div class="text-right whitespace-nowrap">
+
+                        {% if item.variant.product.offer_percentage > 0 %}
+                            <!-- FINAL PRICE (discount applied) -->
+                            <p class="font-semibold text-lg text-primary">
+                                ₹<span id="item-total-{{ item.id }}">{{ item.variant.product.final_price|floatformat:0 }}</span>
+                            </p>
+
+                            <!-- ORIGINAL MRP -->
+                            <p class="text-sm line-through text-white/40">
+                                ₹ {{ item.variant.product.price }}
+                            </p>
+
+                            <!-- OFFER BADGE -->
+                            <span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                {{ item.variant.product.offer_percentage }}% OFF
+                            </span>
+
+                        {% else %}
+                            <!-- NO OFFER -->
+                            <p class="font-semibold text-lg">
+                                ₹<span id="item-total-{{ item.id }}">{{ item.variant.product.price }}</span>
+                            </p>
+                        {% endif %}
+
+                    </div>
+
                 </div>
             </article>
             {% endfor %}

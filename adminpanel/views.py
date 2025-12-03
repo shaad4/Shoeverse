@@ -922,7 +922,7 @@ def admin_offer_edit(request, offer_id):
     if request.method == "POST":
         offer.title = request.POST.get("title")
         offer.discount_percent = request.POST.get("discount")
-        offer.is_active = request.POST.get("is_active") == "on"
+        
 
         start = request.POST.get("start_date")
         end = request.POST.get("end_date")

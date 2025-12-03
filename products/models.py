@@ -43,20 +43,26 @@ class Product(models.Model):
     #offer logics
 
     def get_product_offers(self):
+        now = timezone.now()
         return  Offer.objects.filter(
             offer_type = "product",
             products=self,
-            is_active = True
+            is_active = True,
+            start_date__lte = now,
+            end_date__gte = now
         )
 
     def get_category_offers(self):
         if not self.subcategory:
             return Offer.objects.none()
         
+        now = timezone.now()
         return Offer.objects.filter(
             offer_type="category",
             subcategories=self.subcategory,
-            is_active = True
+            is_active = True,
+            start_date__lte = now,
+            end_date__gte = now
             
         )
     
@@ -178,7 +184,7 @@ class Offer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    @property
+    
     def is_valid(self):
         now = timezone.now()
         return (
