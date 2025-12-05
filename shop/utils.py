@@ -7,7 +7,7 @@ from reportlab.lib import colors
 from io import BytesIO
 from django.http import HttpResponse
 from decimal import Decimal
-
+from shop.models import CartItem
 def generate_invoice(order):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -125,3 +125,27 @@ def generate_invoice(order):
     c.save()
     buffer.seek(0)
     return buffer
+
+
+def get_cart_totals(user):
+    cart_items = CartItem.objects.filter(user=user, variant__is_active = True, variant__product__is_active=True)
+
+    if not cart_items.exists():
+        return None
+    
+    subtotal = sum(item.total_price for item in cart_items)
+    gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+    delivery_charge = Decimal("0")
+
+    discount_amount = Decimal("0")
+    coupon_code = None
+
+    applied_coupon = None
+
+    return{
+        "cart_items" : cart_items,
+        "subtotal" : subtotal,
+        "gst" : gst,
+        "delivery_charge" : delivery_charge,
+        "base_total" : subtotal+gst+delivery_charge
+    }

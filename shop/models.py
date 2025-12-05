@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from datetime import timedelta
 from django.utils import timezone
-
+from coupons.models import Coupon,CouponUsage
 
 import uuid
 
@@ -77,6 +77,9 @@ class Order(models.Model):
 
     cancel_reason = models.TextField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
+
+    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.SET_NULL)
+    discount_amount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

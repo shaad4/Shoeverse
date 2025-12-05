@@ -19,6 +19,7 @@ from django.db import transaction
 from wallet.models import Wallet, WalletTransaction
 from datetime import datetime
 from django.utils import timezone
+from coupons.models import Coupon
 
 
 logger = logging.getLogger("users")
@@ -972,3 +973,185 @@ def admin_offer_delete(request, offer_id):
     messages.success(request, f"Offer '{title}' deleted successfully")
     return redirect("admin_offers")
 
+
+#coupons
+
+def coupon_list_view(request):
+    coupons = Coupon.objects.select_related('category').order_by('-created_at')
+    search_query = request.GET.get("search")
+
+    if search_query:
+        coupons = Coupon.objects.filter(Q(name__icontains = search_query)|Q(code__icontains = search_query))
+
+    context = {
+        "coupons" : coupons,
+        "subcategories"  : SubCategory.objects.all(),
+        "active_page" : "coupons"
+    }
+
+    return render(request, 'adminpanel/coupons_list.html', context)
+
+def coupon_add_view(request):
+    if request.method != "POST":
+        return redirect("admin_coupon_list")
+
+    name = request.POST.get("name")
+    code = request.POST.get("code", "").upper()
+    discountType = request.POST.get("discountType")
+    discountValue = request.POST.get("discountValue")
+    minCartValue = request.POST.get("minCartValue") or 0
+    userLimit = request.POST.get("userLimit") or 1
+    category_id = request.POST.get("category") or None
+    validFrom = request.POST.get("validFrom", "").strip()
+    validTill = request.POST.get("validTill", "").strip()
+
+  
+    if Coupon.objects.filter(code__iexact=code).exists():
+        messages.error(request, "This coupon code already exists.")
+        return redirect("admin_coupon_list")
+    
+
+
+   
+    try:
+        dt_from = datetime.strptime(validFrom, "%Y-%m-%d")
+        dt_till = datetime.strptime(validTill, "%Y-%m-%d")
+
+        dt_till = dt_till.replace(hour=23, minute=59, second=59)
+
+        start_dt = timezone.make_aware(dt_from)
+        end_dt = timezone.make_aware(dt_till)
+
+
+        if start_dt > end_dt:
+            messages.error(request, "Valid From must be before Valid Till.")
+            return redirect("admin_coupon_list")
+
+    except ValueError:
+        messages.error(request, "Invalid date format.")
+        return redirect("admin_coupon_list")
+
+ 
+    coupon = Coupon(
+        name=name,
+        code=code,
+        discountType=discountType,
+        discountValue=discountValue,
+        minCartValue=minCartValue,
+        userLimit=userLimit,
+        validFrom=start_dt,
+        validTill=end_dt,
+    )
+
+
+    if category_id:
+        try:
+            coupon.category = SubCategory.objects.get(id=category_id)
+        except SubCategory.DoesNotExist:
+            messages.error(request, "Selected category does not exist.")
+            return redirect("admin_coupon_list")
+    else:
+        coupon.category = None
+
+    coupon.save()
+
+    messages.success(request, "Coupon created successfully.")
+    return redirect("admin_coupon_list")
+
+        
+
+
+
+def coupon_toggle_view(request, coupon_id):
+    coupon = Coupon.objects.get(id = coupon_id)
+
+    coupon.isActive = not coupon.isActive
+    coupon.save()
+
+    if coupon.isActive:
+        messages.success(request, f"Coupon {coupon.name} - {coupon.code} is now Active")
+    else:
+        messages.info(request, f"Coupon {coupon.name} - {coupon.code} has been Disabled")
+
+    return redirect("admin_coupon_list")
+
+
+def coupon_edit_view(request, coupon_id):
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+
+    if request.method != "POST":
+        return redirect("admin_coupon_list")
+
+    name = request.POST.get("name")
+    code = request.POST.get("code", "").upper()
+    discountType = request.POST.get("discountType")
+    discountValue = request.POST.get("discountValue")
+    minCartValue = request.POST.get("minCartValue") or 0
+    userLimit = request.POST.get("userLimit") or 1
+    category_id = request.POST.get("category") or None
+    validFrom = request.POST.get("validFrom", "").strip()
+    validTill = request.POST.get("validTill", "").strip()
+
+    # Unique code except this coupon
+    if Coupon.objects.exclude(id=coupon.id).filter(code__iexact=code).exists():
+        messages.error(request, "Another coupon with this code already exists.")
+        return redirect("admin_coupon_list")
+
+    
+
+    try:
+        dt_from = datetime.strptime(validFrom, "%Y-%m-%d") 
+        dt_till = datetime.strptime(validTill, "%Y-%m-%d")
+
+        dt_till = dt_till.replace(hour=23, minute=59, second=59)
+
+        start_dt = timezone.make_aware(dt_from)
+        end_dt = timezone.make_aware(dt_till)
+
+        if start_dt > end_dt:
+            messages.error(request, "Valid From must be before Valid Till.")
+            return redirect("admin_coupon_list")
+
+    except ValueError:
+        messages.error(request, "Invalid date format.")
+        return redirect("admin_coupon_list")
+
+    # Update model
+    coupon.name = name
+    coupon.code = code
+    coupon.discountType = discountType
+    coupon.discountValue = discountValue
+    coupon.minCartValue = minCartValue
+    coupon.userLimit = userLimit
+    coupon.validFrom = start_dt
+    coupon.validTill = end_dt
+
+    # Category
+    if category_id:
+        try:
+            coupon.category = SubCategory.objects.get(id=category_id)
+        except SubCategory.DoesNotExist:
+            messages.error(request, "Selected category does not exist.")
+            return redirect("admin_coupon_list")
+    else:
+        coupon.category = None
+
+    coupon.save()
+
+    messages.success(request, "Coupon updated successfully")
+    return redirect("admin_coupon_list")
+
+
+def coupon_delete_view(request, coupon_id):
+    coupon = get_object_or_404(Coupon, id = coupon_id)
+    
+    try:
+        coupon.delete()
+        messages.success(request, f"Coupon '{coupon.code}' has been deleted successfully")
+    except  Exception:
+        messages.error(request, "Failed to delete the coupon. Try again later")
+
+    return redirect("admin_coupon_list")
+
+    
+     

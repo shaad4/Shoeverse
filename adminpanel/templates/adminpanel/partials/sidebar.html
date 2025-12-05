@@ -98,7 +98,7 @@
         </a>
 
         <!-- ✅ Coupons -->
-        <a href="#" 
+        <a href="{% url 'admin_coupon_list' %}" 
            class="flex items-center gap-3 px-3 py-2 rounded-button transition-colors
            {% if active_page == 'coupons' %} bg-sidebar-active text-white {% else %} text-muted hover:bg-sidebar-active hover:text-white {% endif %}">
 

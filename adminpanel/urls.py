@@ -42,7 +42,12 @@ urlpatterns = [
     path("offers/toggle/<int:offer_id>/", views.admin_offer_toggle, name="admin_offer_toggle"),
     path("offers/delete/<int:offer_id>/", views.admin_offer_delete, name="admin_offer_delete"),
 
-
+    path('coupons/', views.coupon_list_view , name="admin_coupon_list"),
+    path('coupons/add/', views.coupon_add_view, name="admin_coupon_add"),
+    path('coupon/toggle/<int:coupon_id>/', views.coupon_toggle_view, name="admin_coupon_toggle"),
+    path('coupons/edit/<int:coupon_id>/', views.coupon_edit_view, name="admin_coupon_edit"),
+    path('coupons/delete/<int:coupon_id>/', views.coupon_delete_view, name="admin_coupon_delete"),
+    
     path("logout/", views.admin_logout_view, name="admin_logout"),
 
 

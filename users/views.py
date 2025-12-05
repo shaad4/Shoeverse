@@ -744,6 +744,7 @@ def confirm_email_change(request, uidb64, token):
         user.email = new_email
         user.save()
         request.session.pop("pending_email_change", None)
+        request.session.modified = True
 
         messages.success(request, "Email updated successfully!")
         return redirect("profile")

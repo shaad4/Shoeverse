@@ -27,6 +27,7 @@ urlpatterns = [
 
    # Checkout & Orders
    path('checkout/', views.checkout_view, name='checkout'),
+   path('checkout/remove-coupon/', views.remove_coupon, name="remove_coupon"),
    path('payment/<int:address_id>/', views.payment_view, name='payment'),
    path('place-order/', views.place_order, name='place_order'),
    path('order-success/<int:order_id>/', views.order_success, name='order_success'),
@@ -40,4 +41,9 @@ urlpatterns = [
    path('cancel-order/item/<int:item_id>/', views.cancel_order_item, name='cancel_order_item'),
    path('return/order/<str:order_id>/', views.return_order_items, name='return_order_items'),
    path('return/submit/<str:order_id>/', views.submit_return_request, name='submit_return_request'),
+
+   #coupon
+   path('apply-coupon/', views.apply_coupon, name = "apply_coupon"),
+   
+
 ]

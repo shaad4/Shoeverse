@@ -6,10 +6,8 @@
 {% block content %}
 <main class="mx-auto max-w-6xl px-4 py-12 lg:px-6">
 
-    <!-- Heading + Order Status -->
     <section class="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 mb-10">
 
-        <!-- Left: Page heading -->
         <div class="space-y-4">
             <div class="flex items-center gap-2 text-xs uppercase tracking-[0.4em] text-mint-100/70">
                 <span class="h-px w-8 bg-mint-300/60"></span>
@@ -23,7 +21,6 @@
             </p>
         </div>
 
-        <!-- Right: Progress Tracker -->
         <div class="flex items-center gap-3 text-sm mt-6 md:mt-0">
 
             <div class="flex items-center gap-2">
@@ -50,10 +47,8 @@
 
     <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
 
-        <!-- LEFT SECTION -->
         <div class="space-y-8">
 
-            <!-- Payment Methods Container -->
             <section class="rounded-3xl border border-white/10 bg-forest-900/80 p-6 shadow-glass">
 
                 <div class="flex flex-col gap-2 mb-6">
@@ -63,12 +58,10 @@
                     </p>
                 </div>
 
-                <!-- SINGLE FORM FOR SELECTION -->
                 <form method="POST" action="{% url 'place_order' %}" class="space-y-4">
                     {% csrf_token %}
                     <input type="hidden" name="address_id" value="{{ address.id }}">
 
-                    <!-- Option 1: UPI / Razorpay -->
                     <label class="group relative flex cursor-pointer items-start gap-4 rounded-2xl border border-white/10 bg-forest-900/40 p-5 transition-all hover:border-primary/50 hover:bg-forest-900/60">
                         <div class="flex items-center h-5">
                             <input type="radio" name="payment_method" value="razorpay" class="peer h-5 w-5 accent-primary" required checked>
@@ -76,15 +69,12 @@
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
                                 <span class="font-semibold text-white group-hover:text-primary transition-colors">UPI / Razorpay</span>
-                                <!-- Optional: Add small icons here if you have them loaded -->
-                            </div>
+                                </div>
                             <p class="mt-1 text-sm text-mint-100/60">Pay securely via UPI, Credit/Debit Card, or Netbanking.</p>
                         </div>
                     </label>
 
-                    <!-- Option 2: Shoeverse Wallet (Inbuilt) -->
                     {% if wallet_balance >= grand_total %}
-                        <!-- Enabled Wallet State -->
                         <label class="group relative flex cursor-pointer items-start gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5 transition-all hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                             <div class="flex items-center h-5">
                                 <input type="radio" name="payment_method" value="wallet" class="peer h-5 w-5 accent-primary">
@@ -101,7 +91,6 @@
                             </div>
                         </label>
                     {% else %}
-                        <!-- Disabled/Insufficient Balance State -->
                         <label class="group relative flex cursor-not-allowed items-start gap-4 rounded-2xl border border-white/5 bg-white/5 p-5 opacity-60">
                             <div class="flex items-center h-5">
                                 <input type="radio" name="payment_method" value="wallet" class="peer h-5 w-5 accent-primary" disabled>
@@ -116,7 +105,6 @@
                         </label>
                     {% endif %}
 
-                    <!-- Option 3: Cash on Delivery -->
                     <label class="group relative flex cursor-pointer items-start gap-4 rounded-2xl border border-white/10 bg-forest-900/40 p-5 transition-all hover:border-primary/50 hover:bg-forest-900/60">
                         <div class="flex items-center h-5">
                             <input type="radio" name="payment_method" value="cod" class="peer h-5 w-5 accent-primary">
@@ -127,7 +115,6 @@
                         </div>
                     </label>
 
-                    <!-- SINGLE PAY BUTTON -->
                     <div class="pt-4">
                         <button type="submit"
                             class="w-full rounded-2xl bg-primary py-4 text-base font-bold text-dark hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all transform active:scale-[0.98]">
@@ -140,14 +127,13 @@
             </section>
         </div>
 
-        <!-- RIGHT SUMMARY -->
         <aside class="space-y-6">
             <section
               class="rounded-3xl border border-white/10 bg-forest-900/80 p-6 shadow-glass">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-lg font-semibold">Order summary</p>
-                  <p class="text-sm text-mint-100/70">{{ total_items }} items</p>
+                  <p class="text-sm text-mint-100/70">Selected items</p>
                 </div>
               </div>
 
@@ -157,13 +143,20 @@
                     <span class="text-white">₹{{ subtotal }}</span>
                 </div>
                 <div class="flex items-center justify-between">
+                    <span>GST (18%)</span>
+                    <span class="text-white">₹{{ gst }}</span>
+                </div>
+                <div class="flex items-center justify-between">
                     <span>Delivery</span>
                     <span class="text-white">₹{{ delivery_charge }}</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span>GST</span>
-                    <span class="text-white">₹{{ gst }}</span>
+                
+                {% if discount_amount > 0 %}
+                <div class="flex items-center justify-between text-emerald-400 font-medium">
+                    <span>Discount</span>
+                    <span>- ₹{{ discount_amount }}</span>
                 </div>
+                {% endif %}
               </div>
 
               <div class="mt-5 border-t border-white/10 pt-4">
