@@ -59,7 +59,7 @@ def generate_invoice(order):
 
     y -= 15
 
-    # ===== TABLE HEADER (Only Once) =====
+    # ===== TABLE HEADER =====
     c.setFont("Helvetica-Bold", 11)
     c.drawString(50, y, "Item")
     c.drawString(260, y, "Qty")
@@ -72,11 +72,11 @@ def generate_invoice(order):
     # ===== ORDER ITEMS =====
     c.setFont("Helvetica", 10)
     for item in order.items.all():
-        if y < 100:
+        if y < 150: # Increased margin to ensure summary fits or new page triggers
             c.showPage()
             y = height - 100
-
-            # Reprint table header after new page
+            
+            # Reprint header
             c.setFont("Helvetica-Bold", 11)
             c.drawString(50, y, "Item")
             c.drawString(260, y, "Qty")
@@ -87,33 +87,56 @@ def generate_invoice(order):
             y -= 15
 
         item_total = item.price * item.quantity
-        c.drawString(50, y, item.variant.product.name[:30])  # limit text
+        c.drawString(50, y, item.variant.product.name[:30])
         c.drawString(260, y, str(item.quantity))
         c.drawString(310, y, f"Rs.{item.price}")
         c.drawString(380, y, f"Rs.{item_total}")
         y -= 18
 
-    # ===== SUMMARY =====
+    # ===== SUMMARY SECTION (UPDATED) =====
     y -= 10
     c.line(300, y, 550, y)
     y -= 20
 
+    # 1. Calculations
     subtotal = sum(item.price * item.quantity for item in order.items.all())
     gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
     delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
-    total = subtotal + gst + delivery_charge
+    
+    # Get discount from model
+    discount = order.discount_amount if order.discount_amount else Decimal("0.00")
+    
+    # Final Total Formula
+    total_payable = subtotal + gst + delivery_charge - discount
 
-    summary = [
+    # 2. Build Summary List
+    summary_data = [
         ("Subtotal", subtotal),
         ("GST (18%)", gst),
         ("Delivery", delivery_charge),
-        ("Total Payable", total),
     ]
 
+    # 3. Add Discount Row if applicable
+    if discount > 0:
+        # Show coupon code if available
+        coupon_label = f"Discount ({order.coupon.code})" if order.coupon else "Discount"
+        summary_data.append((coupon_label, -discount)) # Negative value for clarity
+
+    summary_data.append(("Grand Total", total_payable))
+
+    # 4. Render Summary
     c.setFont("Helvetica-Bold", 11)
-    for label, value in summary:
+    for label, value in summary_data:
         c.drawString(310, y, f"{label}:")
-        c.drawString(450, y, f"Rs. {value}")
+        
+        # Color Handling: Red for Discount, Black for others
+        if "Discount" in label:
+            c.setFillColorRGB(0.8, 0, 0) 
+            c.drawString(450, y, f"Rs. {value}")
+            c.setFillColorRGB(0, 0, 0)  
+        else:
+            c.drawString(450, y, f"Rs. {value}")
+            
         y -= 18
 
     y -= 30

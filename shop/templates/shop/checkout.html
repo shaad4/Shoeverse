@@ -79,7 +79,7 @@
                 </div>
             </section>
 
-            <section class="space-y-5 rounded-3xl border border-primary/30 bg-dark-green/40 px-6 py-6 shadow-card">
+            <section id="address-selection-box" class="space-y-5 rounded-3xl border border-primary/30 bg-dark-green/40 px-6 py-6 shadow-card transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-lg font-semibold text-white">Select Delivery Address</p>
@@ -93,11 +93,12 @@
                         {% for address in addresses %}
                         <label class="flex cursor-pointer items-start gap-4 rounded-2xl border
                             {% if address.is_default %} border-primary bg-dark-green/60 {% else %} border-white/10 bg-dark/40 hover:border-primary/60 {% endif %}
-                            p-5 transition w-full">
+                            p-5 transition w-full address-card">
 
                             <input type="radio" name="address_id" value="{{ address.id }}"
                                 class="mt-1 h-4 w-4 accent-primary cursor-pointer"
-                                {% if address.is_default %}checked{% endif %} />
+                                {% if address.is_default %}checked{% endif %} 
+                                onclick="clearError()"/>
 
                             <div>
                                 <p class="text-base font-semibold text-white">{{ address.full_name }}</p>
@@ -224,6 +225,17 @@
                 {% endif %}
             </section>
 
+            <div id="address-error" class="hidden animate-pulse">
+                <div class="w-full rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-center mb-3">
+                    <p class="text-sm font-semibold text-red-400 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Please select a delivery address to proceed.
+                    </p>
+                </div>
+            </div>
+
             <button type="button" 
                 onclick="goToPayment()" 
                 class="w-full rounded-2xl bg-primary py-4 text-base font-semibold text-dark hover:bg-primary/90 transition shadow-lg shadow-primary/20">
@@ -236,11 +248,36 @@
 <script>
     function goToPayment() {
         const selected = document.querySelector('input[name="address_id"]:checked');
+        const errorDiv = document.getElementById('address-error');
+        const addressBox = document.getElementById('address-selection-box');
+
         if (!selected) {
-            alert("Please select a delivery address before continuing.");
+            // Show error message
+            errorDiv.classList.remove('hidden');
+            
+            // Highlight address section with red border/pulse
+            addressBox.classList.remove('border-primary/30');
+            addressBox.classList.add('border-red-500/50', 'ring-1', 'ring-red-500/50');
+            
+            // Scroll to address section smoothly
+            addressBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
             return;
         }
+        
         window.location.href = `/payment/${selected.value}/`;
+    }
+
+    function clearError() {
+        const errorDiv = document.getElementById('address-error');
+        const addressBox = document.getElementById('address-selection-box');
+        
+        // Hide error message
+        errorDiv.classList.add('hidden');
+        
+        // Remove red styling and revert to original
+        addressBox.classList.remove('border-red-500/50', 'ring-1', 'ring-red-500/50');
+        addressBox.classList.add('border-primary/30');
     }
 </script>
 

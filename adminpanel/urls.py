@@ -47,6 +47,10 @@ urlpatterns = [
     path('coupon/toggle/<int:coupon_id>/', views.coupon_toggle_view, name="admin_coupon_toggle"),
     path('coupons/edit/<int:coupon_id>/', views.coupon_edit_view, name="admin_coupon_edit"),
     path('coupons/delete/<int:coupon_id>/', views.coupon_delete_view, name="admin_coupon_delete"),
+
+
+    path('analytics/',  views.analytics_view, name="admin_analytics"),
+    path('sales-report/',  views.sales_report_view,  name= 'admin_sales_report'),
     
     path("logout/", views.admin_logout_view, name="admin_logout"),
 

@@ -5,7 +5,7 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q,Avg,Count,Sum,Min,Max,F
 from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_http_methods
 from products.models import Product, ProductVariant, ProductImage, SubCategory, Offer
@@ -17,11 +17,12 @@ from decimal import Decimal
 from django.utils.timezone import now
 from django.db import transaction
 from wallet.models import Wallet, WalletTransaction
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from coupons.models import Coupon
-
-
+from django.db.models.functions import TruncMonth, TruncDay
+import json
+from .utils import render_excel_view, render_pdf_view
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -1155,3 +1156,184 @@ def coupon_delete_view(request, coupon_id):
 
     
      
+
+
+#analytics
+
+def analytics_view(request):
+
+    #filtering
+    end_date_str = request.GET.get("end_date", timezone.now().strftime('%Y-%m-%d'))
+    start_date_str = request.GET.get("start_date", (timezone.now() - timedelta(days=30)).date().strftime('%Y-%m-%d'))
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        start_date =(timezone.now() - timedelta(days=30)).date()
+        end_date = timezone.now().date()
+
+    orders = Order.objects.filter(
+        status = "Delivered",
+        created_at__date__range=[start_date,end_date]
+    )
+
+    #KPI Cards
+    summary = orders.aggregate(
+        total_revenue = Sum('total_amount'),
+        orders_count=Count('id'),
+        avg_order_value = Avg('total_amount')
+    )
+
+    total_products_sold = OrderItem.objects.filter(order__in=orders).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0
+
+    kpi_data = {
+        'revenue' : summary['total_revenue'] or 0,
+        'orders'  : summary['orders_count'] or 0,
+        'avg_value' : round(summary['avg_order_value'] or 0, 2),
+        'products_sold': total_products_sold
+    }
+    #chart  1 : sales
+    days_diff = (end_date - start_date).days
+
+    if days_diff > 60:
+        sales_data = orders.annotate(period=TruncMonth("created_at")).values('period').annotate(
+            revenue = Sum('total_amount')
+        ).order_by('period')
+        date_format = '%b %Y'
+    else:
+        sales_data = orders.annotate(period=TruncDay("created_at")).values('period').annotate(
+            revenue = Sum('total_amount')
+        ).order_by('period')
+        date_format = '%d %b'
+
+
+    chart_dates = [item['period'].strftime(date_format) for item in sales_data]
+    chart_revenues =  [float(item["revenue"]) for  item in sales_data]
+
+    #chart 2 : category
+
+    category_data = OrderItem.objects.filter(order__in = orders).values(
+        'variant__product__subcategory__name'
+    ).annotate(
+        revenue = Sum(F('price') *  F('quantity'))
+    ).order_by('-revenue')
+
+    cat_labels = [item['variant__product__subcategory__name'] for item in category_data]
+    cat_values = [float(item['revenue']) for item in  category_data]
+
+    #tables  
+
+    top_products_query = OrderItem.objects.filter(order__in=orders).values(
+        'variant__product__id',
+        'variant__product__name',
+        'variant__product__category',
+    ).annotate(
+        total_sold = Sum('quantity'),
+        total_revenue  = Sum(F('price') * F('quantity'))
+    ).order_by("-total_revenue")[:5]
+
+
+    products_table = []
+    for item in top_products_query:
+
+        product = Product.objects.get(id=item['variant__product__id'])
+
+        img_obj = product.images.filter(is_primary=True).first()
+        if not img_obj:
+            img_obj = product.images.first()
+
+        image_url = img_obj.image.url if img_obj else None
+
+        products_table.append(
+            {
+                'name' : item['variant__product__name'],
+                'category': item['variant__product__category'],
+                'image' : image_url,
+                'price' : product.price,
+                'sold' : item['total_sold'],
+                'revenue' : item['total_revenue'],
+                'stock' : product.total_stock()
+            }
+        )
+
+    context = {
+        'kpi' : kpi_data,
+        'chart_dates' : json.dumps(chart_dates),
+        'chart_revenues' : json.dumps(chart_revenues),
+        'cat_labels' : json.dumps(cat_labels),
+        'cat_values' : json.dumps(cat_values),
+        'products_table' : products_table,
+        'start_date' : start_date_str,
+        'end_date' : end_date_str,
+        'active_page' : "analytics"
+    }
+
+    return render(request, 'adminpanel/analytics.html', context)
+
+
+
+def sales_report_view(request):
+    report_type = request.GET.get('report_type', 'custom')
+    start_date = request.GET.get('start_date')
+    end_date =  request.GET.get('end_date')
+    status_filter = request.GET.get('status','')
+    download_format = request.GET.get('download')
+
+    orders = Order.objects.all().order_by("-created_at")
+
+    today = timezone.now().date()
+
+    if not start_date or not end_date:
+        start_date = today - timedelta(days=30)
+        end_date = today
+    else:
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+    if report_type == "daily":
+        orders = Order.objects.filter(created_at__date =  today)
+    elif report_type == "weekly":
+        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=7))
+    elif report_type == "monthly":
+        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=30))
+    elif  report_type == "yearly":
+        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=30))
+    else:
+        orders = Order.objects.filter(created_at__date__range=[start_date, end_date])
+
+    
+    if status_filter:
+        orders = Order.objects.filter(status=status_filter)
+
+    revenue_orders = orders.filter(status="Delivered")
+    total_revenue = revenue_orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+
+    totals = orders.aggregate(
+        total_count = Count("id"),
+        total_value = Sum('total_amount'),
+        total_discount=Sum('discount_amount')
+    )
+
+    context = {
+        'orders' : orders,
+        'total_count' : totals['total_count'] or 0,
+        'total_value' : totals['total_value'] or 0,
+        'total_revenue' : total_revenue,
+        'total_discount' : totals['total_discount'] or 0,
+
+        'report_type' : report_type,
+        'start_date' : start_date if isinstance(start_date, str) else start_date.strftime('%Y-%m-%d'),
+        'end_date' : end_date if  isinstance(end_date, str) else end_date.strftime('%Y-%m-%d'),
+        'status_filter' : status_filter,
+    }
+
+    if download_format == 'pdf':
+        return render_pdf_view('adminpanel/pdf/sales_report_pdf.html', context)
+    
+    if download_format == 'excel':
+        return render_excel_view(orders)
+
+    return render(request, 'adminpanel/sales_report.html', context)

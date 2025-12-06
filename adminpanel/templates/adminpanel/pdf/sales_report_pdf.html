@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Report</title>
+    <style>
+        /* 1. Page Setup - White Background */
+        @page {
+            size: A4;
+            margin: 1cm;
+            background-color: #ffffff;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            color: #1f2937; /* Dark Gray Text */
+            background-color: #ffffff;
+        }
+
+        /* 2. Header Section */
+        .header-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e5e7eb; /* Light Gray Border */
+            padding-bottom: 15px;
+        }
+        .company-name {
+            color: #111827; /* Almost Black */
+            font-size: 22pt;
+            font-weight: bold;
+        }
+        .report-name {
+            color: #059669; /* Emerald Green */
+            font-size: 12pt;
+            margin-top: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .meta-info {
+            text-align: right;
+            color: #6b7280; /* Gray */
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        /* 3. KPI Cards (Summary) */
+        .kpi-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-spacing: 10px;
+        }
+        .kpi-box {
+            background-color: #f9fafb; /* Very Light Gray */
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+        }
+        .kpi-label {
+            font-size: 8pt;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .kpi-value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        /* Colored Values for emphasis */
+        .val-green { color: #059669; }
+        .val-blue { color: #2563eb; }
+        .val-amber { color: #d97706; }
+
+        /* 4. Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+        .data-table th {
+            background-color: #f3f4f6; /* Light Gray Header */
+            color: #374151;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #d1d5db;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 8pt;
+        }
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+        }
+        
+        /* Striped Rows */
+        tr.row-even { background-color: #ffffff; }
+        tr.row-odd { background-color: #f9fafb; } 
+
+        .status-badge {
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+
+        /* 5. Footer */
+        .footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            text-align: center;
+            font-size: 8pt;
+            color: #9ca3af;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td valign="top">
+                <div class="company-name">Shoeverse</div>
+                <div class="report-name">Sales Report</div>
+            </td>
+            <td class="meta-info" valign="top">
+                <strong>Generated:</strong> {% now "d M Y, H:i" %}<br>
+                <strong>Range:</strong> {{ start_date }} to {{ end_date }}<br>
+                <strong>Status:</strong> {{ status_filter|default:"All Orders" }}
+            </td>
+        </tr>
+    </table>
+
+    <table class="kpi-table">
+        <tr>
+            <td class="kpi-box">
+                <div class="kpi-label">Total Orders</div>
+                <div class="kpi-value">{{ total_count }}</div>
+            </td>
+            <td class="kpi-box">
+                <div class="kpi-label">Realized Revenue</div>
+                <div class="kpi-value val-green">Rs. {{ total_revenue|floatformat:0 }}</div>
+            </td>
+            <td class="kpi-box">
+                <div class="kpi-label">Total Value</div>
+                <div class="kpi-value val-blue">Rs. {{ total_value|floatformat:0 }}</div>
+            </td>
+            <td class="kpi-box">
+                <div class="kpi-label">Discounts</div>
+                <div class="kpi-value val-amber">Rs. {{ total_discount|floatformat:0 }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th>Coupon</th>
+                <th class="text-right">Discount</th>
+                <th class="text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr class="{% cycle 'row-odd' 'row-even' %}">
+                <td style="font-weight: bold; color: #111827;">#{{ order.order_id }}</td>
+                <td>{{ order.created_at|date:"d M Y" }}</td>
+                <td>
+                    <span class="status-badge">{{ order.status }}</span>
+                </td>
+                <td style="text-transform: capitalize;">{{ order.payment_method }}</td>
+                <td>
+                    {% if order.coupon %}
+                        <span style="color: #059669; font-weight: bold;">{{ order.coupon.code }}</span>
+                    {% else %}
+                        <span style="color: #9ca3af;">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if order.discount_amount > 0 %}
+                    <span style="color: #d97706;">Rs. {{ order.discount_amount|floatformat:0 }}</span>
+                    {% else %}
+                    <span style="color: #d1d5db;">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right text-bold">
+                    Rs. {{ order.total_amount|floatformat:0 }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center" style="padding: 20px; color: #6b7280; font-style: italic;">
+                    No records found matching the selected filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        &copy; 2025 Shoeverse Inc. Confidential Internal Document.
+    </div>
+
+</body>
+</html>

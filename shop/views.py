@@ -1201,10 +1201,10 @@ def cancel_order_item(request, item_id):
 
                     order.status = "Cancelled"
                     order.cancel_reason = "All items were cancelled individually"
-                    order.subtotal = Decimal(0)
-                    order.gst = Decimal(0)
-                    order.delivery_charge = Decimal(0)
-                    order.total_amount = Decimal(0)
+                    # order.subtotal = Decimal(0)
+                    # order.gst = Decimal(0)
+                    # order.delivery_charge = Decimal(0)
+                    # order.total_amount = Decimal(0)
 
                     if order.coupon:
                         usage = CouponUsage.objects.filter(

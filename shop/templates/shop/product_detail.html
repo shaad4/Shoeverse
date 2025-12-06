@@ -23,7 +23,6 @@
     <div class="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16">
 
         <div class="space-y-6">
-
             <div id="mainImageWrapper"
                 class="relative aspect-square rounded-[20px] overflow-hidden bg-[#18211d] flex items-center justify-center cursor-crosshair group border border-[#2a3b31]">
                 
@@ -53,9 +52,7 @@
                 </button>
                 {% endfor %}
             </div>
-
         </div>
-
 
         <div class="flex flex-col gap-8">
 
@@ -63,7 +60,6 @@
                 <h1 class="text-3xl md:text-4xl font-bold leading-tight">{{ product.name }}</h1>
 
                 <div class="flex items-center gap-4 text-sm text-gray-400">
-                    
                     {% if avg_rating > 0 %}
                     <div class="flex items-center gap-2 bg-[#2a3b31] border border-[#3d5244] px-3 py-1.5 rounded-full">
                         <span class="font-bold text-white">{{ avg_rating }}</span>
@@ -89,57 +85,34 @@
                 </p>
             </div>
 
-
             <div class="flex items-baseline gap-4 mt-2">
-
                 {% if product.offer_percentage > 0 %}
-                    
-                    <!-- Final (Discounted) Price -->
-                    <p class="text-4xl font-bold text-[#96c4a8]">
-                        ₹ {{ product.final_price }}
-                    </p>
-
-                    <!-- Original MRP -->
-                    <p class="line-through text-gray-500 text-lg">
-                        ₹ {{ product.price }}
-                    </p>
-
-                    <!-- Offer Badge -->
+                    <p class="text-4xl font-bold text-[#96c4a8]">₹ {{ product.final_price }}</p>
+                    <p class="line-through text-gray-500 text-lg">₹ {{ product.price }}</p>
                     <span class="ml-2 px-3 py-1 bg-[#96c4a8]/10 text-[#96c4a8] font-bold rounded-full text-sm tracking-wide">
                         {{ product.offer_percentage }}% OFF
                     </span>
-
                 {% else %}
-                    <!-- No Offer -->
-                    <p class="text-4xl font-bold text-white">
-                        ₹ {{ product.price }}
-                    </p>
+                    <p class="text-4xl font-bold text-white">₹ {{ product.price }}</p>
                 {% endif %}
-
             </div>
-
-
 
             {% if product.color %}
             <div class="space-y-3">
                 <p class="uppercase tracking-widest text-xs font-bold text-gray-500">Color</p>
                 <div class="flex items-center gap-3 bg-[#18211d] w-fit px-4 py-2 rounded-lg border border-[#2a3b31]">
                     <span class="w-4 h-4 rounded-full border border-gray-600 shadow-sm" style="background-color: {{ product.color|lower }}"></span>
-                    <span class="text-white font-medium capitalize">
-                        {{ product.color }}
-                    </span>
+                    <span class="text-white font-medium capitalize">{{ product.color }}</span>
                 </div>
             </div>
             {% endif %}
 
-
             <form method="POST" action="{% url 'add_to_cart' 0 %}" id="addToCartForm">
                 {% csrf_token %}
 
-                <div class="space-y-3 mb-8">
+                <div class="space-y-3 mb-6">
                     <div class="flex justify-between items-end">
                         <p class="uppercase tracking-widest text-xs font-bold text-gray-500">Select Size</p>
-                        
                     </div>
 
                     <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -148,7 +121,6 @@
                                 <input type="radio" 
                                     name="variant_id" 
                                     value="{{ variant.id }}" 
-                                    required
                                     {% if variant.stock <= 0 %}disabled{% endif %}
                                     class="peer hidden">
 
@@ -163,11 +135,14 @@
                             </label>
                         {% endfor %}
                     </div>
+
+                    <p id="size-error" class="hidden text-red-400 text-sm font-medium mt-2 animate-pulse flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Please select a size to continue
+                    </p>
                 </div>
 
-
-                <div class="flex flex-col sm:flex-row items-stretch gap-4">
-        
+                <div class="flex flex-col sm:flex-row items-stretch gap-4 mt-8">
                     <div class="flex-shrink-0">
                         <p class="uppercase text-xs font-bold tracking-widest text-gray-500 mb-2">Quantity</p>
                         <div class="h-14 flex items-center justify-between bg-[#18211d] border border-[#2a3b31] rounded-xl px-2 w-32">
@@ -192,9 +167,10 @@
                             </button>
                         {% endif %}
                     </div>
-                
                 </div>
-            </form> <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="mt-2">
+            </form> 
+            
+            <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="mt-2">
                 {% csrf_token %}
                 <button type="submit" 
                     class="w-full h-12 rounded-xl border flex items-center justify-center gap-2 transition-all duration-300 group
@@ -203,7 +179,6 @@
                     {% else %}
                         bg-transparent border-[#2a3b31] text-gray-400 hover:border-[#96c4a8] hover:text-white
                     {% endif %}">
-                    
                     {% if is_in_wishlist %}
                         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                         <span>Saved to Wishlist</span>
@@ -247,7 +222,6 @@
         </div>
     </div>
 
-
     <section id="reviews" class="mt-24 border-t border-[#2a3b31] pt-16">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4">
             <div>
@@ -270,12 +244,9 @@
         </div>
 
         <div class="grid lg:grid-cols-[350px_1fr] gap-12">
-
             <div class="space-y-8 h-fit lg:sticky lg:top-24">
-                
                 <div class="rounded-2xl bg-[#18211d] border border-[#2a3b31] p-8 text-center shadow-lg">
                     <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-4">Overall Rating</p>
-                    
                     <div class="flex items-center justify-center gap-4 mb-2">
                         <span class="text-6xl font-bold text-white">{{ avg_rating }}</span>
                         <div class="text-left">
@@ -297,13 +268,11 @@
                     {% for star, count in star_distribution.items %}
                     <div class="flex items-center gap-4 text-sm group">
                         <span class="w-12 text-white font-medium flex-shrink-0">{{ star }} Star</span>
-                        
                         <div class="flex-1 h-2.5 bg-[#121714] rounded-full overflow-hidden border border-[#2a3b31]">
                             <div class="h-full bg-yellow-400 rounded-full transition-all duration-1000 ease-out group-hover:bg-yellow-300" 
                                  style="width: {% widthratio count review_count 100 %}%;">
                             </div>
                         </div>
-                        
                         <span class="w-10 text-right text-gray-500 tabular-nums">
                             {% widthratio count review_count 100 %}%
                         </span>
@@ -312,26 +281,21 @@
                 </div>
             </div>
 
-
             <div class="space-y-6">
                 {% if reviews %}
                     {% for review in reviews %}
                     <div class="rounded-2xl bg-[#18211d] border border-[#2a3b31] p-6 hover:border-gray-600 transition-colors">
-                        
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0">
                                     {% if review.user.profileImage %}
-                                        <img src="{{ review.user.profileImage.url }}" 
-                                             alt="{{ review.user.fullName }}" 
-                                             class="w-10 h-10 rounded-full object-cover border border-[#2a3b31]">
+                                        <img src="{{ review.user.profileImage.url }}" alt="{{ review.user.fullName }}" class="w-10 h-10 rounded-full object-cover border border-[#2a3b31]">
                                     {% else %}
                                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#2a3b31] to-[#121714] flex items-center justify-center text-[#96c4a8] font-bold text-xs border border-[#2a3b31]">
                                             {{ review.user.fullName|slice:":2" }}
                                         </div>
                                     {% endif %}
                                 </div>
-                                
                                 <div>
                                     <h3 class="font-bold text-white text-sm">{{ review.user.fullName|default:review.user.email }}</h3>
                                     <div class="flex text-yellow-400 text-xs mt-1 gap-0.5">
@@ -347,18 +311,15 @@
                             </div>
                             <span class="text-xs text-gray-500">{{ review.created_at|date:"M d, Y" }}</span>
                         </div>
-
                         <div class="flex items-center gap-1.5 text-xs text-[#96c4a8] font-bold uppercase tracking-wide mb-3 bg-[#96c4a8]/10 w-fit px-2 py-1 rounded">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Verified Purchase
                         </div>
-
                         <p class="text-gray-300 text-sm leading-relaxed font-light">
                             {{ review.comment }}
                         </p>
                     </div>
                     {% endfor %}
-
                 {% else %}
                     <div class="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#2a3b31] rounded-3xl bg-[#18211d]/50">
                         <div class="w-16 h-16 bg-[#18211d] rounded-full flex items-center justify-center mb-4 border border-[#2a3b31]">
@@ -366,7 +327,6 @@
                         </div>
                         <h3 class="text-lg font-bold text-white">No reviews yet</h3>
                         <p class="text-gray-400 text-sm mt-1 mb-6">This product hasn't been rated yet. Be the first!</p>
-                        
                         {% if can_review %}
                         <a href="{% url 'submit_review' product.id %}" class="text-[#96c4a8] hover:text-white font-bold underline underline-offset-4">Write a Review</a>
                         {% endif %}
@@ -376,25 +336,18 @@
         </div>
     </section>
 
-
     {% if related_products %}
     <section class="mt-24 border-t border-[#2a3b31] pt-16">
         <h2 class="text-2xl font-bold mb-8 text-white">You Might Also Like</h2>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for p in related_products %}
             <a href="{% url 'product_detail' p.id %}" class="group block">
-                <article class="bg-[#18211d] border border-[#2a3b31] rounded-2xl p-4 
-                                hover:border-[#96c4a8]/50 hover:shadow-lg hover:-translate-y-1 
-                                transition-all duration-300 h-full flex flex-col">
-
+                <article class="bg-[#18211d] border border-[#2a3b31] rounded-2xl p-4 hover:border-[#96c4a8]/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
                     <div class="aspect-[4/5] rounded-xl overflow-hidden bg-[#121714] relative mb-4">
                          {% if p.images.first %}
-                            <img src="{{ p.images.first.image.url }}" 
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <img src="{{ p.images.first.image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                          {% endif %}
                     </div>
-
                     <div class="flex flex-col flex-1">
                         <p class="text-[10px] text-[#96c4a8] uppercase font-bold tracking-wider mb-1">{{ p.category }}</p>
                         <h3 class="text-base font-bold text-white leading-snug group-hover:text-[#96c4a8] transition-colors mb-2">
@@ -424,21 +377,20 @@
 </div>
 
 <script>
-    // --- DOM ELEMENTS ---
     const mainImage = document.getElementById("mainImage");
     const container = document.getElementById("mainImageWrapper");
+    const form = document.getElementById('addToCartForm');
+    const errorMsg = document.getElementById('size-error');
+    const sizeInputs = document.querySelectorAll('input[name="variant_id"]');
     
-    // --- 1. THUMBNAIL SWAP ---
+    // Thumbnail Swap
     function swapImage(newSrc, thumbElement) {
-        // Fade out
         mainImage.style.opacity = "0";
-        
         setTimeout(() => {
             mainImage.src = newSrc;
             mainImage.onload = () => { mainImage.style.opacity = "1"; };
         }, 150);
 
-        // Active styling
         document.querySelectorAll(".thumbBtn").forEach(btn => {
             btn.classList.remove("border-[#96c4a8]", "ring-1", "ring-[#96c4a8]");
             btn.classList.add("border-[#2a3b31]");
@@ -448,7 +400,7 @@
         thumbElement.classList.add("border-[#96c4a8]", "ring-1", "ring-[#96c4a8]");
     }
 
-    // --- 2. HOVER TO ZOOM LOGIC ---
+    // Hover Zoom
     if (window.matchMedia("(hover: hover)").matches) {
         container.addEventListener("mousemove", function(e) {
             const rect = container.getBoundingClientRect();
@@ -468,25 +420,24 @@
         });
     }
 
-    // --- 3. MOBILE/TABLET ZOOM MODAL ---
+    // Zoom Modal
     const zoomModal = document.getElementById("zoomModal");
     const zoomedImage = document.getElementById("zoomedImage");
 
     container.addEventListener("click", function() {
-        // Only if not hover capable (Touch devices) OR force functionality
         if (window.innerWidth < 1024) { 
             zoomedImage.src = mainImage.src;
             zoomModal.classList.remove("hidden");
-            document.body.style.overflow = 'hidden'; // Lock scroll
+            document.body.style.overflow = 'hidden'; 
         }
     });
 
     zoomModal.addEventListener("click", () => {
         zoomModal.classList.add("hidden");
-        document.body.style.overflow = ''; // Unlock scroll
+        document.body.style.overflow = ''; 
     });
 
-    // --- 4. QUANTITY LOGIC ---
+    // Quantity Logic
     function changeQty(amount) {
         let qtyInput = document.getElementById("qty-input");
         let qty = parseInt(qtyInput.value) + amount;
@@ -495,13 +446,19 @@
         qtyInput.value = qty;
     }
     
-    // --- 5. FORM VALIDATION (Size Selection) ---
-    const form = document.getElementById('addToCartForm');
+    // Validation
+    sizeInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            errorMsg.classList.add('hidden');
+        });
+    });
+
     form.addEventListener('submit', function(e) {
         const selectedVariant = document.querySelector('input[name="variant_id"]:checked');
         if (!selectedVariant) {
-            e.preventDefault();
-            alert('Please select a size before adding to cart.');
+            e.preventDefault(); 
+            errorMsg.classList.remove('hidden');
+            errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
 </script>

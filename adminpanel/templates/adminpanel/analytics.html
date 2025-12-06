@@ -1,0 +1,291 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Sales Analytics{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="p-6 min-h-screen bg-[#09090b] text-zinc-100 font-sans">
+
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8 border-b border-zinc-800/50 pb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Analytics Dashboard</h1>
+            <p class="text-zinc-400 text-sm mt-1">Overview of sales, revenue, and product performance.</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4">
+            <form method="get" class="flex items-center gap-2 bg-zinc-900 p-1.5 rounded-lg border border-zinc-800">
+                <div class="relative">
+                    <input type="date" name="start_date" value="{{ start_date }}" 
+                        class="bg-zinc-950 border border-zinc-700 rounded-md px-3 py-2 text-xs text-white focus:border-emerald-500 outline-none w-32">
+                </div>
+                <span class="text-zinc-500 text-xs">to</span>
+                <div class="relative">
+                    <input type="date" name="end_date" value="{{ end_date }}" 
+                        class="bg-zinc-950 border border-zinc-700 rounded-md px-3 py-2 text-xs text-white focus:border-emerald-500 outline-none w-32">
+                </div>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-md transition shadow-lg" title="Apply Filter">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            </form>
+
+            <div class="flex gap-2">
+                <a href="{% url 'admin_sales_report' %}" class="flex items-center justify-center px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs font-medium text-white transition-colors gap-2 shadow-sm">
+                    <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    View Detailed Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
+            <div class="relative z-10">
+                <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1">Total Revenue</p>
+                <h3 class="text-2xl font-bold text-white">₹{{ kpi.revenue|floatformat:0 }}</h3>
+            </div>
+            <div class="absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-emerald-500/10 to-transparent"></div>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg hover:border-amber-500/30 transition-colors">
+            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1">Total Discounts</p>
+            <h3 class="text-2xl font-bold text-amber-400">₹{{ kpi.discount|floatformat:0 }}</h3>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg hover:border-blue-500/30 transition-colors">
+            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1">Orders</p>
+            <h3 class="text-2xl font-bold text-white">{{ kpi.orders }}</h3>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg hover:border-purple-500/30 transition-colors">
+            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1">Products Sold</p>
+            <h3 class="text-2xl font-bold text-white">{{ kpi.products_sold }}</h3>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl shadow-lg hover:border-zinc-600 transition-colors">
+            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-1">Avg. Order Value</p>
+            <h3 class="text-2xl font-bold text-white">₹{{ kpi.avg_value }}</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        
+        <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Sales Overview</h3>
+                    <p class="text-xs text-zinc-500">Revenue trend over the selected period</p>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                    DELIVERED ORDERS
+                </span>
+            </div>
+            <div class="relative h-72 w-full">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-lg flex flex-col">
+            <div class="mb-4">
+                <h3 class="text-lg font-bold text-white">Revenue by Category</h3>
+                <p class="text-xs text-zinc-500">Performance across product categories</p>
+            </div>
+            <div class="flex-1 flex items-center justify-center relative h-64">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="p-6 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-center">
+            <div>
+                <h3 class="text-lg font-bold text-white">Top Performing Products</h3>
+                <p class="text-xs text-zinc-500">Highest revenue generating items</p>
+            </div>
+            <button class="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition">View All Products &rarr;</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-zinc-400">
+                <thead class="bg-zinc-950/50 text-xs uppercase font-semibold text-zinc-500 tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Product</th>
+                        <th class="px-6 py-4">Category</th>
+                        <th class="px-6 py-4 text-right">Unit Price</th>
+                        <th class="px-6 py-4 text-center">Sold</th>
+                        <th class="px-6 py-4 text-right">Total Revenue</th>
+                        <th class="px-6 py-4 text-center">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800/60">
+                    {% for product in products_table %}
+                    <tr class="group hover:bg-white/[0.02] transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex-shrink-0 overflow-hidden relative">
+                                    {% if product.image %}
+                                        <img src="{{ product.image }}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-[10px] text-zinc-600">NO IMG</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium text-sm group-hover:text-emerald-400 transition-colors">{{ product.name }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                {{ product.category }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-mono text-zinc-300">₹{{ product.price }}</td>
+                        <td class="px-6 py-4 text-center text-white font-medium">{{ product.sold }}</td>
+                        <td class="px-6 py-4 text-right font-mono text-emerald-400 font-bold">₹{{ product.revenue|floatformat:0 }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if product.stock < 5 %}
+                                <span class="text-red-400 text-xs font-bold bg-red-400/10 px-2 py-1 rounded border border-red-400/20">Low: {{ product.stock }}</span>
+                            {% else %}
+                                <span class="text-zinc-400 text-xs">{{ product.stock }} units</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="p-8 text-center text-zinc-500 italic">No sales data found for the selected period.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- 1. Data Parsing ---
+        const rawDates = '{{ chart_dates|escapejs }}';
+        const rawRevenue = '{{ chart_revenues|escapejs }}';
+        const rawCatLabels = '{{ cat_labels|escapejs }}';
+        const rawCatData = '{{ cat_values|escapejs }}';
+
+        const dates = rawDates ? JSON.parse(rawDates) : [];
+        const revenues = rawRevenue ? JSON.parse(rawRevenue) : [];
+        const catLabels = rawCatLabels ? JSON.parse(rawCatLabels) : [];
+        const catData = rawCatData ? JSON.parse(rawCatData) : [];
+
+        // Global Defaults
+        Chart.defaults.color = '#71717a'; // zinc-500
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // --- 2. Line Chart (Sales) ---
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        
+        // Gradient for line chart
+        const gradient = salesCtx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)'); // Emerald start
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');   // Transparent end
+
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Revenue',
+                    data: revenues,
+                    borderColor: '#10b981', // Emerald 500
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#09090b',
+                    pointBorderColor: '#10b981',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#18181b',
+                        titleColor: '#fff',
+                        bodyColor: '#d1d5db',
+                        borderColor: '#27272a',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return '₹ ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#27272a',  borderDash: [5, 5] },
+                        ticks: { 
+                            callback: function(value) { return '₹' + value/1000 + 'k'; }
+                        },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+
+        // --- 3. Bar Chart (Category) ---
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: catData,
+                    backgroundColor: [
+                        '#3b82f6', // Blue
+                        '#10b981', // Emerald
+                        '#f59e0b', // Amber
+                        '#ef4444', // Red
+                        '#8b5cf6'  // Violet
+                    ],
+                    borderRadius: 4,
+                    barThickness: 30,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#18181b',
+                        borderColor: '#27272a',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return '₹ ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    },
+                    y: { display: false } // Hide Y axis for cleaner look
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

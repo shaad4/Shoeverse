@@ -294,6 +294,20 @@
                 <span>Delivery Charges</span>
                 <span class="text-white">₹{{ order.delivery_charge }}</span>
             </div>
+
+            {% if order.discount_amount > 0 %}
+            <div class="flex justify-between text-emerald-400 font-medium">
+                <div class="flex items-center gap-2">
+                    <span>Discount</span>
+                    {% if order.coupon %}
+                    <span class="text-[10px] uppercase bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded tracking-wider">
+                        {{ order.coupon.code }}
+                    </span>
+                    {% endif %}
+                </div>
+                <span>- ₹{{ order.discount_amount }}</span>
+            </div>
+            {% endif %}
             
             <div class="border-t border-gray-700 my-2"></div>
             
