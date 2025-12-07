@@ -1201,10 +1201,8 @@ def cancel_order_item(request, item_id):
 
                     order.status = "Cancelled"
                     order.cancel_reason = "All items were cancelled individually"
-                    # order.subtotal = Decimal(0)
-                    # order.gst = Decimal(0)
-                    # order.delivery_charge = Decimal(0)
-                    # order.total_amount = Decimal(0)
+                    
+                    refund_amount = old_grand_total
 
                     if order.coupon:
                         usage = CouponUsage.objects.filter(
@@ -1214,6 +1212,8 @@ def cancel_order_item(request, item_id):
                         if usage and usage.used_count > 0:
                             usage.used_count -= 1
                             usage.save()
+                    
+                    order.save()
 
                 else:
                     new_subtotal = sum(i.total_price for i in active_items)
@@ -1227,9 +1227,9 @@ def cancel_order_item(request, item_id):
 
                     order.total_amount = order.subtotal + order.gst + order.delivery_charge
 
-                order.save()
+                    order.save()
 
-                refund_amount = old_grand_total - order.total_amount
+                    refund_amount = old_grand_total - order.total_amount
 
                 if refund_amount > 0 and order.payment_method in ["wallet", "razorpay", "Razorpay"]:
                     wallet,_ = Wallet.objects.get_or_create(user=request.user)
@@ -1243,7 +1243,7 @@ def cancel_order_item(request, item_id):
                         wallet=wallet,
                         amount=refund_amount,
                         transaction_type="credit",
-                        description=f"Refund for Item: {item.variant.product.name}",
+                        description=f"Refund for Item: {item.variant.product.name} (Order #{order.order_id}",
                         balance_before=balance_before,
                         balance_after=balance_after
                     )

@@ -30,6 +30,8 @@ import json
 from wallet.utils import credit_wallet, debit_wallet
 from wallet.models import WalletTransaction, Wallet
 
+from users.models import Banner
+
 logger = logging.getLogger('users')
 User = get_user_model()
 
@@ -396,11 +398,20 @@ def reset_password_view(request, uidb64, token):
 
 def home_view(request):
 
+    banners = Banner.objects.filter(is_active = True).order_by('order')
+
     p1 = Product.objects.get(id=9)
     p2 = Product.objects.get(id=15)
     p3 = Product.objects.get(id=11)
     p4 = Product.objects.get(id=18)
-    return render(request, "users/home.html", {"p1":p1,"p2":p2,"p3":p3,"p4":p4})
+
+    context = {
+        "p1":p1,"p2":p2,"p3":p3,"p4":p4,
+        "banners" : banners
+        }
+
+
+    return render(request, "users/home.html", context)
 
 
 def logout_view(request):

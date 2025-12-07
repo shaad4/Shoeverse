@@ -96,7 +96,20 @@ class Address(models.Model):
 
 
 
+class Banner(models.Model):
+    image = models.ImageField(upload_to='banners/')
+    subtitle = models.CharField(max_length=100, blank=True)
+    title = models.CharField(max_length=100)
+    button_text = models.CharField(max_length=50, default= "Shop Now")
+    button_link = models.CharField(max_length=200, default="shop_products")
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
 
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
 
     
 

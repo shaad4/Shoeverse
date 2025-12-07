@@ -23,6 +23,8 @@ from coupons.models import Coupon
 from django.db.models.functions import TruncMonth, TruncDay
 import json
 from .utils import render_excel_view, render_pdf_view
+from users.models import Banner
+
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -1337,3 +1339,71 @@ def sales_report_view(request):
         return render_excel_view(orders)
 
     return render(request, 'adminpanel/sales_report.html', context)
+
+
+#banner management
+
+def admin_banner_add(request):
+    if request.method == "POST":
+
+        image = request.FILES.get("image")
+        subtitle = request.POST.get('subtitle')
+        title = request.POST.get("title")
+        button_text = request.POST.get("button_text")
+        button_link = request.POST.get("button_link")
+        order = request.POST.get("order")
+
+        is_active  = request.POST.get("is_active") == 'on'
+
+        if not image or not title:
+            messages.error(request, "Image and Main Title are required")
+            return render(request, 'admin/banner_add.html')
+        
+        try:
+            Banner.objects.create(
+                image=image,
+                subtitle=subtitle,
+                title=title,
+                button_text = button_text,
+                button_link = button_link,
+                order = int(order) if order else 0,
+                is_active = is_active
+            )
+            messages.success(request, "Banner added Successfully")
+            return redirect('admin_banner_manager')
+        except Exception as e:
+            messages.error(request, f"Error : {e}")
+
+    return render(request, 'adminpanel/banner_add.html')
+
+
+def admin_banner_manager(request):
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        banner_id = request.POST.get("banner_id")
+
+        if banner_id:
+            banner = get_object_or_404(Banner, id=banner_id)
+
+            if action == "toggle_status":
+                banner.is_active = not banner.is_active
+                banner.save()
+                status_msg = "Activated" if banner.is_active else "Decativated"
+                messages.success(request, f"Banner {banner.title} is now {status_msg}")
+
+            elif action == "delete":
+                banner.delete()
+                messages.warning(request, "Banner deleted permanently")
+
+            return redirect('admin_banner_manager')
+        
+    banners  = Banner.objects.all().order_by('order')
+
+    context = {
+        "banners"  :  banners,
+        "title" : "banner Manager",
+        "site_header" : "Shoeverse Admin"
+    }
+
+    return render(request, 'adminpanel/banner_manager.html', context)

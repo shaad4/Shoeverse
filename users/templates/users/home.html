@@ -3,213 +3,265 @@
 
 {% block content %}
 
-<!-- Hero Section -->
-<section class="relative pt-16">
-    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40 py-5">
-        <div class="flex flex-col">
-
-            <!-- Hero Banner -->
-            <div class="relative h-[480px] rounded-card overflow-hidden mb-3">
-                <div class="absolute inset-0 gradient-overlay z-10"></div>
-                <img src="{% static 'images/hero-main.png' %}" alt="Shoeverse Hero"
-                     class="w-full h-full object-cover" loading="eager">
-
-                <div class="absolute inset-0 z-20 flex flex-col items-center justify-center px-5">
-                    <h1 class="text-display font-black text-white text-center mb-4 max-w-[687px]">
-                        Step Into Style with Shoeverse
-                    </h1>
-                    <p class="text-body text-white text-center mb-8 max-w-[687px]">
-                        Discover exclusive collections for Men, Women, and Kids.
-                    </p>
-                    <a href="{% url 'shop_products' %}"
-                        class="bg-primary text-dark font-bold text-body px-5 py-3 h-12 rounded-button-lg hover:opacity-90">
-                        Shop Now
-                    </a>
-                </div>
+<section class="relative w-full h-[85vh] bg-dark overflow-hidden group">
+    
+    <div id="heroCarousel" class="relative w-full h-full flex transition-transform duration-700 ease-in-out">
+        
+        {% for banner in banners %}
+        <div class="w-full h-full flex-shrink-0 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-transparent to-transparent z-10"></div>
+            
+            <img src="{{ banner.image.url }}" 
+                 class="w-full h-full object-cover object-center" 
+                 alt="{{ banner.title }}">
+            
+            <div class="absolute inset-0 z-20 flex flex-col justify-end pb-20 px-6 md:px-16">
+                {% if banner.subtitle %}
+                <h2 class="text-primary font-bold tracking-[0.2em] text-sm uppercase mb-4">{{ banner.subtitle }}</h2>
+                {% endif %}
+                
+                <h1 class="text-white text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-8">
+                    {{ banner.title|linebreaksbr }}
+                </h1>
+                
+                <a href="{{  banner.button_link }}" 
+                   class="inline-block bg-white text-dark font-bold px-10 py-4 rounded-full text-sm uppercase tracking-wider hover:bg-primary transition-colors w-fit">
+                    {{ banner.button_text }}
+                </a>
             </div>
+        </div>
+        
+        {% empty %}
+        <div class="w-full h-full flex-shrink-0 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-transparent to-transparent z-10"></div>
+            <img src="{% static 'images/hero-main.png' %}" 
+                 class="w-full h-full object-cover object-center" 
+                 alt="Default Hero">
+            <div class="absolute inset-0 z-20 flex flex-col justify-end pb-20 px-6 md:px-16">
+                <h2 class="text-primary font-bold tracking-[0.2em] text-sm uppercase mb-4">New Collection</h2>
+                <h1 class="text-white text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-8">
+                    Step Into <br> The Verse.
+                </h1>
+                <a href="{% url 'shop_products' %}" 
+                   class="inline-block bg-white text-dark font-bold px-10 py-4 rounded-full text-sm uppercase tracking-wider hover:bg-primary transition-colors w-fit">
+                    Shop Now
+                </a>
+            </div>
+        </div>
+        {% endfor %}
 
-            <!-- Search Bar -->
-            <div id="searchWrap" class="mb-5">
-                <form action="{% url 'shop_products' %}" class="flex h-12 rounded-card overflow-hidden">
-                    <div class="bg-dark-green flex items-center justify-center px-4">
-                        <img src="{% static 'images/icon-search.svg' %}" alt="" class="w-6 h-6">
+    </div>
+
+    {% if banners|length > 1 %}
+    <div class="absolute bottom-10 right-10 z-30 flex gap-4">
+        <button onclick="prevSlide()" class="p-3 border border-white/20 rounded-full text-white hover:bg-white hover:text-black transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button onclick="nextSlide()" class="p-3 border border-white/20 rounded-full text-white hover:bg-white hover:text-black transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+    </div>
+    {% endif %}
+</section>
+
+<div class="bg-dark border-b border-white/5 py-12">
+    <div class="max-w-container mx-auto px-5 md:px-16">
+        
+        <form action="{% url 'shop_products' %}" class="max-w-2xl mx-auto border-b border-white/20 focus-within:border-primary transition-colors mb-16">
+            <div class="flex items-center">
+                <input 
+                    type="search" 
+                    name="q"
+                    placeholder="Search Products..." 
+                    class="w-full bg-transparent text-white text-2xl font-light py-4 focus:outline-none placeholder-gray-600"
+                    aria-label="Search">
+                <button type="submit" class="text-gray-400 hover:text-primary transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </div>
+        </form>
+
+        <div class="flex flex-wrap justify-center gap-8 md:gap-16 text-gray-500 text-sm font-medium tracking-wider uppercase">
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Authentic
+            </span>
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Fast Delivery
+            </span>
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0"></path></svg>
+                Easy Returns
+            </span>
+        </div>
+    </div>
+</div>
+
+<section class="bg-dark py-20">
+    <div class="max-w-container mx-auto px-5 md:px-16">
+        
+        <div class="flex justify-between items-baseline mb-12">
+            <h2 class="text-3xl text-white font-bold uppercase tracking-wide">Best Sellers</h2>
+            <a href="{% url 'shop_products' %}" class="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-4">View All</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+            
+            {% for p in products_list_placeholder %}{% endfor %}
+
+            <div class="group cursor-pointer">
+                <a href="{% url 'product_detail' p1.id %}">
+                    <div class="rounded-lg aspect-[4/5] relative overflow-hidden mb-6">
+                        <img src="{{ p1.images.first.image.url }}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                            alt="{{ p1.name }}">
                     </div>
 
-                    <input 
-                        type="search" 
-                        name = "q"
-                        placeholder="Search for your perfect pair..." 
-                        class="flex-1 bg-dark-green text-white placeholder-muted text-body px-4 py-2 
-                               focus:outline-none focus:ring-2 focus:ring-primary"
-                        aria-label="Search"
-                    >
-                </form>
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-white text-lg font-bold group-hover:text-gray-400 transition-colors">{{ p1.name }}</h3>
+                        <p class="text-gray-500 text-sm">{{ p1.category }}</p>
+                        <p class="text-primary font-medium mt-1">₹ {{ p1.price }}</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="group cursor-pointer">
+                <a href="{% url 'product_detail' p2.id %}">
+                    <div class="rounded-lg aspect-[4/5] relative overflow-hidden mb-6">
+                        <img src="{{ p2.images.first.image.url }}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                            alt="{{ p2.name }}">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-white text-lg font-bold group-hover:text-gray-400 transition-colors">{{ p2.name }}</h3>
+                        <p class="text-gray-500 text-sm">{{ p2.category }}</p>
+                        <p class="text-primary font-medium mt-1">₹ {{ p2.price }}</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="group cursor-pointer">
+                <a href="{% url 'product_detail' p3.id %}">
+                    <div class="rounded-lg aspect-[4/5] relative overflow-hidden mb-6">
+                        <img src="{{ p3.images.first.image.url }}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                            alt="{{ p3.name }}">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-white text-lg font-bold group-hover:text-gray-400 transition-colors">{{ p3.name }}</h3>
+                        <p class="text-gray-500 text-sm">{{ p3.category }}</p>
+                        <p class="text-primary font-medium mt-1">₹ {{ p3.price }}</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="group cursor-pointer">
+                <a href="{% url 'product_detail' p4.id %}">
+                    <div class="rounded-lg aspect-[4/5] relative overflow-hidden mb-6">
+                        <img src="{{ p4.images.first.image.url }}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                            alt="{{ p4.name }}">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-white text-lg font-bold group-hover:text-gray-400 transition-colors">{{ p4.name }}</h3>
+                        <p class="text-gray-500 text-sm">{{ p4.category }}</p>
+                        <p class="text-primary font-medium mt-1">₹ {{ p4.price }}</p>
+                    </div>
+                </a>
             </div>
 
         </div>
     </div>
 </section>
 
-<!-- Feature Badges -->
-<section class="py-8 bg-dark">
-    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+<section class="py-20 bg-[#0a0c0b]">
+    <div class="max-w-container mx-auto px-5 md:px-16">
+        <h2 class="text-3xl text-white font-bold uppercase tracking-wide mb-12">The Essentials</h2>
 
-            <!-- Feature Item -->
-            <div class="flex flex-col items-center text-center p-4">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <a href="{% url 'shop_category' 'men' %}" class="relative h-[600px] overflow-hidden group">
+                <img src="{% static 'images/category-mens.png' %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                
+                <div class="absolute bottom-8 left-8">
+                    <span class="block text-white text-sm tracking-widest mb-2">COLLECTION</span>
+                    <h3 class="text-4xl font-bold text-white mb-6">MEN'S</h3>
+                    <span class="inline-block bg-white text-dark text-xs font-bold px-6 py-3 uppercase tracking-wider hover:bg-primary transition-colors">
+                        Shop Now
+                    </span>
                 </div>
-                <h3 class="text-small font-medium text-white mb-1">Fast Delivery</h3>
-                <p class="text-small text-muted">Quick shipping</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0"></path>
-                    </svg>
-                </div>
-                <h3 class="text-small font-medium text-white mb-1">High Quality</h3>
-                <p class="text-small text-muted">Premium materials</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-width="2" d="M4 4v5m15.356 2A8 8 0 004.582 9"></path>
-                    </svg>
-                </div>
-                <h3 class="text-small font-medium text-white mb-1">Easy Returns</h3>
-                <p class="text-small text-muted">30-day guarantee</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-3">
-                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-width="2" d="M12 15v2m-6 4h12"></path>
-                    </svg>
-                </div>
-                <h3 class="text-small font-medium text-white mb-1">Secure Payment</h3>
-                <p class="text-small text-muted">Safe transactions</p>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-<!-- Best Sellers -->
-<section class="py-5">
-    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
-
-        <h2 class="text-heading font-bold text-white mb-3 px-4 pt-5">Best Sellers</h2>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-4 py-4">
-
-            <!-- Product Card -->
-            <a href="{% url 'product_detail' p1.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
-
-            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
-                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{{ p1.images.first.image.url }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">{{p1.name}}</h3>
-                    <p class="text-small text-muted mb-1">{{p1.color}}</p>
-                    <p class="text-small text-muted">₹ {{p1.price}}</p>
-                </div>
-            </div>
-
             </a>
 
-            <!-- Copy similar cards below -->
-            <a href="{% url 'product_detail' p2.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
-            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
-                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{{ p2.images.first.image.url }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <a href="{% url 'shop_category' 'women' %}" class="relative h-[600px] overflow-hidden group">
+                <img src="{% static 'images/category-womens.png' %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                
+                <div class="absolute bottom-8 left-8">
+                    <span class="block text-white text-sm tracking-widest mb-2">COLLECTION</span>
+                    <h3 class="text-4xl font-bold text-white mb-6">WOMEN'S</h3>
+                    <span class="inline-block bg-white text-dark text-xs font-bold px-6 py-3 uppercase tracking-wider hover:bg-primary transition-colors">
+                        Shop Now
+                    </span>
                 </div>
-                <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">{{p2.name}}</h3>
-                    <p class="text-small text-muted mb-1">{{p2.color}}</p>
-                    <p class="text-small text-muted">₹ {{p2.price}}</p>
-                </div>
-            </div>
             </a>
 
-            <a href="{% url 'product_detail' p3.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
-            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
-                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{{ p3.images.first.image.url }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <a href="{% url 'shop_category' 'kids' %}" class="relative h-[600px] overflow-hidden group">
+                <img src="{% static 'images/category-kids.png' %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                
+                <div class="absolute bottom-8 left-8">
+                    <span class="block text-white text-sm tracking-widest mb-2">COLLECTION</span>
+                    <h3 class="text-4xl font-bold text-white mb-6">KIDS'</h3>
+                    <span class="inline-block bg-white text-dark text-xs font-bold px-6 py-3 uppercase tracking-wider hover:bg-primary transition-colors">
+                        Shop Now
+                    </span>
                 </div>
-                <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">{{p3.name}}</h3>
-                    <p class="text-small text-muted mb-1">{{p3.color}}</p>
-                    <p class="text-small text-muted">₹ {{p3.price}}</p>
-                </div>
-            </div>
-            </a>
-
-            <a href="{% url 'product_detail' p4.id %}" class="flex flex-col gap-3 pb-3 group cursor-pointer">
-            <div class="flex flex-col gap-3 pb-3 group cursor-pointer">
-                <div class="relative h-[223px] rounded-card overflow-hidden bg-gray-100">
-                    <img src="{{ p4.images.first.image.url }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                </div>
-                <div class="flex flex-col">
-                    <h3 class="text-body font-medium text-dark mb-1">{{p4.name}}</h3>
-                    <p class="text-small text-muted mb-1">{{p4.color}}</p>
-                    <p class="text-small text-muted">₹ {{p4.price}}</p>
-                </div>
-            </div>
             </a>
 
         </div>
     </div>
 </section>
 
-<!-- Category Section -->
-<section class="py-5">
-    <div class="max-w-container mx-auto px-5 md:px-20 lg:px-40">
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const carousel = document.getElementById('heroCarousel');
+        const slides = carousel.children;
+        const totalSlides = slides.length;
+        let currentSlide = 0;
+        let slideInterval;
 
-        <h2 class="text-heading font-bold text-white mb-3 px-4 pt-5">Shop by Category</h2>
+        function updateSlide() {
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
 
-        <div class="flex flex-col md:flex-row gap-6 md:gap-[88px] px-4 py-4">
+        window.nextSlide = function() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlide();
+            resetTimer();
+        }
 
-            <!-- Category Card -->
-            <a href="{% url 'shop_category' 'men' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
-                <div class="absolute inset-0 category-gradient z-10"></div>
-                <img src="{% static 'images/category-mens.png' %}"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
-                    <h3 class="text-body font-bold text-white mb-2">Men's Shoes</h3>
-                </div>
-            </a>
+        window.prevSlide = function() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlide();
+            resetTimer();
+        }
 
-            <a href="{% url 'shop_category' 'women' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
-                <div class="absolute inset-0 category-gradient z-10"></div>
-                <img src="{% static 'images/category-womens.png' %}"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
-                    <h3 class="text-body font-bold text-white mb-2">Women's Shoes</h3>
-                </div>
-            </a>
+        function startTimer() {
+            // Only auto-play if there is more than 1 slide
+            if (totalSlides > 1) {
+                slideInterval = setInterval(nextSlide, 5000);
+            }
+        }
 
-            <a href="{% url 'shop_category' 'kids' %}" class="relative w-full md:w-[223px] h-[223px] rounded-card overflow-hidden group">
-                <div class="absolute inset-0 category-gradient z-10"></div>
-                <img src="{% static 'images/category-kids.png' %}"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                <div class="absolute bottom-0 left-0 right-0 z-20 p-4">
-                    <h3 class="text-body font-bold text-white mb-2">Kids' Shoes</h3>
-                </div>
-            </a>
+        function resetTimer() {
+            clearInterval(slideInterval);
+            startTimer();
+        }
 
-        </div>
-    </div>
-</section>
+        startTimer();
+    });
+</script>
 
 {% endblock %}
