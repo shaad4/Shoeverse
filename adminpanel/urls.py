@@ -51,7 +51,8 @@ urlpatterns = [
 
     path('analytics/',  views.analytics_view, name="admin_analytics"),
     path('sales-report/',  views.sales_report_view,  name= 'admin_sales_report'),
-
+    path('analytics/products/', views.product_performance_report, name='product_performance_report'),
+    
     path('custom-admin/banners/', views.admin_banner_manager, name='admin_banner_manager'),
     path('custom-admin/banners/add/', views.admin_banner_add, name='admin_banner_add'),
     

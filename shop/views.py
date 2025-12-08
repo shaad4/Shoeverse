@@ -985,7 +985,7 @@ def razorpay_payment_verify(request):
 
             discount_amount = Decimal("0")
             coupon_code = request.session.get("applied_coupon")
-            applied_coupon = True
+            applied_coupon = None
 
             if coupon_code:
                 try:

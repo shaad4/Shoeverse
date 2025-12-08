@@ -103,7 +103,10 @@
                 <h3 class="text-lg font-bold text-white">Top Performing Products</h3>
                 <p class="text-xs text-zinc-500">Highest revenue generating items</p>
             </div>
-            <button class="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition">View All Products &rarr;</button>
+            <a href="{% url 'product_performance_report' %}?start_date={{ start_date }}&end_date={{ end_date }}" 
+                class="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition">
+                View All Products &rarr;
+            </a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-zinc-400">

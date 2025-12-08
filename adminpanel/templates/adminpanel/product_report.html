@@ -1,0 +1,72 @@
+{% extends 'adminpanel/base_admin.html' %}
+
+{% block content %}
+<div class="p-6 min-h-screen bg-[#09090b] text-zinc-100 font-sans">
+    
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'admin_analytics' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="p-2 bg-zinc-800 rounded hover:bg-zinc-700 transition">
+            &larr; Back
+        </a>
+        <h1 class="text-2xl font-bold">Product Performance Report</h1>
+    </div>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-zinc-400">
+                <thead class="bg-zinc-950/50 text-xs uppercase font-semibold text-zinc-500 tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Product</th>
+                        <th class="px-6 py-4">Category</th>
+                        <th class="px-6 py-4 text-right">Unit Price</th>
+                        <th class="px-6 py-4 text-center">Sold</th>
+                        <th class="px-6 py-4 text-right">Total Revenue</th>
+                        <th class="px-6 py-4 text-center">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800/60">
+                    {% for product in products_table %}
+                        <tr class="group hover:bg-white/[0.02] transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex-shrink-0 overflow-hidden relative">
+                                        {% if product.image %}
+                                            <img src="{{ product.image }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="w-full h-full flex items-center justify-center text-[10px] text-zinc-600">NO IMG</div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-white font-medium text-sm">{{ product.name }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">{{ product.category }}</td>
+                            <td class="px-6 py-4 text-right font-mono text-zinc-300">₹{{ product.price }}</td>
+                            <td class="px-6 py-4 text-center text-white font-medium">{{ product.sold }}</td>
+                            <td class="px-6 py-4 text-right font-mono text-emerald-400 font-bold">₹{{ product.revenue|floatformat:0 }}</td>
+                            <td class="px-6 py-4 text-center">{{ product.stock }} units</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-4 border-t border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+            <span class="text-xs text-zinc-500">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}" 
+                       class="px-3 py-1 bg-zinc-800 text-white text-xs rounded hover:bg-zinc-700 transition">Previous</a>
+                {% endif %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}" 
+                       class="px-3 py-1 bg-zinc-800 text-white text-xs rounded hover:bg-zinc-700 transition">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -76,9 +76,45 @@ def admin_login_view(request):
 def admin_dashboard(request):
 
     product_count = Product.objects.count()
-    user_count = User.objects.count()
+    user_count = User.objects.filter(role="user").count()
+    total_orders = Order.objects.count()
+
+
+    total_revenue_data = Order.objects.aggregate(Sum('total_amount'))
+    total_revenue = total_revenue_data["total_amount__sum"] or 0
+
+    recent_orders = Order.objects.select_related('user').order_by("-created_at")[:5]
+
 
     recent_customers = User.objects.filter(role="user").order_by("-date_joined")[:4]
+
+    six_months_ago = timezone.now() - timedelta(days=180)
+    monthly_sales = Order.objects.filter(created_at__gte = six_months_ago).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total_amount')).order_by('month')
+
+
+    sales_data = []
+    if monthly_sales:
+        max_sales = max(item['total'] for item in monthly_sales)
+        for entry in monthly_sales:
+            sales_data.append({
+                'month' : entry['month'].strftime("%b"),
+                'total' : entry['total'],
+                'height_percent' : (entry['total'] / max_sales) * 100
+            })
+
+    category_sales = Order.objects.values(
+        cat_name = F("items__variant__product__category")
+        ).annotate(total=Sum("items__price")).order_by("-total")[:3]
+
+    if category_sales:
+        
+        max_val = category_sales[0]['total'] or 1 
+
+        for cat in category_sales:
+           
+            cat['percent'] = (cat['total'] / max_val) * 100
+    
+
 
     breadcrumbs = [
         {"label": "Dashboard", "url": "/adminpanel/dashboard/"},
@@ -86,9 +122,17 @@ def admin_dashboard(request):
     return render(request, "adminpanel/dashboard.html", {
         "breadcrumbs": breadcrumbs,
         "active_page": "dashboard",
+
         "product_count": product_count,
-        "user_count" : user_count,
-        "recent_customers":recent_customers,
+        "user_count": user_count,
+        "total_orders": total_orders,
+        "total_revenue": total_revenue,
+
+        "recent_customers": recent_customers,
+        "recent_orders": recent_orders,
+
+        "sales_data": sales_data,
+        "category_sales": category_sales,
     })
 
 
@@ -822,6 +866,7 @@ def admin_return_detail(request, return_id):
 
 #offers (Product and Category)
 
+@admin_required
 def offer_list_view(request):
     offers = Offer.objects.all().order_by("-created_at")
     products = Product.objects.filter(is_active=True)
@@ -845,6 +890,7 @@ def offer_list_view(request):
     return render(request, "adminpanel/offer_list.html", context)
 
 
+@admin_required
 def admin_offer_add(request):
     if request.method == "POST":
         title = request.POST.get("title")
@@ -916,6 +962,7 @@ def admin_offer_add(request):
         
     return redirect("admin_offers")
 
+@admin_required
 def admin_offer_edit(request, offer_id):
     offer = get_object_or_404(Offer, id=offer_id)
 
@@ -955,7 +1002,7 @@ def admin_offer_edit(request, offer_id):
 
     return redirect("admin_offers")
 
-
+@admin_required
 def admin_offer_toggle(request, offer_id):
     offer  = get_object_or_404(Offer, id=offer_id)
 
@@ -967,6 +1014,7 @@ def admin_offer_toggle(request, offer_id):
     return redirect("admin_offers")
 
 
+@admin_required
 def admin_offer_delete(request, offer_id):
     offer = get_object_or_404(Offer, id=offer_id)
 
@@ -979,6 +1027,7 @@ def admin_offer_delete(request, offer_id):
 
 #coupons
 
+@admin_required
 def coupon_list_view(request):
     coupons = Coupon.objects.select_related('category').order_by('-created_at')
     search_query = request.GET.get("search")
@@ -994,6 +1043,7 @@ def coupon_list_view(request):
 
     return render(request, 'adminpanel/coupons_list.html', context)
 
+@admin_required
 def coupon_add_view(request):
     if request.method != "POST":
         return redirect("admin_coupon_list")
@@ -1184,7 +1234,8 @@ def analytics_view(request):
     summary = orders.aggregate(
         total_revenue = Sum('total_amount'),
         orders_count=Count('id'),
-        avg_order_value = Avg('total_amount')
+        avg_order_value = Avg('total_amount'),
+        total_discount = Sum('discount_amount')
     )
 
     total_products_sold = OrderItem.objects.filter(order__in=orders).aggregate(total_qty=Sum('quantity'))['total_qty'] or 0
@@ -1193,7 +1244,9 @@ def analytics_view(request):
         'revenue' : summary['total_revenue'] or 0,
         'orders'  : summary['orders_count'] or 0,
         'avg_value' : round(summary['avg_order_value'] or 0, 2),
-        'products_sold': total_products_sold
+        'discount' : summary['total_discount'],
+        'products_sold': total_products_sold,
+
     }
     #chart  1 : sales
     days_diff = (end_date - start_date).days
@@ -1273,6 +1326,65 @@ def analytics_view(request):
 
     return render(request, 'adminpanel/analytics.html', context)
 
+def product_performance_report(request):
+    end_date_str = request.GET.get("end_date", timezone.now().strftime('%Y-%m-%d'))
+    start_date_str = request.GET.get("start_date", (timezone.now() - timedelta(days=30)).date().strftime('%Y-%m-%d'))
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        start_date = (timezone.now()-timedelta(days=30)).date()
+        end_date = timezone.now().date()
+
+
+    orders = Order.objects.filter(
+        status = "Delivered",
+        created_at__date__range=[start_date,end_date]
+    )
+
+    products_query = OrderItem.objects.filter(order__in=orders).values(
+        'variant__product__id',
+        'variant__product__name',
+        'variant__product__category',
+    ).annotate(
+        total_sold=Sum('quantity'),
+        total_revenue=Sum(F('price') * F('quantity'))
+    ).order_by("-total_revenue")
+
+
+    paginator = Paginator(products_query, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    products_table = []
+    for item in page_obj:
+        product = Product.objects.get(id=item['variant__product__id'])
+        
+        img_obj = product.images.filter(is_primary=True).first()
+        if not img_obj:
+            img_obj = product.images.first()
+        image_url = img_obj.image.url if img_obj else None
+
+        products_table.append({
+            'name': item['variant__product__name'],
+            'category': item['variant__product__category'],
+            'image': image_url,
+            'price': product.price,
+            'sold': item['total_sold'],
+            'revenue': item['total_revenue'],
+            'stock': product.total_stock()
+        })
+
+    context = {
+    'products_table': products_table,
+    'page_obj': page_obj, 
+    'start_date': start_date_str,
+    'end_date': end_date_str,
+    "active_page" : "analytics"
+    }
+
+    return render(request, 'adminpanel/product_report.html', context)
 
 
 def sales_report_view(request):
@@ -1330,6 +1442,7 @@ def sales_report_view(request):
         'start_date' : start_date if isinstance(start_date, str) else start_date.strftime('%Y-%m-%d'),
         'end_date' : end_date if  isinstance(end_date, str) else end_date.strftime('%Y-%m-%d'),
         'status_filter' : status_filter,
+        "active_page" : "analytics",
     }
 
     if download_format == 'pdf':
