@@ -263,7 +263,7 @@
                             <select name="category" class="pro-select">
                                 <option value="">-- Apply to All Categories --</option>
                                 {% for sub in subcategories %}
-                                    <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                    <option value="{{ sub.id }}">{{sub.get_category_display}} - {{ sub.name }}</option>
                                 {% endfor %}
                             </select>
                             <p class="text-xs text-zinc-500 mt-1">Leave blank to apply coupon store-wide.</p>
@@ -356,7 +356,7 @@
                             <select name="category" class="pro-select" x-model="editCoupon.category">
                                 <option value="">-- Apply to All Categories --</option>
                                 {% for sub in subcategories %}
-                                    <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                    <option value="{{ sub.id }}">{{sub.get_category_display}} - {{ sub.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>

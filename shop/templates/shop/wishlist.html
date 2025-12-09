@@ -6,7 +6,6 @@
 {% block content %}
 <main class="pt-24 pb-20 space-y-12 max-w-container mx-auto px-5 md:px-10">
 
-    <!-- Page Header -->
     <section>
         <p class="text-small text-muted mb-3">Saved items · {{ wishlist_items|length }} products</p>
         <div class="flex flex-col lg:flex-row lg:items-center gap-6">
@@ -17,43 +16,48 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-3 ml-auto">
-                
                 <button 
                     type="button"
                     onclick="openClearAllModal()"
                     class="px-5 py-2 rounded-button bg-transparent text-muted text-small border border-white/10 hover:border-primary hover:text-primary transition">
                     Clear all
                 </button>
-
-
             </div>
         </div>
     </section>
 
-    <!-- Wishlist Items -->
     <section class="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
 
-        <!-- Wishlist Cards -->
         <div class="space-y-5">
             {% for item in wishlist_items %}
             <article class="rounded-card border border-white/10 bg-card/60 backdrop-blur shadow-card p-5 flex flex-col md:flex-row gap-5">
 
-                <!-- Product Image -->
                 <div class="w-full md:w-[180px] h-[200px] rounded-card overflow-hidden bg-white/5">
                     <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
                 </div>
 
-                <!-- Product Details -->
                 <div class="flex-1">
                     <div class="flex flex-wrap items-start gap-3 justify-between">
                         <div>
                             <p class="text-small text-muted mb-1">{{ item.product.category }} · {{ item.product.subcategory }}</p>
                             <h2 class="text-heading font-semibold text-white">{{ item.product.name }}</h2>
                         </div>
-                        <p class="text-heading font-semibold text-primary">₹ {{ item.product.price }}</p>
-                    </div>
+                        
+                        <div class="text-right flex flex-col items-end">
+                            {% if item.product.offer_percentage > 0 %}
+                                <span class="text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded mb-1">
+                                    {{ item.product.offer_percentage }}% OFF
+                                </span>
+                                
+                                <p class="text-small text-muted line-through">₹ {{ item.product.price }}</p>
+                                
+                                <p class="text-heading font-semibold text-primary">₹ {{ item.product.final_price }}</p>
+                            {% else %}
+                                <p class="text-heading font-semibold text-primary">₹ {{ item.product.price }}</p>
+                            {% endif %}
+                        </div>
+                        </div>
 
-                    <!-- Buttons -->
                     <div class="flex flex-wrap gap-3 mt-6">
                         <form method="POST" action="{% url 'move_to_cart' item.id %}">
                             {% csrf_token %}
@@ -73,7 +77,6 @@
             {% endfor %}
         </div>
 
-        <!-- Summary -->
         {% if wishlist_items %}
         <aside class="rounded-card border border-white/10 bg-card/80 backdrop-blur shadow-card p-6 h-fit">
             <div class="flex items-center justify-between mb-4">
@@ -97,58 +100,34 @@
         {% endif %}
 
     </section>
-    <!-- Remove Wishlist Confirmation Modal -->
-<div id="removeWishlistModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
-    <div class="bg-dark-green rounded-card p-6 text-white w-[90%] max-w-md">
-        
-        <h3 class="text-lg font-semibold mb-4">Remove Item</h3>
-        <p class="text-white/70 mb-6">Are you sure you want to remove this product from your wishlist?</p>
-        
-        <div class="flex justify-end gap-3">
-            <button onclick="closeWishlistRemoveModal()"
-                class="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition">
-                Cancel
-            </button>
 
-            <form id="confirmWishlistRemoveForm" method="POST">
-                {% csrf_token %}
-                <button type="submit"
-                    class="px-4 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition">
-                    Remove
-                </button>
-            </form>
+    <div id="removeWishlistModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-dark-green rounded-card p-6 text-white w-[90%] max-w-md">
+            <h3 class="text-lg font-semibold mb-4">Remove Item</h3>
+            <p class="text-white/70 mb-6">Are you sure you want to remove this product from your wishlist?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeWishlistRemoveModal()" class="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition">Cancel</button>
+                <form id="confirmWishlistRemoveForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition">Remove</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Clear All Confirmation Modal -->
-<div id="clearAllModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
-    <div class="bg-dark-green rounded-card p-6 text-white w-[90%] max-w-md">
-        
-        <h3 class="text-lg font-semibold mb-4">Clear Wishlist</h3>
-        <p class="text-white/70 mb-6">
-            Are you sure you want to remove <strong>all items</strong> from your wishlist?
-        </p>
-        
-        <div class="flex justify-end gap-3">
-            <button 
-                onclick="closeClearAllModal()"
-                class="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition">
-                Cancel
-            </button>
-
-            <form id="confirmClearAllForm" action="{% url 'wishlist_clear_all' %}" method="POST">
-                {% csrf_token %}
-                <button 
-                    type="submit"
-                    class="px-4 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition">
-                    Clear All
-                </button>
-            </form>
+    <div id="clearAllModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-dark-green rounded-card p-6 text-white w-[90%] max-w-md">
+            <h3 class="text-lg font-semibold mb-4">Clear Wishlist</h3>
+            <p class="text-white/70 mb-6">Are you sure you want to remove <strong>all items</strong> from your wishlist?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeClearAllModal()" class="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 transition">Cancel</button>
+                <form id="confirmClearAllForm" action="{% url 'wishlist_clear_all' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition">Clear All</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-
 
 </main>
 
@@ -156,25 +135,18 @@
 function openWishlistRemoveModal(itemId) {
     const modal = document.getElementById('removeWishlistModal');
     const form = document.getElementById('confirmWishlistRemoveForm');
-    form.action = `/wishlist/remove/${itemId}/`;  // Set correct action URL
+    form.action = `/wishlist/remove/${itemId}/`;
     modal.classList.remove('hidden');
 }
-
 function closeWishlistRemoveModal() {
     document.getElementById('removeWishlistModal').classList.add('hidden');
 }
-
-
-
 function openClearAllModal() {
     document.getElementById('clearAllModal').classList.remove('hidden');
 }
-
 function closeClearAllModal() {
     document.getElementById('clearAllModal').classList.add('hidden');
 }
-
-
 </script>
 
 {% endblock %}

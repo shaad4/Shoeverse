@@ -1114,7 +1114,7 @@ def coupon_add_view(request):
         
 
 
-
+@admin_required
 def coupon_toggle_view(request, coupon_id):
     coupon = Coupon.objects.get(id = coupon_id)
 
@@ -1129,6 +1129,7 @@ def coupon_toggle_view(request, coupon_id):
     return redirect("admin_coupon_list")
 
 
+@admin_required
 def coupon_edit_view(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)
 
@@ -1195,6 +1196,7 @@ def coupon_edit_view(request, coupon_id):
     return redirect("admin_coupon_list")
 
 
+@admin_required
 def coupon_delete_view(request, coupon_id):
     coupon = get_object_or_404(Coupon, id = coupon_id)
     
@@ -1211,7 +1213,7 @@ def coupon_delete_view(request, coupon_id):
 
 
 #analytics
-
+@admin_required
 def analytics_view(request):
 
     #filtering
@@ -1326,6 +1328,7 @@ def analytics_view(request):
 
     return render(request, 'adminpanel/analytics.html', context)
 
+@admin_required
 def product_performance_report(request):
     end_date_str = request.GET.get("end_date", timezone.now().strftime('%Y-%m-%d'))
     start_date_str = request.GET.get("start_date", (timezone.now() - timedelta(days=30)).date().strftime('%Y-%m-%d'))
@@ -1386,7 +1389,7 @@ def product_performance_report(request):
 
     return render(request, 'adminpanel/product_report.html', context)
 
-
+@admin_required
 def sales_report_view(request):
     report_type = request.GET.get('report_type', 'custom')
     start_date = request.GET.get('start_date')
@@ -1456,6 +1459,7 @@ def sales_report_view(request):
 
 #banner management
 
+@admin_required
 def admin_banner_add(request):
     if request.method == "POST":
 
@@ -1490,6 +1494,7 @@ def admin_banner_add(request):
     return render(request, 'adminpanel/banner_add.html')
 
 
+@admin_required
 def admin_banner_manager(request):
 
     if request.method == "POST":
@@ -1511,7 +1516,7 @@ def admin_banner_manager(request):
 
             return redirect('admin_banner_manager')
         
-    banners  = Banner.objects.all().order_by('order')
+    banners = Banner.objects.all().order_by('order')
 
     context = {
         "banners"  :  banners,

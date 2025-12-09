@@ -22,6 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR,'.env'))
 
 
+
+
+
+
 class SkipNgrokWarningMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -41,8 +45,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '.ngrok-free.dev',
-    'localhost'
+    'knox-propagational-syllogistically.ngrok-free.dev',
+    'localhost',
 
  ]
 #"127.0.0.1","localhost",
@@ -280,6 +284,12 @@ RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://knox-propagational-syllogistically.ngrok-free.dev",
     'https://*.ngrok-free.app',
     'https://*.ngrok-free.dev',
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+APPEND_SLASH = True
+

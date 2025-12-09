@@ -6,55 +6,49 @@
 {% block content %}
 <div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans relative overflow-hidden items-center justify-center p-4">
 
-    <!-- Background Ambient Glow (Consistent with Wallet Page) -->
+    <!-- Background Ambient Glow -->
     <div class="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div class="absolute top-[10%] right-[20%] w-96 h-96 bg-[#366347]/10 rounded-full blur-[100px]"></div>
         <div class="absolute bottom-[10%] left-[10%] w-[500px] h-[500px] bg-[#1a2e22]/20 rounded-full blur-[120px]"></div>
     </div>
 
-    <!-- Main Payment Card -->
     <div class="relative z-10 w-full max-w-md">
-        
-        <!-- Decorative Header Glow -->
+
         <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#366347] rounded-full blur-[60px] opacity-40"></div>
 
         <div class="bg-[#18211d] rounded-3xl border border-[#2a3b31] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm relative">
-            
-            <!-- Card Noise Texture -->
-            <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.5%22/%3E%3C/svg%3E');"></div>
 
             <div class="relative p-8 z-10">
-                
+
                 <!-- Header -->
                 <div class="text-center mb-8">
                     <div class="w-14 h-14 bg-[#366347]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#366347]/20 text-[#366347]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                     </div>
-                    <h2 class="text-2xl font-bold text-white tracking-tight">Confirm Transaction</h2>
+                    <h2 class="text-2xl font-bold text-white">Confirm Transaction</h2>
                     <p class="text-sm text-gray-500 mt-1">Secure Payment Gateway</p>
                 </div>
 
-                <!-- Amount Display -->
-                <div class="flex flex-col items-center justify-center py-8 bg-[#121714]/50 rounded-2xl border border-[#2a3b31] mb-8 relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[#366347]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Total Amount</p>
+                <!-- Amount -->
+                <div class="flex flex-col items-center justify-center py-8 bg-[#121714]/50 rounded-2xl border border-[#2a3b31] mb-8">
+                    <p class="text-xs font-bold text-gray-500 uppercase mb-2">Total Amount</p>
                     <div class="flex items-start">
                         <span class="text-2xl font-medium text-[#366347] mt-2 mr-1">₹</span>
-                        <span class="text-5xl font-bold text-white tracking-tight">{{ payment.amount }}</span>
+                        <span class="text-5xl font-bold text-white">{{ payment.amount }}</span>
                     </div>
                 </div>
 
-                <!-- Transaction Details Grid -->
+                <!-- Details -->
                 <div class="space-y-4 text-sm mb-8">
-                    <div class="flex justify-between items-center pb-3 border-b border-[#2a3b31]">
+                    <div class="flex justify-between pb-3 border-b border-[#2a3b31]">
                         <span class="text-gray-500">Reference ID</span>
                         <span class="text-gray-300 font-mono">{{ order.id }}</span>
                     </div>
-                    <div class="flex justify-between items-center pb-3 border-b border-[#2a3b31]">
+                    <div class="flex justify-between pb-3 border-b border-[#2a3b31]">
                         <span class="text-gray-500">Account</span>
                         <span class="text-white font-medium">{{ user.fullName }}</span>
                     </div>
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between">
                         <span class="text-gray-500">Merchant</span>
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-[#366347]"></span>
@@ -63,33 +57,23 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
+                <!-- Buttons -->
                 <div class="space-y-3">
-                    <button id="rzp-button" class="w-full group relative flex items-center justify-center py-4 px-6 border border-transparent text-sm font-semibold rounded-xl text-white bg-[#366347] hover:bg-[#2d523b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#366347] focus:ring-offset-[#121714] transition-all duration-200 shadow-[0_5px_15px_rgba(54,99,71,0.3)] hover:shadow-[0_8px_20px_rgba(54,99,71,0.4)]">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 opacity-70 group-hover:opacity-100 transition-opacity">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </span>
+
+                    <button id="rzp-button" class="w-full group relative flex items-center justify-center py-4 px-6 text-sm font-semibold rounded-xl text-white bg-[#366347] hover:bg-[#2d523b]">
                         <span id="btn-text">Pay Now Securely</span>
                         <span id="btn-spinner" class="hidden absolute right-4">
-                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+                                <path class="opacity-75" d="M4 12a8 8 0 018-8V0..."></path>
                             </svg>
                         </span>
                     </button>
-                    
-                    <a href="#" onclick="history.back()" class="block w-full py-4 text-sm font-medium text-gray-500 hover:text-white text-center transition-colors">
+
+                    <a href="#" onclick="history.back()" class="block w-full py-4 text-sm text-gray-500 hover:text-white text-center">
                         Cancel Transaction
                     </a>
-                </div>
 
-                <!-- Security Footer -->
-                <div class="mt-8 pt-6 border-t border-[#2a3b31] flex flex-col items-center gap-2">
-                    <div class="flex items-center gap-2 text-[10px] text-gray-500 uppercase tracking-widest">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <span>256-Bit SSL Encrypted</span>
-                    </div>
-                    <div class="text-[10px] text-[#366347] font-semibold">Powered by Razorpay</div>
                 </div>
 
             </div>
@@ -97,68 +81,50 @@
     </div>
 </div>
 
-<!-- Razorpay Script -->
+<!-- Razorpay JS -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
     var options = {
         "key": "{{ razorpay_key_id }}",
-        "amount": "{{ order.amount }}", 
+        "amount": "{{ order.amount }}",
         "currency": "INR",
         "name": "Shoeverse Wallet",
-        "description": "Wallet Top-up #{{ order.id|slice:':8' }}",
-        "image": "{% static 'images/logo.png' %}", // Make sure you have a logo here or remove this line
         "order_id": "{{ order.id }}",
-        "handler": function (response) {
-            // Show processing state on success before redirect
-            const btn = document.getElementById('rzp-button');
-            const btnText = document.getElementById('btn-text');
-            const btnSpinner = document.getElementById('btn-spinner');
-            
-            btnText.innerText = "Processing...";
-            btnSpinner.classList.remove('hidden');
-            btn.disabled = true;
 
-            window.location.href = `{% url 'wallet_payment_success' %}?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
+        // SUCCESS HANDLER
+        "handler": function (response) {
+            window.location.href =
+                `{% url 'wallet_payment_success' %}?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
         },
+
         "prefill": {
             "name": "{{ user.fullName }}",
             "email": "{{ user.email }}",
-            "contact": "{{ user.phoneNumber|default:'' }}" // Optional: Add phone if available
+            "contact": "{{ user.phoneNumber|default:'' }}"
         },
-        "theme": {
-            "color": "#366347",
-            "backdrop_color": "#121714"
-        },
+
+        "theme": { "color": "#366347" },
+
+        // CANCEL HANDLER
         "modal": {
-            "ondismiss": function() {
-                // Reset button if user closes modal
-                const btn = document.getElementById('rzp-button');
-                const btnText = document.getElementById('btn-text');
-                const btnSpinner = document.getElementById('btn-spinner');
-                
-                btnText.innerText = "Pay Now Securely";
-                btnSpinner.classList.add('hidden');
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            "ondismiss": function () {
+                window.location.href = "{% url 'wallet_payment_failed' %}";
             }
         }
     };
 
     var rzp1 = new Razorpay(options);
 
+    // EXTRA — Catches *bank decline*, *QR close*, *UPI fail*
+    rzp1.on('payment.failed', function () {
+        window.location.href = "{% url 'wallet_payment_failed' %}";
+    });
+
     document.getElementById('rzp-button').onclick = function (e) {
         e.preventDefault();
-        
-        // UI Loading State
-        const btn = this;
-        const btnText = document.getElementById('btn-text');
-        const btnSpinner = document.getElementById('btn-spinner');
-        
-        btnText.innerText = "Connecting...";
-        btnSpinner.classList.remove('hidden');
-        btn.classList.add('opacity-75', 'cursor-not-allowed');
-        
-        // Open Razorpay
         rzp1.open();
     }
 </script>
+
 {% endblock %}

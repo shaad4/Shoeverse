@@ -466,14 +466,14 @@ def update_cart_quantity(request, item_id):
         max_allowed = min(cart_item.variant.stock, 4)
 
         # --- REMOVE ITEM LOGIC ---
-        if new_qty < 1:
+        if new_qty < 1: 
             cart_item.delete()
-            cart_data = get_cart_data(request.user) # Ensure this helper exists
+            cart_data = get_cart_data(request.user) 
             
             return JsonResponse({
                 "success": True, 
                 "removed": True, 
-                "cart_totals": cart_data  # CHANGED: "cart_data" -> "cart_totals"
+                "cart_totals": cart_data  
             })
 
         # --- MAX LIMIT LOGIC ---
@@ -493,9 +493,9 @@ def update_cart_quantity(request, item_id):
             "success": True,
             "removed": False,
             # Keys now match JavaScript expectations
-            "item_qty": cart_item.quantity,          # was "quantity"
-            "item_total": float(cart_item.variant.product.final_price * cart_item.quantity), # was "total_price"
-            "cart_totals": cart_data,                # was "cart_data"
+            "item_qty": cart_item.quantity,        
+            "item_total": float(cart_item.variant.product.final_price * cart_item.quantity), 
+            "cart_totals": cart_data,                
         })
 
     except CartItem.DoesNotExist:
@@ -531,7 +531,7 @@ def wishlist_view(request):
     
     wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
 
-    wishlist_total = sum(item.product.price for item in  wishlist_items)
+    wishlist_total = sum(item.product.final_price for item in  wishlist_items)
 
     return render(request, "shop/wishlist.html", {"wishlist_items":wishlist_items, "wishlist_total":wishlist_total})
 
@@ -793,7 +793,7 @@ def place_order(request):
     data = get_cart_totals(request.user)
     if  not data:
         messages.error(request, "Your cart is empty")
-        return("cart")
+        return redirect("cart")
     
 
 
@@ -1402,6 +1402,7 @@ def submit_review(request, product_id):
 from django.utils import timezone
 from datetime import datetime
 
+@user_required
 def apply_coupon(request):
     if request.method != "POST":
         return redirect("checkout")
