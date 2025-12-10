@@ -24,7 +24,7 @@ from django.db.models.functions import TruncMonth, TruncDay
 import json
 from .utils import render_excel_view, render_pdf_view
 from users.models import Banner
-
+from wallet.utils import credit_wallet
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -714,16 +714,25 @@ def admin_cancel_order_item(request, item_id):
     item.variant.save()
     item.save()
 
+    refund_amount = item.total_price 
+
+    wallet, _ = Wallet.objects.get_or_create(user=order.user)
+    wallet.balance += refund_amount
+    wallet.save()
+
+    credit_wallet(wallet, refund_amount,f"Refund for cancelled item: {item.variant.product.name}" )
+
     active_items = order.items.exclude(status='Cancelled')
 
     if not active_items.exists():
         # If no items left, cancel the whole order
         order.status = "Cancelled"
         order.cancel_reason = "All items cancelled by Admin"
-        order.subtotal = Decimal(0)
-        order.gst = Decimal(0)
-        order.delivery_charge = Decimal(0)
-        order.total_amount = Decimal(0)
+        # order.subtotal = Decimal(0)
+        # order.gst = Decimal(0)
+        # order.delivery_charge = Decimal(0)
+        # order.total_amount = Decimal(0)
+        
     else:
         new_subtotal = sum(i.total_price for i in active_items)
         order.subtotal = new_subtotal
