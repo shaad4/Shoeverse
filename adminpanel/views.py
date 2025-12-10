@@ -1426,13 +1426,13 @@ def sales_report_view(request):
     elif report_type == "monthly":
         orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=30))
     elif  report_type == "yearly":
-        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=30))
+        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=365))
     else:
         orders = Order.objects.filter(created_at__date__range=[start_date, end_date])
 
     
     if status_filter:
-        orders = Order.objects.filter(status=status_filter)
+        orders = orders.filter(status=status_filter)
 
     revenue_orders = orders.filter(status="Delivered")
     total_revenue = revenue_orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
