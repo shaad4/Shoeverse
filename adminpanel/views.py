@@ -105,8 +105,12 @@ def admin_dashboard(request):
             })
 
     category_sales = Order.objects.values(
-        cat_name = F("items__variant__product__category")
-        ).annotate(total=Sum("items__price")).order_by("-total")[:3]
+        cat_name=F("items__variant__product__category") 
+    ).annotate(
+        total=Sum(F("items__price") * F("items__quantity"))
+    ).order_by("-total")[:3]
+    
+
 
     if category_sales:
         
@@ -116,8 +120,34 @@ def admin_dashboard(request):
            
             cat['percent'] = (cat['total'] / max_val) * 100
     
+    #best selling product
+    best_selling_products = (
+        OrderItem.objects
+        .values(
+            name=F("variant__product__name"),
+            color=F("variant__product__color")
+                )
+        .annotate(total_sold=Sum("quantity"))
+        .order_by("-total_sold")[:10]
+    )
 
+    product_labels = [p["name"] for p in best_selling_products]
+    product_values = [p["total_sold"] for p in best_selling_products]
+    product_colors = [p["color"] or "#cccccc" for p in best_selling_products]
 
+    #best selling category
+    best_selling_category = (
+        OrderItem.objects
+        .values(category=F("variant__product__subcategory__name"))
+        .annotate(total_sold=Sum("quantity"))
+        .order_by("-total_sold")[:10]
+    )
+
+    category_labels = [c["category"] or "Uncategorized" for c in best_selling_category]
+    category_values = [c["total_sold"] for c in best_selling_category]
+
+    
+ 
     breadcrumbs = [
         {"label": "Dashboard", "url": "/adminpanel/dashboard/"},
     ]
@@ -135,6 +165,14 @@ def admin_dashboard(request):
 
         "sales_data": sales_data,
         "category_sales": category_sales,
+
+        "product_labels": json.dumps(product_labels),
+        "product_values": json.dumps(product_values),
+        "product_colors": json.dumps(product_colors),
+
+        "category_labels": json.dumps(category_labels),
+        "category_values": json.dumps(category_values),
+
     })
 
 

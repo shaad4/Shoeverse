@@ -1320,7 +1320,7 @@ def submit_return_request(request, order_id):
         
         reason = request.POST.get('reason')
         pickup_address_id = request.POST.get('pickup_address')
-
+    
         uploaded_images = request.FILES.getlist('images')
 
 
