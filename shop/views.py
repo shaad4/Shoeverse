@@ -22,7 +22,8 @@ from django.conf import settings
 from payments.models import Payment
 from django.db import transaction
 from coupons.models import Coupon, CouponUsage
-
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 import logging
 from .utils import get_cart_totals
 
@@ -185,7 +186,12 @@ def  product_detail_view(request, product_id):
         return redirect("shop_products")
     
     #fetching all the product variantes
-    variants = product.variants.filter(is_active=True).order_by("size")
+    variants = (
+        product.variants
+        .filter(is_active=True)
+        .annotate(size_int=Cast("size", IntegerField()))
+        .order_by("size_int")
+    )
 
     #fetch images
     images = product.images.all().order_by("-is_primary","id")
@@ -366,7 +372,12 @@ def cart_view(request):
 
     grand_total  = subtotal + gst + delivery_charge
 
-   
+    for item in in_stock_items:
+        item.sorted_variants = (
+            item.variant.product.variants
+            .annotate(size_int=Cast("size", IntegerField()))
+            .order_by("size_int")
+        )
 
     context = {
         "cart_items" : in_stock_items,

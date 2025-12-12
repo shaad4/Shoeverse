@@ -6,6 +6,9 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from decimal import Decimal
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+
 
 # Create your models here.
 
@@ -99,6 +102,10 @@ class ProductVariant(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now = True)
+
+    class Meta:
+        ordering = [Cast('size', IntegerField()).asc()]
+
 
     def __str__(self):
         return f"{self.product.name} - Size {self.size}"

@@ -25,6 +25,8 @@ import json
 from .utils import render_excel_view, render_pdf_view
 from users.models import Banner
 from wallet.utils import credit_wallet
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -398,7 +400,12 @@ def product_add_view(request):
 @admin_required
 def product_variant_list_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    variants = product.variants.all().order_by("size")
+    variants = (
+        product.variants
+        .filter(is_active=True)
+        .annotate(size_int=Cast("size", IntegerField()))
+        .order_by("size_int")
+    )
 
     form = ProductVarientForm()
 

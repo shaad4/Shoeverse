@@ -61,7 +61,7 @@
                                 Size
                                 <select class="bg-dark-green text-white border border-white/15 rounded-full px-2 py-1"
                                         onchange="updateSize('{{ item.id }}', this.value)">
-                                    {% for variant in item.variant.product.variants.all %}
+                                    {% for variant in item.sorted_variants %}
                                         <option value="{{ variant.id }}" {% if variant.id == item.variant.id %}selected{% endif %}>
                                             {{ variant.size }}
                                         </option>
