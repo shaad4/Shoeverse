@@ -6,7 +6,6 @@
 {% block content %}
 <div class="min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white pb-20">
 
-    <!-- Header Section -->
     <div class="bg-[#18211d] border-b border-[#2a3b31] mb-8 sticky top-0 z-20">
         <div class="mx-auto max-w-3xl px-4 py-6">
             <nav class="flex items-center gap-2 text-sm text-[#96c4a8]/70 mb-3">
@@ -31,14 +30,12 @@
         <form method="POST" action="{% url 'submit_return_request' order.order_id %}" enctype="multipart/form-data" class="space-y-8">
             {% csrf_token %}
 
-            <!-- STEP 1: Select Items -->
             <section class="animate-fade-in-up">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">1</span>
                         <h2 class="text-lg font-bold text-white">Select Items to Return</h2>
                     </div>
-                    <!-- Select All Button -->
                     <button type="button" id="selectAllBtn" class="text-sm font-medium text-[#96c4a8] hover:text-white bg-[#2a3b31]/50 px-3 py-1.5 rounded-lg border border-[#2a3b31] transition-all hover:bg-[#2a3b31]">
                         Select All
                     </button>
@@ -47,28 +44,27 @@
                 <div class="grid gap-3">
                     {% for item in items %}
                     <label class="relative group cursor-pointer">
-                        <!-- Changed type="radio" to type="checkbox" -->
                         <input type="checkbox" name="item_id" value="{{ item.id }}" class="peer sr-only item-checkbox">
 
-                        
                         <div class="flex items-start gap-4 p-4 rounded-xl border border-[#2a3b31] bg-[#18211d] transition-all duration-200 peer-checked:border-amber-500 peer-checked:bg-[#1f1a18] peer-checked:shadow-lg peer-checked:shadow-amber-900/10 hover:bg-[#1f2b26]">
                             
-                            <!-- Checkbox Indicator (Square) -->
-                            <div class="mt-1 w-5 h-5 rounded border border-gray-500 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-colors">
-                                <!-- Checkmark Icon -->
-                                <svg class="w-3.5 h-3.5 text-[#121714] opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-
-                            <!-- Product Image -->
                             <div class="w-20 h-20 rounded-lg bg-[#121714] border border-[#2a3b31] overflow-hidden flex-shrink-0">
                                 <img src="{{ item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
                             </div>
 
-                            <!-- Details -->
-                            <div class="flex-1">
-                                <h3 class="font-bold text-white text-base group-hover:text-[#96c4a8] transition-colors">{{ item.variant.product.name }}</h3>
-                                <p class="text-sm text-gray-400 mt-0.5">Size: {{ item.variant.size }}</p>
-                                <div class="flex items-center justify-between mt-2">
+                            <div class="flex-1 min-w-0"> <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-bold text-white text-base group-hover:text-[#96c4a8] transition-colors">{{ item.variant.product.name }}</h3>
+                                        <p class="text-sm text-gray-400 mt-0.5">Size: {{ item.variant.size }}</p>
+                                    </div>
+                                    
+                                    <div class="hidden peer-checked:flex items-center gap-1.5 text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        <span class="text-xs font-bold whitespace-nowrap">Return This</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center mt-2">
                                     <span class="text-sm font-medium text-white bg-[#2a3b31]/50 px-2 py-0.5 rounded border border-[#2a3b31]">
                                         ₹{{ item.price }} × {{ item.quantity }}
                                     </span>
@@ -76,7 +72,6 @@
                             </div>
                         </div>
                         
-                        <!-- Selected Border Glow (Pseudo-element) -->
                         <div class="absolute inset-0 border-2 border-amber-500 rounded-xl opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></div>
                     </label>
                     {% empty %}
@@ -87,7 +82,6 @@
                 </div>
             </section>
 
-            <!-- STEP 2: Return Details -->
             <section class="animate-fade-in-up" style="animation-delay: 100ms;">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">2</span>
@@ -96,9 +90,6 @@
 
                 <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 shadow-xl shadow-black/20 space-y-5">
                     
-                    
-
-                    <!-- Reason Textarea -->
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-2">Why are you returning this?</label>
                         <textarea name="reason" required rows="4" 
@@ -106,7 +97,6 @@
                             placeholder="Please provide details about the issue (e.g., Size too small, Damaged product)..."></textarea>
                     </div>
 
-                    <!-- Image Upload -->
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-2">Upload Photos (Optional)</label>
                         <div class="relative">
@@ -124,7 +114,6 @@
                 </div>
             </section>
 
-            <!-- STEP 3: Pickup Address -->
             <section class="animate-fade-in-up" style="animation-delay: 200ms;">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#2a3b31] text-[#96c4a8] font-bold text-sm border border-[#3d5244]">3</span>
@@ -136,19 +125,22 @@
                     <label class="relative group cursor-pointer">
                         <input type="radio" name="pickup_address" value="{{ address.id }}" required class="peer sr-only">
                         
-                        <div class="p-4 rounded-xl border border-[#2a3b31] bg-[#18211d] transition-all duration-200 peer-checked:border-amber-500 peer-checked:bg-[#1f1a18] hover:bg-[#1f2b26] flex items-start gap-3">
-                            <!-- Radio Indicator -->
-                            <div class="mt-1 w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-colors flex-shrink-0">
-                                <div class="w-1.5 h-1.5 bg-[#121714] rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
-                            </div>
-
-                            <div>
-                                <p class="font-bold text-white text-sm">{{ address.full_name }}</p>
-                                <p class="text-gray-400 text-sm mt-1 leading-relaxed">
-                                    {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}, 
-                                    {{ address.city }} - <span class="text-gray-300">{{ address.pincode }}</span>
-                                </p>
-                                <p class="text-xs text-[#96c4a8] mt-2 font-medium">Phone: {{ address.phone_number }}</p>
+                        <div class="p-4 rounded-xl border border-[#2a3b31] bg-[#18211d] transition-all duration-200 peer-checked:border-amber-500 peer-checked:bg-[#1f1a18] hover:bg-[#1f2b26]">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-white text-sm">{{ address.full_name }}</p>
+                                    <p class="text-gray-400 text-sm mt-1 leading-relaxed">
+                                        {{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}, 
+                                        {{ address.city }} - <span class="text-gray-300">{{ address.pincode }}</span>
+                                    </p>
+                                    <p class="text-xs text-[#96c4a8] mt-2 font-medium">Phone: {{ address.phone_number }}</p>
+                                </div>
+                                
+                                <div class="hidden peer-checked:block">
+                                    <span class="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 shadow-sm">
+                                        Selected
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </label>
@@ -156,20 +148,18 @@
                 </div>
             </section>
 
-            <!-- Policy Notice -->
             <div class="bg-amber-900/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 text-sm text-amber-200/80">
                 <svg class="w-5 h-5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <div>
                     <p class="font-semibold text-amber-500 mb-1">Return Policy</p>
                     <ul class="list-disc list-inside space-y-0.5 text-xs opacity-80">
-                        <li>Returns accepted within 7 days of delivery.</li>
+                        <li>Returns accepted within 10 days of delivery.</li>
                         <li>Items must be unused and in original packaging.</li>
                         <li>Refunds processed after quality check.</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Submit Button -->
             <div class="pt-4 pb-12">
                 <button type="submit" class="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg shadow-amber-900/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-lg">
                     Submit Return Request

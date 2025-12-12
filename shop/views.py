@@ -1290,7 +1290,7 @@ def return_order_items(request, order_id):
         order_item__order=order
     ).values_list('order_item_id', flat=True)
 
-    eligible_items = order.items.exclude(id__in=already_requested_ids)
+    eligible_items = order.items.exclude(id__in=already_requested_ids).exclude(status="Cancelled")
 
     if not eligible_items.exists():
         messages.info(request, "All eligible items in this order have already been requested for return.")
