@@ -1,88 +1,99 @@
-<aside class="w-[260px] bg-dark-green rounded-card p-5 m-5 flex flex-col text-white" 
-       style="height: calc(100vh - 2.5rem);">
+{% load static %}
 
-
-    <!-- Menu -->
-    <nav class="flex flex-col gap-3 flex-1">
-
-        <!-- Personal Info -->
+<aside class="hidden lg:flex w-[260px] flex-col bg-[#18211d] border border-[#2a3b31] rounded-2xl p-5 sticky top-5 h-[calc(100vh-2.5rem)]">
+    
+    <nav class="flex flex-col gap-2 flex-1">
         <a href="{% url 'profile' %}"
-           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all
-           {% if request.path == '/profile/' or request.path == '/profile/edit/'  %}
-                bg-sidebar-active text-white scale-[1.02]
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium
+           {% if request.path == '/profile/' or request.path == '/profile/edit/' %}
+                bg-[#2a3b31] text-white shadow-lg shadow-black/20
            {% else %}
-                text-muted hover:bg-input-bg hover:text-white
+                text-gray-400 hover:bg-[#2a3b31]/50 hover:text-white
            {% endif %}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zM4 20c0-4 4-6 8-6s8 2 8 6"/>
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             <span>Personal Info</span>
         </a>
 
-        <!-- My Orders -->
         <a href="{% url 'order_list' %}"
-           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium
            {% if request.path == '/my-orders/' %}
-                bg-sidebar-active text-white scale-[1.02]
+                bg-[#2a3b31] text-white shadow-lg shadow-black/20
            {% else %}
-                text-muted hover:bg-input-bg hover:text-white
+                text-gray-400 hover:bg-[#2a3b31]/50 hover:text-white
            {% endif %}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M21 16V8a2 2 0 00-2-2h-3l-2-2h-4l-2 2H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2z"/>
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
             <span>My Orders</span>
         </a>
 
-        <!-- Address -->
         <a href="{% url 'address' %}"
-           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all
-           {% if request.path == '/address/' or request.path == '/address/add/' or request.path|slice:":14" == '/address/edit/' %}
-                bg-sidebar-active text-white scale-[1.02]
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium
+           {% if '/address/' in request.path %}
+                bg-[#2a3b31] text-white shadow-lg shadow-black/20
            {% else %}
-                text-muted hover:bg-input-bg hover:text-white
+                text-gray-400 hover:bg-[#2a3b31]/50 hover:text-white
            {% endif %}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 11a4 4 0 100-8 4 4 0 000 8z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 11c-4.418 0-8 2.239-8 5v1a1 1 0 001 1h14a1 1 0 001-1v-1c0-2.761-3.582-5-8-5z" />
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Address</span>
         </a>
 
-        <!-- Wallet -->
         <a href="{% url 'wallet' %}"
-           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium
            {% if request.path == '/wallet/' %}
-                bg-sidebar-active text-white scale-[1.02]
+                bg-[#2a3b31] text-white shadow-lg shadow-black/20
            {% else %}
-                text-muted hover:bg-input-bg hover:text-white
+                text-gray-400 hover:bg-[#2a3b31]/50 hover:text-white
            {% endif %}">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
             <span>Wallet</span>
         </a>
     </nav>
 
-    <!-- Footer Links -->
-    <div class="mt-10 border-t border-input-border pt-4">
-        <div class="flex flex-col gap-2 text-sm text-muted">
-            <a href="#" class="hover:text-white transition-colors">About Us</a>
-            <a href="#" class="hover:text-white transition-colors">Contact Us</a>
-        </div>
+    <div class="mt-auto border-t border-[#2a3b31] pt-4 space-y-2">
+        <a href="{% url 'logout' %}" 
+           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 text-gray-400 transition-all font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span>Logout</span>
+        </a>
     </div>
-
-
-    <a href="{% url 'logout' %}" 
-       class="flex items-center gap-3 px-4 py-3 mt-4 rounded-lg hover:bg-input-bg transition-all text-muted hover:text-white">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-        </svg>
-        <span>Logout</span>
-    </a>
 </aside>
+
+
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#121714]/95 backdrop-blur-lg border-t border-[#2a3b31] pb-safe">
+    <div class="flex justify-around items-center h-16">
+        
+        <a href="{% url 'profile' %}" 
+           class="flex flex-col items-center justify-center w-full h-full gap-1
+           {% if request.path == '/profile/' or request.path == '/profile/edit/' %} text-[#96c4a8] {% else %} text-gray-500 hover:text-gray-300 {% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span class="text-[10px] font-medium">Profile</span>
+        </a>
+
+        <a href="{% url 'order_list' %}" 
+           class="flex flex-col items-center justify-center w-full h-full gap-1
+           {% if request.path == '/my-orders/' %} text-[#96c4a8] {% else %} text-gray-500 hover:text-gray-300 {% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <span class="text-[10px] font-medium">Orders</span>
+        </a>
+
+        <a href="{% url 'address' %}" 
+           class="flex flex-col items-center justify-center w-full h-full gap-1
+           {% if '/address/' in request.path %} text-[#96c4a8] {% else %} text-gray-500 hover:text-gray-300 {% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+            <span class="text-[10px] font-medium">Address</span>
+        </a>
+
+        <a href="{% url 'wallet' %}" 
+           class="flex flex-col items-center justify-center w-full h-full gap-1
+           {% if request.path == '/wallet/' %} text-[#96c4a8] {% else %} text-gray-500 hover:text-gray-300 {% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            <span class="text-[10px] font-medium">Wallet</span>
+        </a>
+
+        <a href="{% url 'logout' %}" 
+           class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-500 hover:text-red-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span class="text-[10px] font-medium">Logout</span>
+        </a>
+
+    </div>
+</nav>
