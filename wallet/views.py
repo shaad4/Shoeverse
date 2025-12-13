@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from .utils import credit_wallet
 from payments.models import Payment
-
+from django.core.paginator import Paginator
 # Create your views here.
 
 
@@ -18,9 +18,14 @@ def wallet_view(request):
     wallet, created = Wallet.objects.get_or_create(user=request.user)
     transactions = wallet.transactions.all().order_by("-created_at")
 
+    paginator = Paginator(transactions,5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+
     context = {
         'wallet': wallet,
-        'transactions': transactions,
+        'transactions': page_obj,
     }
 
     return render(request, 'wallet.html', context)
