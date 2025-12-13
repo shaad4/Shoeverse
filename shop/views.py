@@ -906,7 +906,11 @@ def place_order(request):
                     messages.error(request, "Insufficent wallet balance")
                     return redirect("payment", address_id=address_id)
             elif payment_method == "cod":
-                payment_status = "PENDING"
+                if grand_total < 5000:
+                    payment_status = "PENDING"
+                else:
+                    messages.error(request, "Cash on Delivery is available only for orders below ₹5000.")
+                    return redirect("payment", address_id=address_id)
             else:
                 messages.error(request, "Invalid payment option")
                 return redirect("payment", address_id=address_id)
