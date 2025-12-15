@@ -692,15 +692,15 @@ def checkout_view(request):
             del request.session["applied_coupon"]      
 
 
+    taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
 
-    gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+    gst = (taxable_amount * Decimal('0.18')).quantize(Decimal('0.01'))
+
     delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
     
-    total_items = sum(item.quantity for item in cart_items)
-
     is_free_delivery = (delivery_charge == Decimal('0'))
 
-    grand_total = subtotal + gst + delivery_charge - discount_amount
+    grand_total = taxable_amount + gst + delivery_charge 
 
     if grand_total < 0:
         grand_total = Decimal("0.00")
@@ -741,9 +741,9 @@ def payment_view(request, address_id):
 
 
     subtotal = data['subtotal']
-    gst = data['gst']
+    
     delivery_charge = data['delivery_charge']
-    grand_total = data['base_total']
+
 
     discount_amount = Decimal("0")
     coupon_code = request.session.get("applied_coupon")
@@ -764,7 +764,15 @@ def payment_view(request, address_id):
         except Coupon.DoesNotExist:
             pass
 
-    grand_total = grand_total - discount_amount
+    discount_amount = discount_amount.quantize(Decimal("0.01"))
+    
+    taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
+    gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
+
+    grand_total = taxable_amount + gst + delivery_charge
+
+    if grand_total < 0:
+        grand_total = Decimal("0.00")
 
     # wallet
     wallet,_ = Wallet.objects.get_or_create(user=request.user)
@@ -795,174 +803,7 @@ def payment_view(request, address_id):
 
     return render(request, 'shop/payment.html', context)
 
-# @user_required
-# def place_order(request):
-#     if request.method != "POST":
-#         return redirect('checkout')
-    
-#     address_id = request.POST.get('address_id')
-#     payment_method = request.POST.get("payment_method")
 
-#     if not address_id:
-#         messages.error(request, "Please select a delivery address.")
-#         return redirect("checkout")
-    
-    
-    
-#     address = get_object_or_404(Address, id=address_id, user=request.user)
-
-#     data = get_cart_totals(request.user)
-#     if  not data:
-#         messages.error(request, "Your cart is empty")
-#         return redirect("cart")
-    
-
-
-#     cart_items = data['cart_items']
-#     subtotal = data['subtotal']
-#     gst = data['gst']
-#     delivery_charge = data['delivery_charge']
-#     grand_total = data['base_total']
-
-
-#     if not cart_items.exists():
-#         messages.error(request, "Your cart is empty")
-#         return redirect("cart")
-    
-#     for item in cart_items:
-#         if item.quantity > item.variant.stock:
-#             messages.error(request, f"{item.variant.product.name} is out of stock")
-#             return redirect('checkout')
-        
-#     discount_amount = Decimal("0")
-#     coupon_code = request.session.get("applied_coupon")
-#     applied_coupon = None
-    
-#     if coupon_code:
-#         try:
-#             coupon = Coupon.objects.get(code=coupon_code, isActive=True)
-#             today = timezone.localtime().date()
-
-#             if coupon.validFrom.date() <= today <= coupon.validTill.date():
-#                 if subtotal >= coupon.minCartValue:
-#                     if  coupon.discountType == "percent":
-#                         discount_amount = (subtotal * coupon.discountValue)/100
-#                     else:
-#                         discount_amount = coupon.discountValue
-
-#                     if discount_amount >  subtotal:
-#                         discount_amount = subtotal
-
-#                     applied_coupon = coupon
-#         except Coupon.DoesNotExist:
-#             pass
-
-#     grand_total = grand_total - discount_amount
-#     if grand_total < 0: grand_total = Decimal("0.00")
-
-#     #razorpay 
-#     if payment_method == "razorpay":
-#         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-#         razorpay_order = client.order.create({
-#             "amount":int(grand_total * 100),
-#             "currency" : "INR",
-#             "payment_capture" : 1,
-#         })
-
-#         payment = Payment.objects.create(
-#             user=request.user,
-#             amount=grand_total,
-#             purpose="order_payment",
-#             razorpay_order_id = razorpay_order['id'],
-#             status="pending",
-#         )
-
-
-#         return render(request, "shop/razorpay_payment.html",{
-#             "razorpay_order": razorpay_order,
-#             "razorpay_key": settings.RAZORPAY_KEY_ID,
-#             "payment": payment,
-#             "amount": grand_total,
-#             "address": address,
-#         })
-    
-#     try:
-#         with transaction.atomic():
-#             payment_status = "PENDING"
-
-#             if payment_method == "wallet":
-#                 wallet, _ = Wallet.objects.get_or_create(user=request.user)
-#                 #lock the wallet row
-#                 wallet = Wallet.objects.select_for_update().get(user=request.user)
-
-#                 if wallet.balance >= grand_total:
-#                     balance_before = wallet.balance
-
-#                     wallet.balance -= grand_total
-#                     wallet.save()
-
-#                     balance_after = wallet.balance
-
-#                     WalletTransaction.objects.create(
-#                         wallet=wallet,
-#                         amount=grand_total,
-#                         transaction_type="debit",
-#                         description="Order Payment from Wallet",
-#                         balance_before = balance_before,
-#                         balance_after = balance_after
-#                     )
-#                     payment_status = "SUCCESS"
-#                 else:
-#                     messages.error(request, "Insufficent wallet balance")
-#                     return redirect("payment", address_id=address_id)
-#             elif payment_method == "cod":
-#                 if grand_total < 5000:
-#                     payment_status = "PENDING"
-#                 else:
-#                     messages.error(request, "Cash on Delivery is available only for orders below ₹5000.")
-#                     return redirect("payment", address_id=address_id)
-#             else:
-#                 messages.error(request, "Invalid payment option")
-#                 return redirect("payment", address_id=address_id)
-
-
-#             order = Order.objects.create(
-#                 user = request.user,
-#                 address = address,
-#                 subtotal = subtotal,
-#                 gst=gst,
-#                 delivery_charge= delivery_charge,
-#                 total_amount = grand_total,
-#                 coupon=applied_coupon,
-#                 discount_amount = discount_amount,
-#                 payment_method = payment_method,
-#                 status = 'Processing' if payment_status == "SUCCESS" else "Pending",
-#             )
-
-#             for item in cart_items:
-#                 if item.quantity > item.variant.stock:
-#                     messages.error(request, f"{item.variant.product.name} is out of stock")
-#                     return redirect('checkout')
-                
-#                 OrderItem.objects.create(
-#                     order=order,
-#                     variant=item.variant,
-#                     quantity = item.quantity,
-#                     price = item.variant.product.final_price,
-#                 )
-#                 item.variant.stock -= item.quantity
-#                 item.variant.save()
-
-#             cart_items.delete()
-
-#             return redirect('order_success',order_id=order.id)
-#     except ValueError as e:
-#         messages.error(request, str(e))
-#         return redirect('cart')
-#     except Exception as e:
-#         messages.error(request, "An error occurred. Please try again.")
-#         print(f"Order Error: {e}")
-#         return redirect('checkout')
 
 @user_required
 def place_order(request):
@@ -985,9 +826,7 @@ def place_order(request):
 
     cart_items = data['cart_items']
     subtotal = data['subtotal']
-    gst = data['gst']
     delivery_charge = data['delivery_charge']
-    grand_total = data['base_total']
 
     if not cart_items.exists():
         messages.error(request, "Your cart is empty")
@@ -1016,8 +855,14 @@ def place_order(request):
                     applied_coupon = coupon
         except Coupon.DoesNotExist:
             pass
+    
+    discount_amount = discount_amount.quantize(Decimal("0.01"))
+    
+    taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
+    gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
 
-    grand_total -= discount_amount
+    grand_total = taxable_amount + gst + delivery_charge
+
     if grand_total < 0:
         grand_total = Decimal("0.00")
 
@@ -1181,9 +1026,7 @@ def razorpay_payment_verify(request):
             # Price calculation
             
             subtotal = data["subtotal"]
-            gst = data['gst']
             delivery_charge = data['delivery_charge']
-            grand_total = data['base_total']
 
             discount_amount = Decimal("0")
             coupon_code = request.session.get("applied_coupon")
@@ -1205,7 +1048,13 @@ def razorpay_payment_verify(request):
                 except:
                     pass
                     
-            grand_total = grand_total - discount_amount
+            discount_amount = discount_amount.quantize(Decimal("0.01"))
+
+            taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
+            gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
+
+            
+            grand_total = taxable_amount + gst + delivery_charge
 
             order = Order.objects.create(
                 user=request.user,

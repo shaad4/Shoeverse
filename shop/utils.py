@@ -99,21 +99,17 @@ def generate_invoice(order):
     y -= 20
 
     # 1. Calculations
-    subtotal = sum(item.price * item.quantity for item in order.items.all())
-    gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
-    delivery_charge = Decimal("0") if subtotal >= Decimal("1000") else Decimal("100")
-    
-    # Get discount from model
+    subtotal = order.subtotal
     discount = order.discount_amount if order.discount_amount else Decimal("0.00")
-    
-    # Final Total Formula
-    total_payable = subtotal + gst + delivery_charge - discount
+   
+    gst = order.gst
+    delivery_charge = order.delivery_charge
+   
+    total_payable = order.total_amount
 
     # 2. Build Summary List
     summary_data = [
-        ("Subtotal", subtotal),
-        ("GST (18%)", gst),
-        ("Delivery", delivery_charge),
+    ("Subtotal", subtotal),
     ]
 
     # 3. Add Discount Row if applicable
@@ -122,7 +118,12 @@ def generate_invoice(order):
         coupon_label = f"Discount ({order.coupon.code})" if order.coupon else "Discount"
         summary_data.append((coupon_label, -discount)) # Negative value for clarity
 
-    summary_data.append(("Grand Total", total_payable))
+    summary_data.extend([
+        ("GST (18%)", gst),
+        ("Delivery", delivery_charge),
+        ("Grand Total", total_payable),
+    ])
+
 
     # 4. Render Summary
     c.setFont("Helvetica-Bold", 11)
@@ -150,25 +151,70 @@ def generate_invoice(order):
     return buffer
 
 
+# def get_cart_totals(user):
+#     cart_items = CartItem.objects.filter(user=user, variant__is_active = True, variant__product__is_active=True)
+
+#     if not cart_items.exists():
+#         return None
+    
+#     subtotal = sum(item.total_price for item in cart_items)
+#     gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+#     delivery_charge = Decimal("0")
+
+#     discount_amount = Decimal("0")
+#     coupon_code = None
+
+#     applied_coupon = None
+
+#     return{
+#         "cart_items" : cart_items,
+#         "subtotal" : subtotal,
+#         "gst" : gst,
+#         "delivery_charge" : delivery_charge,
+#         "base_total" : subtotal+gst+delivery_charge
+#     }
+
+
+from decimal import Decimal
+
+GST_RATE = Decimal("0.18")
+
 def get_cart_totals(user):
-    cart_items = CartItem.objects.filter(user=user, variant__is_active = True, variant__product__is_active=True)
+    cart_items = CartItem.objects.filter(
+        user=user,
+        variant__is_active=True,
+        variant__product__is_active=True,
+        variant__stock__gt=0
+    )
 
     if not cart_items.exists():
         return None
-    
+
+    # 1. Subtotal
     subtotal = sum(item.total_price for item in cart_items)
-    gst = (subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
-    delivery_charge = Decimal("0")
+    subtotal = subtotal.quantize(Decimal("0.01"))
 
-    discount_amount = Decimal("0")
-    coupon_code = None
+    # 2. No discount here (handled in checkout/place_order)
+    discount_amount = Decimal("0.00")
 
-    applied_coupon = None
+    # 3. Taxable amount = subtotal
+    taxable_amount = subtotal
 
-    return{
-        "cart_items" : cart_items,
-        "subtotal" : subtotal,
-        "gst" : gst,
-        "delivery_charge" : delivery_charge,
-        "base_total" : subtotal+gst+delivery_charge
+    # 4. GST (display only, NOT final)
+    gst = (taxable_amount * GST_RATE).quantize(Decimal("0.01"))
+
+    # 5. Delivery
+    delivery_charge = Decimal("0.00") if subtotal >= Decimal("1000") else Decimal("100.00")
+
+    # 6. Total (pre-discount)
+    grand_total = (taxable_amount + gst + delivery_charge).quantize(Decimal("0.01"))
+
+    return {
+        "cart_items": cart_items,
+        "subtotal": subtotal,
+        "discount_amount": discount_amount,   
+        "taxable_amount": taxable_amount,
+        "gst": gst,
+        "delivery_charge": delivery_charge,
+        "base_total": grand_total,
     }
