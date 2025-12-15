@@ -4,21 +4,21 @@
 
             <!-- Footer Links -->
             <div class="flex flex-wrap justify-center md:justify-start gap-6">
-                <a href="#" class="text-body text-muted hover:text-primary transition-colors">About Us</a>
-                <a href="#" class="text-body text-muted hover:text-primary transition-colors">Privacy Policy</a>
-                <a href="#" class="text-body text-muted hover:text-primary transition-colors">Terms</a>
-                <a href="#" class="text-body text-muted hover:text-primary transition-colors">Contact</a>
+                <a href="{%url 'aboutus' %}" class="text-body text-muted hover:text-primary transition-colors">About Us</a>
+                <a href="{%url 'privacy_policy' %}" class="text-body text-muted hover:text-primary transition-colors">Privacy Policy</a>
+                <a href="{% url 'terms' %}" class="text-body text-muted hover:text-primary transition-colors">Terms</a>
+                <a href="{% url 'create_ticket' %}" class="text-body text-muted hover:text-primary transition-colors">Contact</a>
             </div>
 
             <!-- Social Icons -->
             <div class="flex gap-4">
-                <a href="#" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Facebook">
+                <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Facebook">
                     <img src="/static/images/icon-social-1.svg" alt="" class="w-full h-full">
                 </a>
-                <a href="#" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Twitter">
+                <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Twitter">
                     <img src="/static/images/icon-social-2.svg" alt="" class="w-full h-full">
                 </a>
-                <a href="#" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Instagram">
+                <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Instagram">
                     <img src="/static/images/icon-social-3.svg" alt="" class="w-full h-full">
                 </a>
             </div>

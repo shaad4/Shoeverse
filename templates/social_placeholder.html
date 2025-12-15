@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Connect With Us | Shoeverse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white flex items-center justify-center relative overflow-hidden p-6">
+
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#366347]/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#96c4a8]/5 rounded-full blur-[100px]"></div>
+    </div>
+
+    <div class="relative z-10 max-w-2xl w-full text-center">
+        
+        <div class="bg-[#18211d] border border-[#2a3b31] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+            
+            <div class="mb-8 relative inline-block">
+                <div class="absolute inset-0 bg-[#96c4a8] blur-xl opacity-20 rounded-full"></div>
+                <div class="relative bg-[#1c2621] w-20 h-20 mx-auto rounded-2xl border border-[#2a3b31] flex items-center justify-center text-[#96c4a8]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
+                        <path d="M8.5 8.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5Z"></path>
+                        <path d="M15.5 15.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5Z"></path>
+                    </svg>
+                </div>
+                <span class="absolute -top-2 -right-2 bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wide">
+                    WIP
+                </span>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">We're Getting Social</h1>
+            <p class="text-gray-400 text-lg mb-10 leading-relaxed">
+                Our social media pages are currently under construction. We are preparing something special to share our latest drops and community stories with you.
+            </p>
+
+            <div class="grid grid-cols-3 gap-4 mb-10 max-w-sm mx-auto">
+                <div class="flex flex-col items-center gap-2 group/icon opacity-50 hover:opacity-100 transition-opacity">
+                    <div class="w-14 h-14 rounded-2xl bg-[#121714] border border-[#2a3b31] flex items-center justify-center text-gray-500 group-hover/icon:text-[#E1306C] group-hover/icon:border-[#E1306C]/30 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                    </div>
+                    <span class="text-xs text-gray-600 font-medium">Instagram</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 group/icon opacity-50 hover:opacity-100 transition-opacity">
+                    <div class="w-14 h-14 rounded-2xl bg-[#121714] border border-[#2a3b31] flex items-center justify-center text-gray-500 group-hover/icon:text-[#1877F2] group-hover/icon:border-[#1877F2]/30 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    </div>
+                    <span class="text-xs text-gray-600 font-medium">Facebook</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 group/icon opacity-50 hover:opacity-100 transition-opacity">
+                    <div class="w-14 h-14 rounded-2xl bg-[#121714] border border-[#2a3b31] flex items-center justify-center text-gray-500 group-hover/icon:text-white group-hover/icon:border-white/30 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+                    </div>
+                    <span class="text-xs text-gray-600 font-medium">X</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-sm text-[#96c4a8] font-medium animate-pulse">Launching Soon</p>
+                <a href="{% url 'home' %}" class="inline-flex items-center justify-center px-8 py-3 bg-[#2a3b31] hover:bg-[#364a3e] text-white font-medium rounded-xl transition-all border border-[#3d5244] hover:shadow-lg hover:shadow-[#2a3b31]/20">
+                    Return to Shop
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

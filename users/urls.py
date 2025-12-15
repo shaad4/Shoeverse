@@ -29,6 +29,11 @@ urlpatterns = [
 
     path('send-email-change-link/', views.send_email_change_link, name='send_email_change_link'),
     path('confirm-email-change/<uidb64>/<token>/', views.confirm_email_change, name='confirm_email_change'),
+
+    path('aboutus/', views.aboutus_view, name="aboutus"),
+    path('privacy-policy/', views.privacy_policy, name="privacy_policy"),
+    path("terms/", views.terms_view, name="terms"),
+    path("social/", views.social_placeholder_view, name="social"),
 ]
 
     

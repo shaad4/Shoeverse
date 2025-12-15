@@ -27,6 +27,11 @@ from users.models import Banner
 from wallet.utils import credit_wallet
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
+from django.http import JsonResponse
+import json
+from support.models import SupportTicket, SupportMessage
+from support.views import get_ticket_safe
+
 logger = logging.getLogger("users")
 User = get_user_model()
 
@@ -1579,3 +1584,5 @@ def admin_banner_manager(request):
     }
 
     return render(request, 'adminpanel/banner_manager.html', context)
+
+

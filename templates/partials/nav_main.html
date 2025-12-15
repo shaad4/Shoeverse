@@ -41,13 +41,29 @@
                 {% if request.user.is_authenticated %}
                 <div class="hidden md:block relative group">
                     <form method="GET" action="{% url 'shop_products' %}">
+                        
                         <div class="relative">
                             <input type="text" name="q" placeholder="Search..." value="{{ q }}"
                                 class="bg-[#1c2621] border border-[#2a3b31] text-white text-sm rounded-full pl-10 pr-4 py-2 w-48 focus:w-64 transition-all duration-300 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] placeholder-gray-500">
-                            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-[#96c4a8] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-[#96c4a8] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                         </div>
-                        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+
+                        {% if category %}
+                            <input type="hidden" name="category" value="{{ category }}">
+                        {% endif %}
+                        
                         <input type="hidden" name="sort" value="{{ sort }}">
+                        <input type="hidden" name="color" value="{{ active_color }}">
+                        <input type="hidden" name="subcategory" value="{{ active_subcategory }}">
+                        <input type="hidden" name="min_price" value="{{ min_price }}">
+                        <input type="hidden" name="max_price" value="{{ max_price }}">
+
+                        {% for size in active_sizes %}
+                            <input type="hidden" name="size" value="{{ size }}">
+                        {% endfor %}
+
                         <button type="submit" class="hidden"></button>
                     </form>
                 </div>

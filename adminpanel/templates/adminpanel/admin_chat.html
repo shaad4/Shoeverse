@@ -1,0 +1,174 @@
+{% extends 'adminpanel/base_admin.html' %} 
+
+{% block title %}Admin Chat - #{{ ticket.ticket_id }}{% endblock %}
+
+{% block content %}
+<div class="p-6 h-[calc(100vh-2rem)] flex flex-col bg-[#09090b]">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4 pb-4 border-b border-zinc-800">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'staff_dashboard' %}"
+               class="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
+                <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl font-bold text-white flex items-center gap-3">
+                    {{ ticket.subject }}
+                    <span class="text-zinc-500 font-mono text-sm">#{{ ticket.ticket_id }}</span>
+                </h1>
+                <p class="text-sm text-blue-400 font-bold uppercase tracking-wider mt-1">
+                    Talking to: {{ ticket.user.fullName }}({{ticket.user.email}})
+                </p>
+            </div>
+        </div>
+
+        <div>
+            {% if ticket.status != 'RESOLVED' %}
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit"
+                        class="px-4 py-2 bg-zinc-800 border border-zinc-700 text-red-400
+                               hover:bg-red-500/10 hover:border-red-500/50
+                               rounded-lg text-sm font-bold transition">
+                    Mark Resolved
+                </button>
+            </form>
+            {% else %}
+                <span class="px-3 py-1 bg-green-900/30 text-green-400
+                             text-sm font-bold rounded border border-green-500/30">
+                    Resolved
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chat-box"
+         class="flex-1 overflow-y-auto p-6 space-y-4 bg-zinc-900
+                rounded-xl border border-zinc-800 mb-4">
+
+        {% for msg in chat_messages %}
+        <div class="flex w-full {% if msg.user.is_staff %}justify-end{% else %}justify-start{% endif %}">
+            <div class="max-w-[60%]">
+                <div class="px-5 py-3 text-sm leading-relaxed rounded-2xl shadow-sm
+                    {% if msg.user.is_staff %}
+                        bg-blue-600 text-white rounded-tr-none
+                    {% else %}
+                        bg-zinc-800 text-zinc-300 rounded-tl-none border border-zinc-700
+                    {% endif %}">
+
+                    {% if not msg.user.is_staff %}
+                        <div class="text-[10px] font-bold text-zinc-500 uppercase mb-1">
+                            Customer
+                        </div>
+                    {% endif %}
+
+                    {{ msg.message|linebreaksbr }}
+
+                    <div class="text-[10px] mt-1 text-right opacity-60">
+                        {{ msg.created_at|date:"H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="flex items-center justify-center h-full text-zinc-600">
+                No messages yet.
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Input -->
+    <div class="relative">
+        <input type="text"
+               id="message-input"
+               autocomplete="off"
+               {% if ticket.status == 'RESOLVED' %}disabled{% endif %}
+               class="w-full bg-zinc-900 text-zinc-100 border border-zinc-800
+                      rounded-xl px-5 py-4 pr-32
+                      focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                      focus:border-blue-500 transition-all"
+               placeholder="{% if ticket.status == 'RESOLVED' %}
+                            Ticket is resolved
+                            {% else %}
+                            Type a reply as Admin...
+                            {% endif %}">
+
+        <div class="absolute right-2 top-2 bottom-2">
+            <button onclick="sendMessage()"
+                    {% if ticket.status == 'RESOLVED' %}disabled{% endif %}
+                    class="px-4 h-full bg-blue-600 hover:bg-blue-500
+                           disabled:bg-zinc-700 disabled:cursor-not-allowed
+                           text-white rounded-lg font-bold text-sm transition">
+                Reply
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ticketId = "{{ ticket.id }}";
+    const chatBox = document.getElementById("chat-box");
+    const messageInput = document.getElementById("message-input");
+
+    let currentMessageCount = {{ chat_messages|length }};
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie) {
+            document.cookie.split(';').forEach(cookie => {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            });
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        fetch(`/support/api/send/${ticketId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({ message: text })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                messageInput.value = "";
+                fetchMessages();
+            }
+        });
+    }
+
+    function fetchMessages() {
+        fetch(`/support/api/get/${ticketId}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.messages.length > currentMessageCount) {
+                location.reload(); // admin view: safest & simplest
+            }
+        });
+    }
+
+    setInterval(fetchMessages, 3000);
+
+    messageInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
+{% endblock %}

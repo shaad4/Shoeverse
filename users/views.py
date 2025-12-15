@@ -762,3 +762,18 @@ def confirm_email_change(request, uidb64, token):
     else:
         messages.error(request, "Invalid or expired confirmation link.")
         return redirect("profile")
+    
+
+
+
+def aboutus_view(request):
+    return render(request, "aboutus.html")
+
+def privacy_policy(request):
+    return render(request, "privacypolicy.html")
+
+def terms_view(request):
+    return render(request, "terms.html")
+
+def social_placeholder_view(request):
+    return render(request, "social_placeholder.html")

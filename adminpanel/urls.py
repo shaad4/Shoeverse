@@ -55,7 +55,7 @@ urlpatterns = [
     
     path('custom-admin/banners/', views.admin_banner_manager, name='admin_banner_manager'),
     path('custom-admin/banners/add/', views.admin_banner_add, name='admin_banner_add'),
-    
+
     path("logout/", views.admin_logout_view, name="admin_logout"),
 
 

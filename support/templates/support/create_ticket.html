@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Contact Support | Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white relative overflow-hidden pb-24 lg:pb-0">
+
+    <!-- Background -->
+    <div class="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-[#366347]/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-[#1a2e22]/30 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="relative z-20 lg:h-auto">
+        {% include "users/profile_sidebar.html" %}
+    </div>
+
+    <main class="flex-1 min-w-0 p-4 lg:p-10 relative z-10">
+        <div class="max-w-3xl mx-auto space-y-8">
+
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Open New Ticket</h1>
+                    <p class="text-sm text-gray-400 mt-1">
+                        Describe your issue and we'll get back to you shortly.
+                    </p>
+                </div>
+
+                <a href="{% url 'my_tickets' %}"
+                   class="group flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-[#366347] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round"
+                         class="group-hover:-translate-x-1 transition-transform">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to History
+                </a>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                <div class="space-y-2">
+                    {% for message in messages %}
+                        <div class="p-3 rounded-lg text-sm font-medium
+                            {% if message.tags == 'error' %}
+                                bg-red-500/10 text-red-400 border border-red-500/20
+                            {% else %}
+                                bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                            {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Form -->
+            <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 md:p-8 shadow-xl relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-64 h-64 bg-[#366347] rounded-full blur-[80px] opacity-10 pointer-events-none"></div>
+
+                <form method="POST" action="{% url 'create_ticket' %}" class="space-y-6 relative z-10">
+                    {% csrf_token %}
+
+                    <!-- Subject -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+                            Subject
+                        </label>
+                        <input name="subject" required
+                               class="block w-full rounded-xl border border-[#2a3b31] bg-[#121714]
+                                      py-3.5 px-4 text-white placeholder-gray-600
+                                      focus:border-[#366347] focus:ring-1 focus:ring-[#366347] outline-none"
+                               placeholder="E.g., Received wrong size">
+                    </div>
+
+                    <!-- Message -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+                            Issue Description
+                        </label>
+                        <textarea name="message" rows="6" required
+                                  class="block w-full rounded-xl border border-[#2a3b31] bg-[#121714]
+                                         py-3.5 px-4 text-white placeholder-gray-600
+                                         focus:border-[#366347] focus:ring-1 focus:ring-[#366347]
+                                         outline-none resize-none"
+                                  placeholder="Please describe the issue in detail..."></textarea>
+                        <p class="text-[10px] text-gray-500 ml-1">
+                            * Our team usually responds within 24 hours.
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-4 flex flex-col sm:flex-row items-center gap-4">
+                        <button type="submit"
+                                class="w-full sm:w-auto flex-1 inline-flex items-center justify-center
+                                       px-6 py-3.5 font-bold text-white bg-[#366347]
+                                       rounded-xl hover:bg-[#2d523b] transition-all">
+                            Start Conversation
+                        </button>
+
+                        <a href="{% url 'my_tickets' %}"
+                           class="w-full sm:w-auto text-center px-6 py-3.5 rounded-xl
+                                  border border-[#2a3b31] text-gray-400 hover:text-white
+                                  hover:bg-[#2a3b31] transition-all">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

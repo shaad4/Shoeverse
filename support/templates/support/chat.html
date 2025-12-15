@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chat #{{ ticket.ticket_id }} | Shoeverse{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row min-h-screen bg-[#0f1311] text-gray-200 font-sans">
+
+    {% include "users/profile_sidebar.html" %}
+
+    <main class="flex-1 flex flex-col items-center justify-center p-0 lg:p-6 h-[100dvh]">
+
+        <div class="flex flex-col w-full h-full lg:w-[450px] lg:h-[650px] 
+                    bg-[#18211d] lg:rounded-3xl shadow-2xl shadow-black/50 
+                    border-x border-y lg:border border-[#2a3b31] overflow-hidden relative">
+
+            <div class="px-4 py-4 border-b border-[#2a3b31] bg-[#1d2621] flex justify-between items-center z-10 shrink-0">
+                <div class="flex items-center gap-3">
+                    
+                    <a href="{% url 'my_tickets' %}" class="p-2 -ml-2 text-gray-400 hover:text-white hover:bg-[#2a3b31] rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                        </svg>
+                    </a>
+
+                    <div>
+                        <h2 class="text-white font-semibold text-sm flex items-center gap-2">
+                            #{{ ticket.ticket_id }}
+                        </h2>
+                        <p class="text-xs text-gray-400 max-w-[150px] truncate">{{ ticket.subject }}</p>
+                    </div>
+                </div>
+                
+                <span class="text-[10px] px-2 py-1 rounded-full font-medium tracking-wide border
+                    {% if ticket.status == 'OPEN' %}bg-rose-500/10 text-rose-400 border-rose-500/20
+                    {% elif ticket.status == 'IN_PROGRESS' %}bg-amber-500/10 text-amber-400 border-amber-500/20
+                    {% else %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20{% endif %}">
+                    {{ ticket.get_status_display }}
+                </span>
+            </div>
+
+            <div id="chat-box" class="flex-1 overflow-y-auto p-5 space-y-3 bg-[#121714] relative scroll-smooth">
+                
+                {% for msg in chat_messages %}
+                <div class="flex w-full {% if msg.user == request.user %}justify-end{% else %}justify-start{% endif %} animate-fade-in-up">
+                    <div class="max-w-[80%] flex flex-col {% if msg.user == request.user %}items-end{% else %}items-start{% endif %}">
+                        
+                        <div class="px-4 py-2.5 text-sm shadow-sm
+                            {% if msg.user == request.user %}
+                                bg-[#366347] text-white rounded-2xl rounded-tr-sm
+                            {% else %}
+                                bg-[#1f2b25] text-gray-200 border border-[#2a3b31] rounded-2xl rounded-tl-sm
+                            {% endif %}">
+                            {{ msg.message|linebreaksbr }}
+                        </div>
+                        
+                        <span class="text-[9px] text-gray-500 mt-1 px-1">
+                            {{ msg.created_at|date:"h:i A" }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="h-full flex flex-col items-center justify-center opacity-40">
+                    <p class="text-sm">No messages yet. Start the conversation.</p>
+                </div>
+                {% endfor %}
+
+                {% if ticket.status == 'CLOSED' or ticket.status == 'RESOLVED' %}
+                <div class="flex items-center justify-center py-6 opacity-50">
+                    <div class="h-px bg-gray-700 w-12"></div>
+                    <span class="px-2 text-[10px] text-gray-500 uppercase tracking-widest">Ticket Resolved</span>
+                    <div class="h-px bg-gray-700 w-12"></div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="p-4 bg-[#18211d] shrink-0 border-t border-[#2a3b31]">
+                
+                {% if ticket.status == 'CLOSED' or ticket.status == 'RESOLVED' %}
+                    <div class="flex items-center justify-center p-3 bg-[#121714] rounded-xl border border-[#2a3b31] border-dashed opacity-70 cursor-not-allowed">
+                        <svg class="w-4 h-4 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="text-sm text-gray-400">This conversation has ended.</span>
+                    </div>
+                {% else %}
+                    <div class="relative flex items-center gap-2">
+                        <input id="message-input" type="text"
+                               class="w-full bg-[#0f1311] text-gray-100 border border-[#2a3b31]
+                                      rounded-full pl-5 pr-12 py-3 text-sm 
+                                      focus:border-[#366347] focus:ring-1 focus:ring-[#366347] 
+                                      transition-all outline-none placeholder-gray-600"
+                               placeholder="Type your message...">
+
+                        <button onclick="sendMessage()"
+                                class="absolute right-1.5 top-1.5 bottom-1.5 bg-[#366347] hover:bg-[#2d523b] text-white w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95 shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 ml-0.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                            </svg>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<style>
+    #chat-box::-webkit-scrollbar { width: 6px; }
+    #chat-box::-webkit-scrollbar-track { background: transparent; }
+    #chat-box::-webkit-scrollbar-thumb { background-color: #2a3b31; border-radius: 20px; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+</style>
+
+<script>
+const ticketId = "{{ ticket.id }}";
+const chatBox = document.getElementById("chat-box");
+const messageInput = document.getElementById("message-input"); // might be null if resolved
+
+// Safety check: Only run logic if input exists (ticket is open)
+const isChatOpen = !!messageInput;
+
+// Initialize message count from server-rendered template
+let currentMessageCount = {{ chat_messages|length }};
+
+// Scroll to bottom on load
+chatBox.scrollTop = chatBox.scrollHeight;
+
+function sendMessage() {
+    if (!isChatOpen) return;
+    
+    const text = messageInput.value.trim();
+    if (!text) return;
+
+    // 1. Optimistic UI: Add to screen immediately
+    addMessageToUI(text, true, new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+    
+    // 2. Clear input
+    messageInput.value = "";
+    
+    // 3. FIX: Increment local counter immediately so the next poll doesn't duplicate it
+    currentMessageCount += 1;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // 4. Send to server
+    fetch(`/support/api/send/${ticketId}/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ message: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status !== "success") {
+            console.error("Failed to send");
+            // Optional: Handle error UI here
+        }
+    });
+}
+
+function addMessageToUI(text, isMe, time) {
+    const row = document.createElement("div");
+    row.className = `flex w-full ${isMe ? "justify-end" : "justify-start"} animate-fade-in-up`;
+    row.innerHTML = `
+        <div class="max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}">
+            <div class="px-4 py-2.5 text-sm shadow-sm
+                ${isMe ? "bg-[#366347] text-white rounded-2xl rounded-tr-sm"
+                       : "bg-[#1f2b25] text-gray-200 border border-[#2a3b31] rounded-2xl rounded-tl-sm"}">
+                ${text.replace(/\n/g, "<br>")}
+            </div>
+            <span class="text-[9px] text-gray-500 mt-1 px-1">${time}</span>
+        </div>
+    `;
+    chatBox.appendChild(row);
+}
+
+function fetchMessages() {
+    fetch(`/support/api/get/${ticketId}/`)
+    .then(res => res.json())
+    .then(data => {
+        // If server has same amount or fewer messages, do nothing
+        if (data.messages.length <= currentMessageCount) return;
+
+        // Only render messages that are strictly NEWER than our count
+        const newMsgs = data.messages.slice(currentMessageCount);
+        
+        newMsgs.forEach(msg => {
+            const isMe = (msg.sender === "USER");
+            addMessageToUI(msg.message, isMe, msg.created_at);
+        });
+
+        // Sync count
+        currentMessageCount = data.messages.length;
+        
+        // Only auto-scroll if user is already near bottom (optional UX polish)
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+// Poll every 3 seconds
+setInterval(fetchMessages, 3000);
+
+if (isChatOpen) {
+    messageInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+}
+</script>
+{% endblock %}

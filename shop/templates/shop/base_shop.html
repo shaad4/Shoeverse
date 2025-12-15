@@ -55,15 +55,21 @@
         <div class="max-w-container mx-auto px-5 md:px-10 py-10 text-small text-muted">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div class="flex flex-wrap gap-6">
-                    <a href="#" class="hover:text-white">About Us</a>
-                    <a href="#" class="hover:text-white">Privacy Policy</a>
-                    <a href="#" class="hover:text-white">Terms</a>
-                    <a href="#" class="hover:text-white">Contact</a>
+                    <a href="{%url 'aboutus'%}" class="hover:text-white">About Us</a>
+                    <a href="{%url 'privacy_policy'%}" class="hover:text-white">Privacy Policy</a>
+                    <a href="{%url 'terms'%}" class="hover:text-white">Terms</a>
+                    <a href="{%url 'create_ticket'%}" class="hover:text-white">Contact</a>
                 </div>
                 <div class="flex items-center gap-4">
-                    <img src="{% static 'images/icon-social-1.svg' %}" class="w-5 h-5">
-                    <img src="{% static 'images/icon-social-2.svg' %}" class="w-5 h-5">
-                    <img src="{% static 'images/icon-social-3.svg' %}" class="w-5 h-5">
+                    <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Facebook">
+                        <img src="/static/images/icon-social-1.svg" alt="" class="w-full h-full">
+                    </a>
+                    <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Twitter">
+                        <img src="/static/images/icon-social-2.svg" alt="" class="w-full h-full">
+                    </a>
+                    <a href="{% url 'social' %}" class="w-6 h-6 text-muted hover:text-primary transition-colors" aria-label="Instagram">
+                        <img src="/static/images/icon-social-3.svg" alt="" class="w-full h-full">
+                    </a>
                     
                 </div>
             </div>

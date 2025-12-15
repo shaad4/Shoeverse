@@ -28,6 +28,7 @@ urlpatterns = [
     path("adminpanel/", include("adminpanel.urls")),
     path("", include("shop.urls")),
     path('wallet/', include('wallet.urls')),
+    path('support/', include('support.urls')),
 
 
 
