@@ -11,7 +11,7 @@
     [x-cloak] { display:none !important; }
     /* Checkbox Styling */
     input[type="checkbox"]:checked {
-        background-color: #2563eb; /* Blue-600 */
+        background-color: #2563eb;
         border-color: #2563eb;
     }
     .pro-input, .pro-select {
@@ -32,6 +32,29 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    
+    /* Flatpickr Customization */
+    .flatpickr-calendar {
+        background: #18181b !important;
+        border: 1px solid #27272a !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+    }
+    .flatpickr-day.selected {
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+    }
+    .flatpickr-time input {
+        color: white !important;
+    }
+    
+    /* FIX: Force static calendar to float absolutely relative to the wrapper */
+    .flatpickr-calendar.static.open {
+        position: absolute !important;
+        top: calc(100% + 5px) !important; /* Push slightly below input */
+        left: 0 !important;
+        z-index: 9999 !important;
+        display: block !important;
+    }
 </style>
 
 {{ subcategories|json_script:"subcat_data" }}
@@ -121,9 +144,9 @@
                         </td>
 
                         <td class="px-6 py-4 text-xs font-mono text-zinc-500">
-                            <div class="flex flex-col">
-                                <span>Start: {{ offer.start_date|date:"d M Y" }}</span>
-                                <span>End: &nbsp;{{ offer.end_date|date:"d M Y" }}</span>
+                            <div class="flex flex-col gap-1">
+                                <span class="flex items-center gap-2"><span class="w-10">Start:</span> <span class="text-zinc-300">{{ offer.start_date|date:"d M Y, H:i" }}</span></span>
+                                <span class="flex items-center gap-2"><span class="w-10">End:</span> <span class="text-zinc-300">{{ offer.end_date|date:"d M Y, H:i" }}</span></span>
                             </div>
                         </td>
 
@@ -140,7 +163,6 @@
                         </td>
 
                         <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                            
                             <button
                                 @click="openEditModal({
                                     id: {{ offer.id }},
@@ -187,7 +209,6 @@
         </div>
     </div>
 
-    <!-- ADD MODAL -->
     <div x-cloak x-show="isAddOpen"
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
          <div @click.away="isAddOpen = false" class="bg-[#18181b] w-full max-w-lg rounded-2xl border border-zinc-700 shadow-2xl">
@@ -220,18 +241,22 @@
                                 <input type="number" name="discount" min="1" max="99" class="pro-input" placeholder="0" required>
                             </div>
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Start Date</label>
-                                <input type="text" name="start_date" class="pro-input datetime-picker" required>
+                                <div class="relative">
+                                    <input type="text" id="add_start_date" name="start_date" class="pro-input bg-zinc-800" placeholder="YYYY-MM-DD 00:00" required>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">End Date</label>
-                                <input type="text" name="end_date" class="pro-input datetime-picker" required>
+                                <div class="relative">
+                                    <input type="text" id="add_end_date" name="end_date" class="pro-input bg-zinc-800" placeholder="YYYY-MM-DD 23:59" required>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- ADD PRODUCT MULTISELECT -->
                         <div x-show="addType === 'product'" x-collapse class="space-y-4">
                             <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Select Products</label>
                             <div x-data="multiSelect({items: allProducts, fieldName: 'product_id'})" class="relative" @click.away="open = false">
@@ -266,7 +291,6 @@
                             </div>
                         </div>
 
-                        <!-- ADD CATEGORY MULTISELECT -->
                         <div x-show="addType === 'category'" x-collapse class="space-y-4 bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Main Category</label>
@@ -329,7 +353,6 @@
          </div>
     </div>
 
-    <!-- EDIT MODAL -->
     <div x-cloak x-show="isEditOpen"
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
 
@@ -358,18 +381,22 @@
                             <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Discount (%)</label>
                             <input type="number" name="discount" min="1" max="99" x-model="editOffer.discount_percent" class="pro-input">
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Start Date</label>
-                                <input type="text" name="start_date" class="pro-input datetime-picker" :value="editOffer.start_date">
+                                <div class="relative">
+                                    <input type="text" id="edit_start_date" name="start_date" class="pro-input bg-zinc-800" required>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">End Date</label>
-                                <input type="text" name="end_date" class="pro-input datetime-picker" :value="editOffer.end_date">
+                                <div class="relative">
+                                    <input type="text" id="edit_end_date" name="end_date" class="pro-input bg-zinc-800" required>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- EDIT PRODUCT MULTISELECT -->
                         <template x-if="editOffer.offer_type === 'product'">
                             <div class="space-y-4">
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Products</label>
@@ -411,7 +438,6 @@
                             </div>
                         </template>
 
-                        <!-- EDIT CATEGORY MULTISELECT -->
                         <template x-if="editOffer.offer_type === 'category'">
                             <div class="space-y-4">
                                 <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-1.5">Subcategories</label>
@@ -463,7 +489,6 @@
         </div>
     </div>
 
-    <!-- DELETE MODAL -->
     <div x-cloak x-show="isDeleteOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
         <div class="bg-[#18181b] w-full max-w-md rounded-2xl border border-zinc-800 p-6 shadow-2xl" @click.away="isDeleteOpen = false">
             <h3 class="text-lg font-semibold text-white text-center">Delete Offer?</h3>
@@ -479,11 +504,59 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        flatpickr(".datetime-picker", {
+        
+        // --- 1. CONFIGURATION for ADD MODAL (Use static: true) ---
+        const addEndPicker = flatpickr("#add_end_date", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-            theme: "dark"
+            minDate: "today",
+            defaultHour: 23,
+            defaultMinute: 59,
+            theme: "dark",
+            static: true  // <--- KEY FIX: Places calendar in flow, CSS handles position
+        });
+
+        flatpickr("#add_start_date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minDate: "today",
+            defaultHour: 0,
+            defaultMinute: 0,
+            theme: "dark",
+            static: true, // <--- KEY FIX
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    addEndPicker.set('minDate', dateStr);
+                }
+            }
+        });
+
+        // --- 2. CONFIGURATION for EDIT MODAL (Use static: true) ---
+        window.editEndPicker = flatpickr("#edit_end_date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            defaultHour: 23,
+            defaultMinute: 59,
+            theme: "dark",
+            static: true // <--- KEY FIX
+        });
+
+        window.editStartPicker = flatpickr("#edit_start_date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            defaultHour: 0,
+            defaultMinute: 0,
+            theme: "dark",
+            static: true, // <--- KEY FIX
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    window.editEndPicker.set('minDate', dateStr);
+                }
+            }
         });
     });
 
@@ -548,6 +621,9 @@
 
             openAddModal() {
                 this.isAddOpen = true;
+                // Optional: clear dates in add form
+                document.getElementById('add_start_date')._flatpickr.clear();
+                document.getElementById('add_end_date')._flatpickr.clear();
             },
 
             openEditModal(offer) {
@@ -565,6 +641,14 @@
                 
                 if (offer.subcategories && Array.isArray(offer.subcategories)) {
                     this.selectedSubcategories = offer.subcategories.map(id => String(id));
+                }
+
+                // Update Flatpickrs for Edit Modal
+                if(window.editStartPicker && window.editEndPicker) {
+                    window.editStartPicker.setDate(offer.start_date);
+                    window.editEndPicker.setDate(offer.end_date);
+                    // Ensure End Picker knows the minDate is the Start Date
+                    window.editEndPicker.set('minDate', offer.start_date);
                 }
 
                 this.isEditOpen = true;

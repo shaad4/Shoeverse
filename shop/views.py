@@ -1256,10 +1256,7 @@ def cancel_order_item(request, item_id):
                     refund_amount = old_grand_total
 
                     if order.coupon:
-                        usage = CouponUsage.objects.filter(
-                            user=request.user,
-                            coupon = order.coupon
-                        ).first()
+                        usage = CouponUsage.objects.filter(user=request.user,coupon = order.coupon).first()
                         if usage and usage.used_count > 0:
                             usage.used_count -= 1
                             usage.save()
@@ -1269,16 +1266,43 @@ def cancel_order_item(request, item_id):
                 else:
                     new_subtotal = sum(i.total_price for i in active_items)
                     order.subtotal = new_subtotal
-                    order.gst = (new_subtotal * Decimal('0.18')).quantize(Decimal('0.01')) 
+
+
+                    new_discount = Decimal("0")
+
+                    if order.coupon:
+                        if new_subtotal < order.coupon.minCartValue:
+                            order.coupon = None
+                            new_discount = Decimal("0")
+                            messages.warning(request, "Coupon is removed because order total fell  below minimum requirement")
+                        else:
+                            if order.coupon.discountType == "percent":
+                                new_discount = (new_subtotal * order.coupon.discountValue) / 100
+                            else:
+                                new_discount = order.coupon.discountValue
+
+                        if new_discount  > new_subtotal:
+                            new_subtotal = new_subtotal
+
+                    order.discount_amount = new_discount.quantize(Decimal("0.01"))
+
+                    taxable_amount = (new_subtotal - order.discount_amount).quantize(Decimal("0.01"))
+                  
+
+                    order.gst = (taxable_amount * Decimal('0.18')).quantize(Decimal('0.01')) 
+
+
                     
                     if order.subtotal >= 1000:
                         order.delivery_charge = Decimal(0)
                     else:
                         order.delivery_charge = Decimal(100)
 
-                    order.total_amount = order.subtotal + order.gst + order.delivery_charge
 
+
+                    order.total_amount = taxable_amount + order.gst + order.delivery_charge
                     order.save()
+                    
 
                     refund_amount = old_grand_total - order.total_amount
 

@@ -15,7 +15,10 @@ def generate_invoice(order):
 
     y = height - 50
 
-    # ===== HEADER (Logo + Title) =====
+    # ... [HEADER, LOGO, ADDRESS SECTIONS REMAIN SAME] ...
+    # (Paste your existing Header/Address code here)
+    
+    # [Temporarily recreating context for the loop below]
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
     if os.path.exists(logo_path):
         c.drawImage(logo_path, 50, y - 60, width=70, height=70, preserveAspectRatio=True, mask='auto')
@@ -33,7 +36,7 @@ def generate_invoice(order):
     y -= 30
 
     c.setFont("Helvetica", 11)
-    c.drawString(50, y, f"Order ID: {order.order_id}")
+    c.drawString(50, y, f"Order ID: {order.order_id if hasattr(order, 'order_id') else order.id}") # Safety check
     c.drawString(350, y, f"Order Date: {order.created_at.strftime('%d %b %Y')}")
     y -= 20
     c.drawString(50, y, f"Payment Method: {order.payment_method}")
@@ -45,18 +48,19 @@ def generate_invoice(order):
     y -= 18
 
     c.setFont("Helvetica", 10)
-    address_lines = [
-        order.address.full_name,
-        order.address.address_line1,
-        order.address.address_line2,
-        f"{order.address.city}, {order.address.state} - {order.address.pincode}",
-        f"Phone: {order.address.phone_number}",
-    ]
-    for line in address_lines:
-        if line:
-            c.drawString(50, y, line)
-            y -= 15
-
+    # Ensure address exists to prevent errors
+    if order.address:
+        address_lines = [
+            order.address.full_name,
+            order.address.address_line1,
+            order.address.address_line2,
+            f"{order.address.city}, {order.address.state} - {order.address.pincode}",
+            f"Phone: {order.address.phone_number}",
+        ]
+        for line in address_lines:
+            if line:
+                c.drawString(50, y, line)
+                y -= 15
     y -= 15
 
     # ===== TABLE HEADER =====
@@ -69,10 +73,11 @@ def generate_invoice(order):
     c.line(50, y, 550, y)
     y -= 15
 
-    # ===== ORDER ITEMS =====
+    # ===== ORDER ITEMS (UPDATED LOGIC) =====
     c.setFont("Helvetica", 10)
+    
     for item in order.items.all():
-        if y < 150: # Increased margin to ensure summary fits or new page triggers
+        if y < 150: 
             c.showPage()
             y = height - 100
             
@@ -86,14 +91,41 @@ def generate_invoice(order):
             c.line(50, y, 550, y)
             y -= 15
 
-        item_total = item.price * item.quantity
-        c.drawString(50, y, item.variant.product.name[:30])
+        # --- LOGIC CHANGE HERE ---
+        is_cancelled = item.status == 'Cancelled'
+        
+        if is_cancelled:
+            # 1. Grey out text
+            c.setFillColorRGB(0.5, 0.5, 0.5) 
+            # 2. Add marker to name
+            item_name = f"{item.variant.product.name[:25]} (CANCELLED)"
+            # 3. Set Total to 0.00 so columns sum up correctly
+            line_total_str = "Rs. 0.00"
+        else:
+            # Normal Item
+            c.setFillColorRGB(0, 0, 0)
+            item_name = item.variant.product.name[:30]
+            item_total = item.price * item.quantity
+            line_total_str = f"Rs.{item_total}"
+
+        # Draw the Row
+        c.drawString(50, y, item_name)
         c.drawString(260, y, str(item.quantity))
         c.drawString(310, y, f"Rs.{item.price}")
-        c.drawString(380, y, f"Rs.{item_total}")
-        y -= 18
+        c.drawString(380, y, line_total_str)
+        
+        # Optional: Draw a strikethrough line for cancelled items
+        if is_cancelled:
+            c.setStrokeColorRGB(0.5, 0.5, 0.5)
+            c.line(50, y + 4, 450, y + 4) # Draw line through text
+            c.setStrokeColorRGB(0, 0, 0)   # Reset stroke color
 
-    # ===== SUMMARY SECTION (UPDATED) =====
+        y -= 18
+        
+        # Reset fill color for next loop iteration
+        c.setFillColorRGB(0, 0, 0) 
+
+    # ===== SUMMARY SECTION =====
     y -= 10
     c.line(300, y, 550, y)
     y -= 20
@@ -101,22 +133,17 @@ def generate_invoice(order):
     # 1. Calculations
     subtotal = order.subtotal
     discount = order.discount_amount if order.discount_amount else Decimal("0.00")
-   
     gst = order.gst
     delivery_charge = order.delivery_charge
-   
     total_payable = order.total_amount
 
-    # 2. Build Summary List
     summary_data = [
-    ("Subtotal", subtotal),
+        ("Subtotal", subtotal),
     ]
 
-    # 3. Add Discount Row if applicable
     if discount > 0:
-        # Show coupon code if available
         coupon_label = f"Discount ({order.coupon.code})" if order.coupon else "Discount"
-        summary_data.append((coupon_label, -discount)) # Negative value for clarity
+        summary_data.append((coupon_label, -discount))
 
     summary_data.extend([
         ("GST (18%)", gst),
@@ -124,13 +151,11 @@ def generate_invoice(order):
         ("Grand Total", total_payable),
     ])
 
-
     # 4. Render Summary
     c.setFont("Helvetica-Bold", 11)
     for label, value in summary_data:
         c.drawString(310, y, f"{label}:")
         
-        # Color Handling: Red for Discount, Black for others
         if "Discount" in label:
             c.setFillColorRGB(0.8, 0, 0) 
             c.drawString(450, y, f"Rs. {value}")
