@@ -66,7 +66,7 @@ def product_list_view(request, category=None):
     
 
 
-    q = request.GET.get("q","")
+    q = request.GET.get("q","").strip()
     if q:
         products = products.filter(name__icontains=q)
 
@@ -696,7 +696,7 @@ def checkout_view(request):
 
     gst = (taxable_amount * Decimal('0.18')).quantize(Decimal('0.01'))
 
-    delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
+    delivery_charge = Decimal('0') if taxable_amount >= Decimal('1000') else Decimal('100')
     
     is_free_delivery = (delivery_charge == Decimal('0'))
 
@@ -742,7 +742,7 @@ def payment_view(request, address_id):
 
     subtotal = data['subtotal']
     
-    delivery_charge = data['delivery_charge']
+    
 
 
     discount_amount = Decimal("0")
@@ -768,7 +768,7 @@ def payment_view(request, address_id):
     
     taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
     gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
-
+    delivery_charge = Decimal('0') if taxable_amount >= Decimal('1000') else Decimal('100')
     grand_total = taxable_amount + gst + delivery_charge
 
     if grand_total < 0:
@@ -826,7 +826,7 @@ def place_order(request):
 
     cart_items = data['cart_items']
     subtotal = data['subtotal']
-    delivery_charge = data['delivery_charge']
+    
 
     if not cart_items.exists():
         messages.error(request, "Your cart is empty")
@@ -859,7 +859,10 @@ def place_order(request):
     discount_amount = discount_amount.quantize(Decimal("0.01"))
     
     taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
+
     gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
+
+    delivery_charge = Decimal('0') if taxable_amount >= Decimal('1000') else Decimal('100')
 
     grand_total = taxable_amount + gst + delivery_charge
 
@@ -1026,7 +1029,7 @@ def razorpay_payment_verify(request):
             # Price calculation
             
             subtotal = data["subtotal"]
-            delivery_charge = data['delivery_charge']
+            
 
             discount_amount = Decimal("0")
             coupon_code = request.session.get("applied_coupon")
@@ -1053,7 +1056,8 @@ def razorpay_payment_verify(request):
             taxable_amount = (subtotal - discount_amount).quantize(Decimal("0.01"))
             gst = (taxable_amount * Decimal("0.18")).quantize(Decimal("0.01"))
 
-            
+            delivery_charge = delivery_charge = Decimal('0') if taxable_amount >= Decimal('1000') else Decimal('100')
+
             grand_total = taxable_amount + gst + delivery_charge
 
             order = Order.objects.create(
