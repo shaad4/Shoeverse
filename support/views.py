@@ -10,18 +10,15 @@ from users.decorator import user_required
 from .models import SupportTicket, SupportMessage
 
 
-# -------------------------
-# Helpers
-# -------------------------
+# Helper fun
 def get_ticket_safe(request, ticket_id):
     if request.user.is_staff:
         return get_object_or_404(SupportTicket, id=ticket_id)
     return get_object_or_404(SupportTicket, id=ticket_id, user=request.user)
 
 
-# -------------------------
-# USER SIDE
-# -------------------------
+
+#user
 @user_required
 def create_ticket(request):
     if request.method == "POST":
@@ -69,10 +66,8 @@ def ticket_chat(request, ticket_id):
     })
 
 
-# -------------------------
-# SHARED API
-# -------------------------
 
+#shared
 @require_POST
 def send_message(request, ticket_id):
     ticket = get_ticket_safe(request, ticket_id)
@@ -116,9 +111,8 @@ def get_messages(request, ticket_id):
     return JsonResponse({"messages": data})
 
 
-# -------------------------
-# ADMIN SIDE
-# -------------------------
+
+#admin 
 @admin_required
 def staff_dashboard(request):
     tickets = SupportTicket.objects.all().order_by("status", "-updated_at")

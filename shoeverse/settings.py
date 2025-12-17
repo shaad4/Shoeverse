@@ -45,7 +45,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    'knox-propagational-syllogistically.ngrok-free.dev',
+    '.ngrok-free.dev',
     'localhost',
 
  ]
@@ -286,6 +286,7 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
 CSRF_TRUSTED_ORIGINS = [
     "https://knox-propagational-syllogistically.ngrok-free.dev",
+    "https://unurging-specularly-tana.ngrok-free.dev/",
     'https://*.ngrok-free.app',
     'https://*.ngrok-free.dev',
 ]

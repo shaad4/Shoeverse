@@ -102,7 +102,8 @@ def signup_view(request):
             email = email,
             fullName = fullName,
             password=password,
-            referredBy = referredBy
+            referredBy = referredBy,
+            is_active = False
         )
 
         logger.info(f"User created (not verified): {email}")
@@ -206,6 +207,9 @@ def verify_otp_view(request):
         otp_obj.is_verified=True
         otp_obj.save()
 
+        user.is_active = True
+        user.save()
+
         logger.info(f"OTP verified successfully for {user.email}")
 
         login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
@@ -302,6 +306,14 @@ def login_view(request):
         
         try:
             user_obj = User.objects.get(email=email)
+            if not user_obj.is_active:
+                if EmailOTP.objects.filter(user=user_obj, is_verified=False).exists():
+                    request.session["pending_user_id"] = user_obj.id
+                    messages.info(request, "Please verify your email to activate your account.")
+                    return redirect("verify_otp")
+                else:
+                    messages.error(request, "Your account is deactivated. Contact support.")
+                    return redirect("login")
         except User.DoesNotExist:
             messages.error(request, "Invalid email or password.")
             return redirect("login")
