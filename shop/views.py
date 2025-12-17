@@ -1120,6 +1120,11 @@ def order_success(request, order_id):
         except Coupon.DoesNotExist:
             pass
 
+    Wishlist.objects.filter(
+        user=request.user,
+        product__in = order.items.values_list("variant__product", flat=True)).delete()
+
+
     request.session.pop("applied_coupon", None)
     request.session.modified = True
 
