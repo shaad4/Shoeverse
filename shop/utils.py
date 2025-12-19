@@ -33,9 +33,7 @@ def generate_invoice(order):
     c.setFont("Helvetica-Bold", 16)
     c.drawString(50, y, "INVOICE")
     
-    # Order Status Badge (The Overall Status)
     status_text = f"Order Status: {order.status.upper()}"
-    status_width = c.stringWidth(status_text, "Helvetica-Bold", 11)
     c.setFont("Helvetica-Bold", 11)
     c.drawRightString(550, y, status_text)
     y -= 30
@@ -60,10 +58,10 @@ def generate_invoice(order):
                 y -= 15
     y -= 25
 
-    # ===== TABLE HEADER (Added Status Column) =====
+    # ===== TABLE HEADER =====
     c.setFont("Helvetica-Bold", 10)
     c.drawString(50, y, "Item Description")
-    c.drawString(240, y, "Status") # New Column
+    c.drawString(240, y, "Status")
     c.drawString(320, y, "Qty")
     c.drawString(380, y, "Unit Price")
     c.drawString(480, y, "Total")
@@ -71,37 +69,49 @@ def generate_invoice(order):
     c.line(50, y, 550, y)
     y -= 18
 
+    # ===== NEW CALCULATION LOGIC FOR ACTIVE SUMMARY =====
+    active_subtotal = Decimal('0.00')
+
     # ===== ORDER ITEMS LOOP =====
     c.setFont("Helvetica", 9)
     for item in order.items.all():
         if y < 100:
             c.showPage()
-            y = height - 50 # Reset Y for new page
+            y = height - 50
 
         is_inactive = item.status in ['Cancelled', 'Returned']
         
         if is_inactive:
-            c.setFillColorRGB(0.5, 0.5, 0.5) # Grey out inactive items
-            line_total = 0.00
+            c.setFillColorRGB(0.5, 0.5, 0.5)
+            line_total = Decimal('0.00')
         else:
             c.setFillColorRGB(0, 0, 0)
             line_total = item.price * item.quantity
+            # Add to our dynamic subtotal for the summary section
+            active_subtotal += line_total
 
         item_name = f"{item.variant.product.name[:30]} (Size: {item.variant.size})"
         
-        # Draw Row
         c.drawString(50, y, item_name)
-        c.drawString(240, y, item.status) # Shows individual item status
+        c.drawString(240, y, item.status) 
         c.drawString(320, y, str(item.quantity))
         c.drawString(380, y, f"Rs. {item.price:,.2f}")
         c.drawRightString(530, y, f"Rs. {line_total:,.2f}")
 
         if is_inactive:
             c.setStrokeColorRGB(0.5, 0.5, 0.5)
-            c.line(50, y + 3, 530, y + 3) # Strikethrough
+            c.line(50, y + 3, 530, y + 3)
             c.setStrokeColorRGB(0, 0, 0)
 
         y -= 18
+
+    # ===== DYNAMIC SUMMARY CALCULATION =====
+    # Calculate tax based only on the active subtotal
+    active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+    
+    # We maintain the delivery charge and subtract the original coupon discount
+    # but ensure the final total doesn't drop below zero.
+    active_total = (active_subtotal + active_gst + order.delivery_charge - order.discount_amount).max(Decimal('0.00'))
 
     # ===== SUMMARY SECTION =====
     c.setFillColorRGB(0, 0, 0)
@@ -109,12 +119,12 @@ def generate_invoice(order):
     c.line(300, y, 550, y)
     y -= 20
     
-    # Using order-level totals (GST included, Delivery included)
     summary_data = [
-        ("Subtotal", order.subtotal),
-        ("GST (18%)", order.gst),
+        ("Active Subtotal", active_subtotal),
+        ("GST (18%)", active_gst),
         ("Delivery", order.delivery_charge),
     ]
+    
     if order.discount_amount > 0:
         summary_data.insert(1, (f"Discount ({order.coupon.code if order.coupon else 'Coupon'})", -order.discount_amount))
 
@@ -130,7 +140,7 @@ def generate_invoice(order):
     y -= 20
     c.setFont("Helvetica-Bold", 12)
     c.drawString(320, y, "Grand Total:")
-    c.drawRightString(530, y, f"Rs. {order.total_amount:,.2f}")
+    c.drawRightString(530, y, f"Rs. {active_total:,.2f}")
 
     # Footer
     c.setFont("Helvetica-Oblique", 9)

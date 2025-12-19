@@ -46,7 +46,6 @@
     {% if order.status != 'Cancelled' and order.status != 'Refunded' and order.status != 'Returned' %}
     <div class="mb-10">
         <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 md:p-10 relative overflow-hidden shadow-lg">
-            
             <div class="relative flex flex-col md:flex-row justify-between">
                 <div class="absolute left-5 top-0 bottom-0 w-1 bg-[#2a3b31] md:hidden"></div>
                 <div class="hidden md:block absolute top-5 left-0 right-0 h-1 bg-[#2a3b31]"></div>
@@ -118,14 +117,13 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v4a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h4m5 4H9m8 14v-5h-5"></path></svg>
         </div>
         <div>
-            <h3 class="text-lg font-bold text-orange-400">Order Refunded</h3>
-            <p class="text-gray-400 text-sm">Funds have been credited back to your wallet for returned items. Shipping charges are excluded as per policy.</p>
+            <h3 class="text-lg font-bold text-orange-400">Order {{ order.status }}</h3>
+            <p class="text-gray-400 text-sm">Processed items have been updated. {% if order.status == 'Refunded' %}Funds have been credited to your wallet for returned items.{% endif %}</p>
         </div>
     </div>
     {% endif %}
 
     <div class="grid gap-8 lg:grid-cols-3">
-      
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] overflow-hidden shadow-xl shadow-black/20">
             <div class="p-6 border-b border-[#2a3b31] flex justify-between items-center bg-[#1c2621]">
@@ -169,7 +167,6 @@
 
                              <div class="flex items-center gap-2">
                                 {% if item.status != 'Cancelled' and item.status != 'Returned' %}
-                                    
                                     {% if order.status == 'Delivered' %}
                                         <a href="{% url 'submit_review' item.variant.product.id %}" 
                                         class="text-xs font-medium text-[#96c4a8] hover:text-white border border-[#2a3b31] bg-[#2a3b31]/50 px-3 py-1.5 rounded-lg transition-colors">
@@ -188,7 +185,6 @@
                                             Return / Exchange
                                         </a>
                                     {% endif %}
-
                                 {% endif %}
 
                                 {% if order.status == 'Pending' or order.status == 'Processing' %}
@@ -241,7 +237,6 @@
                 </div>
              </div>
         </div>
-
       </div>
 
       <div class="space-y-6">
@@ -250,12 +245,12 @@
             
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between text-gray-400">
-                    <span>Subtotal</span>
-                    <span class="text-white">₹{{ order.subtotal }}</span>
+                    <span>Active Subtotal</span>
+                    <span class="text-white">₹{{ active_subtotal }}</span>
                 </div>
                 <div class="flex justify-between text-gray-400">
                     <span>GST (18%)</span>
-                    <span class="text-white">₹{{ order.gst }}</span>
+                    <span class="text-white">₹{{ active_gst }}</span>
                 </div>
                 <div class="flex justify-between text-gray-400">
                     <span>Delivery</span>
@@ -279,8 +274,8 @@
                 <div class="border-t border-[#2a3b31] my-4"></div>
                 
                 <div class="flex justify-between items-center">
-                    <span class="text-base font-bold text-white">Grand Total</span>
-                    <span class="text-xl font-bold text-[#96c4a8]">₹{{ order.total_amount }}</span>
+                    <span class="text-base font-bold text-white">Net Total</span>
+                    <span class="text-xl font-bold text-[#96c4a8]">₹{{ active_total }}</span>
                 </div>
             </div>
 
@@ -304,16 +299,12 @@
                 </button>
                 {% endif %}
 
-                {% if order.status == 'Delivered' %}
+                {% if order.status == 'Delivered' or order.status == 'Returned' %}
                     {% if has_returnable_items %}
                         <a href="{% url 'return_order_items' order.order_id %}" 
                           class="w-full block text-center py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 font-semibold transition-all duration-200">
                             Return / Exchange
                         </a>
-                    {% else %}
-                        <p class="text-center text-xs text-gray-500 italic">
-                            Return window expired (10 days after delivery)
-                        </p>
                     {% endif %}
                 {% endif %}
             </div>
@@ -324,14 +315,12 @@
             </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <div id="cancelModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" id="cancelBackdrop"></div>
-
     <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="relative transform overflow-hidden rounded-2xl bg-[#18211d] border border-[#2a3b31] text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md opacity-0 scale-95" id="cancelPanel">
@@ -340,14 +329,14 @@
                 <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-bold text-white text-center mb-2" id="modal-title">Cancel Order</h3>
-            <p id="modal-desc" class="text-sm text-gray-400 text-center mb-6">Are you sure you want to cancel this? This action cannot be undone.</p>
+            <p id="modal-desc" class="text-sm text-gray-400 text-center mb-6">Are you sure? This action cannot be undone.</p>
             
             <form id="cancelForm" method="POST">
                 {% csrf_token %}
                 <label class="block text-sm font-medium text-gray-300 mb-2">Reason for cancellation</label>
                 <textarea name="cancel_reason" rows="3" required
                     class="w-full rounded-xl bg-[#121714] border border-[#2a3b31] text-white p-3 focus:ring-1 focus:ring-red-500 focus:border-red-500 placeholder-gray-600 resize-none outline-none"
-                    placeholder="e.g. Changed my mind, found a better price..."></textarea>
+                    placeholder="e.g. Changed my mind..."></textarea>
 
                 <div class="mt-6 flex flex-col sm:flex-row-reverse gap-3">
                     <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
@@ -375,14 +364,14 @@
     function openCancelOrderModal(orderId) {
         form.action = "{% url 'cancel_order' 'ORDER_ID' %}".replace('ORDER_ID', orderId);
         modalTitle.innerText = "Cancel Entire Order";
-        modalDesc.innerText = "Are you sure you want to cancel this entire order? All items will be cancelled and stock returned.";
+        modalDesc.innerText = "Are you sure you want to cancel this entire order?";
         showModal();
     }
 
     function openCancelItemModal(itemId, itemName) {
         form.action = "{% url 'cancel_order_item' 0 %}".replace('0', itemId);
         modalTitle.innerText = "Cancel Item";
-        modalDesc.innerHTML = `Are you sure you want to cancel <strong>${itemName}</strong>?<br>The rest of your order will remain active.`;
+        modalDesc.innerHTML = `Are you sure you want to cancel <strong>${itemName}</strong>?`;
         showModal();
     }
 

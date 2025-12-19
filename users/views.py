@@ -29,7 +29,7 @@ import json
 
 from wallet.utils import credit_wallet, debit_wallet
 from wallet.models import WalletTransaction, Wallet
-
+from decimal import Decimal
 from users.models import Banner
 
 logger = logging.getLogger('users')
@@ -656,6 +656,15 @@ def order_list_view(request):
 def order_detail_view(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
+    
+    active_subtotal = Decimal("0.01")
+    for item in order_items:
+        if item.status not in ['Cancelled', 'Returned']:
+            active_subtotal += (item.price * item.quantity)
+
+    active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+    active_total = (active_subtotal + active_gst + order.delivery_charge - order.discount_amount).max(Decimal('0.00'))
+
 
     today = timezone.now().date()
     return_deadline = None
@@ -690,6 +699,9 @@ def order_detail_view(request, order_id):
         "order": order,
         "order_items": order_items,
         "has_returnable_items": has_returnable_items,
+        "active_subtotal": active_subtotal,
+        "active_gst": active_gst,
+        "active_total": active_total,
     }
 
     return render(request, "users/order_detail.html", context)
