@@ -97,20 +97,10 @@
                 {% endif %}
             </div>
 
-            {% if product.color %}
-            <div class="space-y-3">
-                <p class="uppercase tracking-widest text-xs font-bold text-gray-500">Color</p>
-                <div class="flex items-center gap-3 bg-[#18211d] w-fit px-4 py-2 rounded-lg border border-[#2a3b31]">
-                    <span class="w-4 h-4 rounded-full border border-gray-600 shadow-sm" style="background-color: {{ product.color|lower }}"></span>
-                    <span class="text-white font-medium capitalize">{{ product.color }}</span>
-                </div>
-            </div>
-            {% endif %}
-
             <form method="POST" action="{% url 'add_to_cart' 0 %}" id="addToCartForm">
                 {% csrf_token %}
 
-                <div class="space-y-3 mb-6">
+                <div class="space-y-4 mb-6">
                     <div class="flex justify-between items-end">
                         <p class="uppercase tracking-widest text-xs font-bold text-gray-500">Select Size</p>
                     </div>
@@ -121,17 +111,30 @@
                                 <input type="radio" 
                                     name="variant_id" 
                                     value="{{ variant.id }}" 
+                                    data-stock="{{ variant.stock }}"
                                     {% if variant.stock <= 0 %}disabled{% endif %}
                                     class="peer hidden">
 
-                                <span class="rounded-xl py-3.5 block text-center border font-medium transition-all duration-200
+                                <span class="relative rounded-xl py-3.5 block text-center border font-medium transition-all duration-200
                                             {% if variant.stock <= 0 %}
-                                                bg-[#18211d] border-[#2a3b31] text-gray-600 opacity-50 cursor-not-allowed decoration-slice line-through
+                                                bg-[#18211d] border-[#2a3b31] text-gray-600 opacity-50 cursor-not-allowed
                                             {% else %}
                                                 bg-[#18211d] border-[#2a3b31] text-gray-300 hover:border-[#96c4a8] peer-checked:bg-[#96c4a8] peer-checked:text-[#121714] peer-checked:border-[#96c4a8] peer-checked:shadow-[0_0_15px_rgba(150,196,168,0.3)]
                                             {% endif %}">
                                     {{ variant.size }}
+                                    
+                                    {% if variant.stock <= 0 %}
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-full h-[1px] bg-red-500/30 -rotate-45"></div>
+                                        </div>
+                                    {% endif %}
                                 </span>
+
+                                {% if variant.stock > 0 and variant.stock <= 5 %}
+                                    <span class="absolute -top-2 -right-1 bg-orange-600 text-[9px] text-white px-1.5 py-0.5 rounded-md font-black shadow-lg z-10 border border-[#121714]">
+                                        {{ variant.stock }} LEFT
+                                    </span>
+                                {% endif %}
                             </label>
                         {% endfor %}
                     </div>
@@ -157,7 +160,7 @@
                         {% if is_out_of_stock %}
                             <button type="button" class="w-full h-14 bg-red-900/20 border border-red-900/30 text-red-400 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                                Out of Stock
+                                Sold Out
                             </button>
                         {% else %}
                             <button type="submit" 
@@ -382,7 +385,43 @@
     const form = document.getElementById('addToCartForm');
     const errorMsg = document.getElementById('size-error');
     const sizeInputs = document.querySelectorAll('input[name="variant_id"]');
+    const qtyInput = document.getElementById("qty-input");
     
+    let currentMaxStock = 10; // Default limit
+
+    // Size Selection Change Handler
+    sizeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            errorMsg.classList.add('hidden');
+            
+            // Update Max Stock based on selected variant
+            const selectedStock = parseInt(this.getAttribute('data-stock'));
+            // Limit to 4 as per your logic or available stock, whichever is lower
+            currentMaxStock = Math.min(selectedStock, 4); 
+            
+            // Adjust current quantity if it exceeds new max
+            if (parseInt(qtyInput.value) > currentMaxStock) {
+                qtyInput.value = currentMaxStock;
+            }
+        });
+    });
+
+    // Quantity Logic
+    function changeQty(amount) {
+        // Ensure a size is selected first for accurate stock checking
+        const selectedVariant = document.querySelector('input[name="variant_id"]:checked');
+        
+        let qty = parseInt(qtyInput.value) + amount;
+        if (qty < 1) qty = 1;
+        
+        // Use currentMaxStock (which is updated on size click)
+        if (qty > currentMaxStock) {
+            qty = currentMaxStock;
+        }
+        
+        qtyInput.value = qty;
+    }
+
     // Thumbnail Swap
     function swapImage(newSrc, thumbElement) {
         mainImage.style.opacity = "0";
@@ -400,20 +439,17 @@
         thumbElement.classList.add("border-[#96c4a8]", "ring-1", "ring-[#96c4a8]");
     }
 
-    // Hover Zoom
+    // Hover Zoom (Desktop only)
     if (window.matchMedia("(hover: hover)").matches) {
         container.addEventListener("mousemove", function(e) {
             const rect = container.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
             const xPercent = (x / rect.width) * 100;
             const yPercent = (y / rect.height) * 100;
-
             mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
             mainImage.style.transform = "scale(2)"; 
         });
-
         container.addEventListener("mouseleave", function() {
             mainImage.style.transformOrigin = "center center";
             mainImage.style.transform = "scale(1)";
@@ -423,7 +459,6 @@
     // Zoom Modal
     const zoomModal = document.getElementById("zoomModal");
     const zoomedImage = document.getElementById("zoomedImage");
-
     container.addEventListener("click", function() {
         if (window.innerWidth < 1024) { 
             zoomedImage.src = mainImage.src;
@@ -431,28 +466,12 @@
             document.body.style.overflow = 'hidden'; 
         }
     });
-
     zoomModal.addEventListener("click", () => {
         zoomModal.classList.add("hidden");
         document.body.style.overflow = ''; 
     });
 
-    // Quantity Logic
-    function changeQty(amount) {
-        let qtyInput = document.getElementById("qty-input");
-        let qty = parseInt(qtyInput.value) + amount;
-        if (qty < 1) qty = 1;
-        if (qty > 4) qty = 4;
-        qtyInput.value = qty;
-    }
-    
-    // Validation
-    sizeInputs.forEach(input => {
-        input.addEventListener('change', () => {
-            errorMsg.classList.add('hidden');
-        });
-    });
-
+    // Form Validation
     form.addEventListener('submit', function(e) {
         const selectedVariant = document.querySelector('input[name="variant_id"]:checked');
         if (!selectedVariant) {
