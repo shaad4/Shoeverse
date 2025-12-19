@@ -1426,7 +1426,7 @@ def submit_return_request(request, order_id):
                 if len(uploaded_images) > 2:
                     return_request.image3 = uploaded_images[2]
                 return_request.save()
-
+            
         messages.success(request, "Return request submitted successfully")
         return redirect('order_detail', order_id = order.order_id)
     

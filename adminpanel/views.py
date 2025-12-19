@@ -721,28 +721,42 @@ def update_order_status(request, order_id):
         if new_status == order.status:
                 messages.info(request, "No changes made.")
                 return redirect('admin_order_detail', order_id=order.order_id)
-        
-        if new_status == 'Cancelled' and order.status != 'Cancelled':
-            for item in order.items.all():
-                if item.status != 'Cancelled':
-                    item.status = 'Cancelled'
-                    item.variant.stock += item.quantity
-                    item.variant.save()
-                    item.save()
+        try:
+            with transaction.atomic():
 
-            order.cancel_reason = "Cancelled by Admin"
+                if new_status == 'Cancelled' and order.status != 'Cancelled':
+                    for item in order.items.all():
+                        if item.status != 'Cancelled':
+                            item.status = 'Cancelled'
+                            item.variant.stock += item.quantity
+                            item.variant.save()
+                            item.save()
+
+                    order.cancel_reason = "Cancelled by Admin"
+
+
+                else:
+                    for item in order.items.all():
+                        if item.status not in ['Cancelled','Returned']:
+                            item.status = new_status
+                            item.save()
+
     
-        order.status = new_status
+                order.status = new_status
 
-        if new_status == "Delivered":
-            order.delivered_at = now()
+                if new_status == "Delivered":
+                    order.delivered_at = now()
 
-        elif new_status != "Delivered":
-            order.delivered_at = None
+                elif new_status != "Delivered":
+                    order.delivered_at = None
 
-        order.save()
+                order.save()
 
-        messages.success(request, f"Order status updated to {new_status}.")
+        
+                messages.success(request, f"Order status updated to {new_status}.")
+
+        except Exception as e:
+            messages.error(request,f"An error occurred: {str(e)}" )
 
     return redirect('admin_order_detail', order_id=order.order_id)
 
@@ -885,6 +899,9 @@ def admin_return_detail(request, return_id):
 
                 if new_status == "REFUNDED" and previous_status != "REFUNDED":
 
+                    if not return_request.refund_amount:
+                        return_request.refund_amount = return_request.calculate_refund_amount()
+
                     wallet,_ = Wallet.objects.get_or_create(user=return_request.user)
 
                     balance_before = wallet.balance
@@ -901,6 +918,18 @@ def admin_return_detail(request, return_id):
                         balance_before = balance_before,
                         balance_after = balance_after,
                     )
+
+                    order_item = return_request.order_item
+                    order_item.status = 'Returned'
+                    order_item.save()
+
+                    order = order_item.order
+                    total_items = order.items.count()
+                    processed_items = order.items.filter(status__in=['Returned', 'Cancelled']).count()
+
+                    if total_items == processed_items:
+                        order.status = "Refunded"
+                        order.save()
 
                     messages.success(request, f"Refund of ₹{return_request.refund_amount} credited to user's wallet.")
 

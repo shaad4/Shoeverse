@@ -14,7 +14,7 @@
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">My Orders</h1>
-                    <p class="text-sm text-gray-400 mt-1">Track pending orders and review history.</p>
+                    <p class="text-sm text-gray-400 mt-1">Track pending orders and review purchase history.</p>
                 </div>
 
                 <form method="GET" action="" class="w-full md:w-72">
@@ -24,16 +24,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        
-                        <input type="text" 
-                               name="search" 
-                               value="{{ request.GET.search|default:'' }}" 
+                        <input type="text" name="search" value="{{ request.GET.search|default:'' }}" 
                                class="block w-full p-2.5 pl-10 text-sm text-white bg-[#18211d] border border-[#2a3b31] rounded-xl focus:ring-1 focus:ring-[#96c4a8] focus:border-[#96c4a8] placeholder-gray-600 transition-all shadow-sm" 
                                placeholder="Search Order ID...">
-                        
-                        {% if current_filter %}
-                            <input type="hidden" name="filter" value="{{ current_filter }}">
-                        {% endif %}
+                        {% if current_filter %}<input type="hidden" name="filter" value="{{ current_filter }}">{% endif %}
                     </div>
                 </form>
             </div>
@@ -65,25 +59,25 @@
                             <span class="text-gray-500">{{ order.created_at|date:"M d, Y" }}</span>
                         </div>
                         
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider border
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest border
                             {% if order.status == 'Delivered' %} bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                            {% elif order.status == 'Refunded' %} bg-red-500/10 text-red-400 border-red-500/20
+                            {% elif order.status == 'Returned' %} bg-orange-500/10 text-orange-400 border-orange-500/20
                             {% elif order.status == 'Shipped' %} bg-blue-500/10 text-blue-400 border-blue-500/20
-                            {% elif order.status == 'Processing' %} bg-amber-500/10 text-amber-400 border-amber-500/20
                             {% elif order.status == 'Cancelled' %} bg-red-500/10 text-red-400 border-red-500/20
                             {% else %} bg-gray-500/10 text-gray-400 border-gray-500/20 {% endif %}">
                             
-                            <span class="w-1.5 h-1.5 rounded-full animate-pulse
+                            <span class="w-1.5 h-1.5 rounded-full
                                 {% if order.status == 'Delivered' %} bg-emerald-400
+                                {% elif order.status == 'Refunded' or order.status == 'Cancelled' %} bg-red-400
+                                {% elif order.status == 'Returned' %} bg-orange-400
                                 {% elif order.status == 'Shipped' %} bg-blue-400
-                                {% elif order.status == 'Processing' %} bg-amber-400
-                                {% elif order.status == 'Cancelled' %} bg-red-400
-                                {% else %} bg-gray-400 {% endif %}"></span>
+                                {% else %} bg-gray-400 animate-pulse {% endif %}"></span>
                             {{ order.get_status_display }}
                         </span>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-5">
-                        
                         <div class="relative w-full sm:w-24 h-40 sm:h-24 flex-shrink-0 bg-[#121714] rounded-xl border border-[#2a3b31] overflow-hidden group/image">
                             {% with first_item=order.items.first %}
                                 {% if first_item.variant.product.images.first %}
@@ -94,7 +88,7 @@
                             {% endwith %}
                             
                             {% if order.items.count > 1 %}
-                            <div class="absolute bottom-0 right-0 bg-[#2a3b31] text-white text-[10px] px-2 py-0.5 rounded-tl-lg font-bold border-t border-l border-[#121714] z-10">
+                            <div class="absolute bottom-0 right-0 bg-[#2a3b31]/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-tl-lg font-bold border-t border-l border-[#121714] z-10">
                                 +{{ order.items.count|add:"-1" }} more
                             </div>
                             {% endif %}
@@ -102,10 +96,13 @@
 
                         <div class="flex-1 flex flex-col justify-center min-w-0">
                             {% with first_item=order.items.first %}
-                                <h3 class="font-bold text-white text-base truncate pr-2">{{ first_item.variant.product.name }}</h3>
+                                <h3 class="font-bold text-white text-base truncate pr-2 group-hover:text-[#96c4a8] transition-colors">{{ first_item.variant.product.name }}</h3>
                                 <div class="text-sm text-gray-400 mt-1.5 flex flex-wrap gap-2 items-center">
                                     <span class="bg-[#121714] px-2 py-0.5 rounded text-xs border border-[#2a3b31] text-gray-300">Size: {{ first_item.variant.size }}</span>
                                     <span class="text-gray-500 text-xs">Qty: {{ first_item.quantity }}</span>
+                                    {% if order.items.count > 1 %}
+                                        <span class="text-[#96c4a8]/50 text-xs italic">& multi-item order</span>
+                                    {% endif %}
                                 </div>
                             {% endwith %}
                             <div class="mt-3 font-bold text-lg text-white">₹{{ order.total_amount }}</div>
@@ -113,18 +110,22 @@
 
                         <div class="flex flex-row sm:flex-col justify-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                             <a href="{% url 'order_detail' order.order_id %}" 
-                               class="flex-1 sm:flex-none w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm font-medium transition-all border border-transparent hover:border-[#3d5244] hover:shadow-lg hover:shadow-black/10 active:scale-95">
-                                Details
-                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                               class="flex-1 sm:flex-none w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white text-sm font-bold transition-all border border-transparent hover:border-[#3d5244] active:scale-95">
+                                View Order
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </a>
                             
                             {% if order.status == 'Delivered' %}
                                 {% with first_item=order.items.first %}
                                     <a href="{% url 'submit_review' first_item.variant.product.id %}" 
-                                    class="flex-1 sm:flex-none w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-transparent border border-[#2a3b31] hover:bg-[#2a3b31] text-gray-400 hover:text-white text-sm font-medium transition-all active:scale-95">
+                                    class="flex-1 sm:flex-none w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-transparent border border-[#2a3b31] hover:border-[#96c4a8] text-gray-400 hover:text-[#96c4a8] text-sm font-bold transition-all active:scale-95">
                                         Review
                                     </a>
                                 {% endwith %}
+                            {% elif order.status == 'Refunded' %}
+                                <div class="flex-1 sm:flex-none w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-red-500/5 border border-red-500/20 text-red-400/70 text-[10px] uppercase font-black tracking-widest">
+                                    Amount Credited
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -136,14 +137,14 @@
                         <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     </div>
                     <h3 class="text-lg font-bold text-white">No orders found</h3>
-                    <p class="text-gray-400 text-sm mt-1 mb-6 text-center max-w-xs">
+                    <p class="text-gray-400 text-sm mt-1 mb-6 text-center max-w-xs px-4">
                         {% if request.GET.search %}
-                            We couldn't find any orders matching your search.
+                            We couldn't find any orders matching "{{ request.GET.search }}".
                         {% else %}
-                            You haven't placed any orders yet. Start shopping!
+                            You haven't placed any orders in this category yet.
                         {% endif %}
                     </p>
-                    <a href="{% url 'shop_products' %}" class="px-6 py-2.5 rounded-xl bg-[#96c4a8] hover:bg-[#85b095] text-[#121714] font-bold text-sm transition-all hover:scale-105 shadow-lg shadow-[#96c4a8]/20">
+                    <a href="{% url 'shop_products' %}" class="px-8 py-3 rounded-xl bg-[#96c4a8] hover:bg-[#85b095] text-[#121714] font-bold text-sm transition-all hover:scale-105 shadow-lg shadow-[#96c4a8]/20">
                         {% if request.GET.search %}Clear Search{% else %}Start Shopping{% endif %}
                     </a>
                 </div>
@@ -151,27 +152,22 @@
             </div>
 
             {% if page_obj.has_other_pages %}
-            <nav class="flex items-center justify-center gap-2 pt-8">
-                
+            <nav class="flex items-center justify-center gap-2 pt-10">
                 {% if page_obj.has_previous %}
                     <a href="?page={{ page_obj.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
-                       class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#18211d] border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all hover:-translate-x-1"
+                       class="w-11 h-11 flex items-center justify-center rounded-xl bg-[#18211d] border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all"
                        aria-label="Previous">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </a>
-                {% else %}
-                    <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#121714] border border-[#1f2b24] text-gray-700 cursor-not-allowed">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                    </span>
                 {% endif %}
 
-                <div class="flex items-center gap-1 bg-[#18211d] p-1 rounded-xl border border-[#2a3b31]">
+                <div class="flex items-center gap-1.5 bg-[#18211d] p-1.5 rounded-xl border border-[#2a3b31]">
                     {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
-                            <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#96c4a8] text-[#121714] font-bold text-sm shadow-sm">{{ num }}</span>
+                            <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#96c4a8] text-[#121714] font-black text-sm">{{ num }}</span>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                             <a href="?page={{ num }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
-                               class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-[#2a3b31] text-sm transition-colors">
+                               class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-[#2a3b31] text-sm font-bold transition-all">
                                 {{ num }}
                             </a>
                         {% endif %}
@@ -180,16 +176,11 @@
 
                 {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
-                       class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#18211d] border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all hover:translate-x-1"
+                       class="w-11 h-11 flex items-center justify-center rounded-xl bg-[#18211d] border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all"
                        aria-label="Next">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </a>
-                {% else %}
-                    <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#121714] border border-[#1f2b24] text-gray-700 cursor-not-allowed">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </span>
                 {% endif %}
-
             </nav>
             {% endif %}
 

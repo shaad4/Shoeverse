@@ -25,8 +25,9 @@
         <div class="flex items-center gap-3">
             <span class="px-4 py-1.5 rounded-full text-sm font-semibold border backdrop-blur-md
                 {% if order.status == 'Delivered' %} bg-green-500/10 text-green-400 border-green-500/20
+                {% elif order.status == 'Refunded' %} bg-red-500/10 text-red-400 border-red-500/20
+                {% elif order.status == 'Returned' %} bg-orange-500/10 text-orange-400 border-orange-500/20
                 {% elif order.status == 'Shipped' %} bg-blue-500/10 text-blue-400 border-blue-500/20
-                {% elif order.status == 'Processing' %} bg-yellow-500/10 text-yellow-400 border-yellow-500/20
                 {% elif order.status == 'Cancelled' %} bg-red-500/10 text-red-400 border-red-500/20
                 {% else %} bg-gray-500/10 text-gray-400 border-gray-500/20 {% endif %}">
                 {{ order.get_status_display }}
@@ -42,12 +43,11 @@
 
   <div class="mx-auto max-w-6xl px-4 py-8">
     
-    {% if order.status != 'Cancelled' %}
+    {% if order.status != 'Cancelled' and order.status != 'Refunded' and order.status != 'Returned' %}
     <div class="mb-10">
         <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 md:p-10 relative overflow-hidden shadow-lg">
             
             <div class="relative flex flex-col md:flex-row justify-between">
-                
                 <div class="absolute left-5 top-0 bottom-0 w-1 bg-[#2a3b31] md:hidden"></div>
                 <div class="hidden md:block absolute top-5 left-0 right-0 h-1 bg-[#2a3b31]"></div>
 
@@ -67,14 +67,14 @@
 
                 <div class="relative z-10 flex flex-row md:flex-col items-center gap-4 md:gap-2 mb-8 md:mb-0">
                     <div class="w-10 h-10 rounded-full flex flex-shrink-0 items-center justify-center border-4 bg-[#18211d] transition-all duration-300
-                        {% if order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %} 
+                        {% if order.status != 'Pending' %} 
                             border-yellow-500 text-yellow-500 shadow-lg shadow-yellow-900/20
                         {% else %} 
                             border-[#2a3b31] text-gray-500 
                         {% endif %}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                     </div>
-                    <p class="font-medium md:mt-2 {% if order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}text-white{% else %}text-gray-500{% endif %}">Processing</p>
+                    <p class="font-medium md:mt-2 {% if order.status != 'Pending' %}text-white{% else %}text-gray-500{% endif %}">Processing</p>
                 </div>
 
                 <div class="relative z-10 flex flex-row md:flex-col items-center gap-4 md:gap-2 mb-8 md:mb-0">
@@ -112,6 +112,16 @@
             {% endif %}
         </div>
     </div>
+    {% elif order.status == 'Refunded' or order.status == 'Returned' %}
+    <div class="mb-10 bg-orange-500/5 border border-orange-500/20 rounded-2xl p-6 flex items-center gap-4 animate-fade-in">
+        <div class="p-3 bg-orange-500/20 rounded-full text-orange-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v4a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h4m5 4H9m8 14v-5h-5"></path></svg>
+        </div>
+        <div>
+            <h3 class="text-lg font-bold text-orange-400">Order Refunded</h3>
+            <p class="text-gray-400 text-sm">Funds have been credited back to your wallet for returned items. Shipping charges are excluded as per policy.</p>
+        </div>
+    </div>
     {% endif %}
 
     <div class="grid gap-8 lg:grid-cols-3">
@@ -135,9 +145,18 @@
                     <div class="flex-1 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start">
-                                <h4 class="text-lg font-bold text-white hover:text-[#96c4a8] transition-colors">
-                                    <a href="#">{{ item.variant.product.name }}</a>
-                                </h4>
+                                <div class="flex flex-col gap-1">
+                                    <h4 class="text-lg font-bold text-white hover:text-[#96c4a8] transition-colors">
+                                        <a href="#">{{ item.variant.product.name }}</a>
+                                    </h4>
+                                    <span class="w-fit text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border
+                                        {% if item.status == 'Returned' %} bg-orange-500/10 text-orange-400 border-orange-500/20
+                                        {% elif item.status == 'Cancelled' %} bg-red-500/10 text-red-400 border-red-500/20
+                                        {% elif item.status == 'Delivered' %} bg-green-500/10 text-green-400 border-green-500/20
+                                        {% else %} bg-gray-500/10 text-gray-400 border-gray-500/20 {% endif %}">
+                                        {{ item.status }}
+                                    </span>
+                                </div>
                                 <span class="text-white font-bold text-lg">₹{{ item.total_price }}</span>
                             </div>
                             <p class="text-sm text-gray-400 mt-1">Size: {{ item.variant.size }}</p>
@@ -149,7 +168,7 @@
                              </div>
 
                              <div class="flex items-center gap-2">
-                                {% if item.status != 'Cancelled' %}
+                                {% if item.status != 'Cancelled' and item.status != 'Returned' %}
                                     
                                     {% if order.status == 'Delivered' %}
                                         <a href="{% url 'submit_review' item.variant.product.id %}" 
@@ -161,7 +180,7 @@
                                     {% if item.return_request %}
                                         <a href="{% url 'return_detail' item.return_request.id %}"
                                         class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-md hover:bg-blue-500/20 hover:text-blue-300 transition-colors">
-                                            Return Status: {{ item.return_request.get_status_display }}
+                                            Return: {{ item.return_request.get_status_display }}
                                         </a>
                                     {% elif item.is_return_eligible %}
                                         <a href="{% url 'return_order_items' order.order_id %}"
@@ -170,10 +189,6 @@
                                         </a>
                                     {% endif %}
 
-                                {% else %}
-                                    <span class="text-xs font-medium text-red-500 bg-red-500/10 px-3 py-1 rounded border border-red-500/20">
-                                        Cancelled
-                                    </span>
                                 {% endif %}
 
                                 {% if order.status == 'Pending' or order.status == 'Processing' %}
@@ -230,7 +245,6 @@
       </div>
 
       <div class="space-y-6">
-        
         <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] p-6 sticky top-6 shadow-xl shadow-black/20">
             <h3 class="text-lg font-bold text-white mb-6">Payment Summary</h3>
             
@@ -271,11 +285,17 @@
             </div>
 
             <div class="mt-8 space-y-3">
+                {% if order.status != 'Refunded' and order.status != 'Cancelled' %}
                 <a href="{% url 'download_invoice' order.order_id %}" target="_blank"
                    class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#2a3b31] hover:bg-[#364a3e] text-white font-semibold transition-all duration-200 border border-[#3d5244]">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download Invoice
                 </a>
+                {% else %}
+                <div class="w-full py-3 rounded-xl bg-gray-500/5 text-gray-500 border border-gray-500/10 font-medium text-center text-sm italic">
+                    Invoice unavailable for {{ order.get_status_display|lower }} orders
+                </div>
+                {% endif %}
 
                 {% if order.status == 'Pending' or order.status == 'Processing' %}
                 <button onclick="openCancelOrderModal('{{ order.order_id }}')" 
@@ -292,7 +312,7 @@
                         </a>
                     {% else %}
                         <p class="text-center text-xs text-gray-500 italic">
-                            Return period expired (10 days after delivery)
+                            Return window expired (10 days after delivery)
                         </p>
                     {% endif %}
                 {% endif %}
@@ -320,7 +340,7 @@
                 <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <h3 class="text-xl font-bold text-white text-center mb-2" id="modal-title">Cancel Order</h3>
-            <p id="modal-desc" class="text-sm text-gray-400 text-center mb-6">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            <p id="modal-desc" class="text-sm text-gray-400 text-center mb-6">Are you sure you want to cancel this? This action cannot be undone.</p>
             
             <form id="cancelForm" method="POST">
                 {% csrf_token %}
@@ -345,7 +365,6 @@
 </div>
 
 <script>
-    // --- Cancel Modal Logic ---
     const modal = document.getElementById("cancelModal");
     const backdrop = document.getElementById("cancelBackdrop");
     const panel = document.getElementById("cancelPanel");
@@ -353,32 +372,20 @@
     const modalTitle = document.getElementById("modal-title");
     const modalDesc = document.getElementById("modal-desc");
 
-    // SCENARIO 1: Cancel Entire Order
     function openCancelOrderModal(orderId) {
-        // Set URL for Order Cancel
         form.action = "{% url 'cancel_order' 'ORDER_ID' %}".replace('ORDER_ID', orderId);
-        
-        // Update Text
         modalTitle.innerText = "Cancel Entire Order";
         modalDesc.innerText = "Are you sure you want to cancel this entire order? All items will be cancelled and stock returned.";
-        
         showModal();
     }
 
-    // SCENARIO 2: Cancel Single Item
     function openCancelItemModal(itemId, itemName) {
-        // Set URL for Item Cancel
-        // '0' is a placeholder int that Django URL tag accepts, which we swap in JS
         form.action = "{% url 'cancel_order_item' 0 %}".replace('0', itemId);
-        
-        // Update Text
         modalTitle.innerText = "Cancel Item";
         modalDesc.innerHTML = `Are you sure you want to cancel <strong>${itemName}</strong>?<br>The rest of your order will remain active.`;
-        
         showModal();
     }
 
-    // Helper functions
     function showModal() {
         modal.classList.remove("hidden");
         setTimeout(() => {
@@ -392,10 +399,9 @@
         backdrop.classList.add("opacity-0");
         panel.classList.remove("opacity-100", "scale-100");
         panel.classList.add("opacity-0", "scale-95");
-
         setTimeout(() => {
             modal.classList.add("hidden");
-            form.reset(); // Reset the textarea
+            form.reset();
         }, 300);
     }
 </script>

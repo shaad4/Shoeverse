@@ -107,6 +107,7 @@ class OrderItem(models.Model):
         ('Delivered' , 'Delivered'),
         ('Cancelled' , 'Cancelled'),
         ('Returned', 'Returned'),
+        ('Refunded', 'Refunded'),
     ]
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE ,related_name = 'items')
@@ -180,7 +181,13 @@ class ReturnRequest(models.Model):
         return f"Return {self.order_item.variant.product.name} ({self.status})"
 
     def calculate_refund_amount(self):
-        return (self.order_item.price * self.order_item.quantity).quantize(Decimal('0.01'))
+        base_item_total = self.order_item.price * self.order_item.quantity
+
+        tax_amount = base_item_total * Decimal('0.18')
+
+        total_refund = base_item_total + tax_amount
+
+        return total_refund.quantize(Decimal("0.01"))
 
     def save(self, *args, **kwargs):
         if not self.refund_amount:

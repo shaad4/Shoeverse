@@ -8,169 +8,133 @@ from io import BytesIO
 from django.http import HttpResponse
 from decimal import Decimal
 from shop.models import CartItem
+
+
 def generate_invoice(order):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-
     y = height - 50
 
-    # ... [HEADER, LOGO, ADDRESS SECTIONS REMAIN SAME] ...
-    # (Paste your existing Header/Address code here)
-    
-    # [Temporarily recreating context for the loop below]
+    # ===== HEADER & LOGO =====
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
     if os.path.exists(logo_path):
         c.drawImage(logo_path, 50, y - 60, width=70, height=70, preserveAspectRatio=True, mask='auto')
 
-    c.setFont("Helvetica-Bold", 20)
+    c.setFont("Helvetica-Bold", 24)
     c.drawString(140, y - 20, "Shoeverse")
-
     c.setFont("Helvetica", 11)
+    c.setFillColorRGB(0.3, 0.3, 0.3)
     c.drawString(140, y - 40, "Premium Footwear, Delivered With Care")
-    y -= 90
+    c.setFillColorRGB(0, 0, 0)
+    y -= 100
 
-    # ===== ORDER DETAILS =====
-    c.setFont("Helvetica-Bold", 14)
+    # ===== INVOICE & ORDER STATUS =====
+    c.setFont("Helvetica-Bold", 16)
     c.drawString(50, y, "INVOICE")
+    
+    # Order Status Badge (The Overall Status)
+    status_text = f"Order Status: {order.status.upper()}"
+    status_width = c.stringWidth(status_text, "Helvetica-Bold", 11)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawRightString(550, y, status_text)
     y -= 30
 
+    # ===== ORDER DETAILS & ADDRESS =====
     c.setFont("Helvetica", 11)
-    c.drawString(50, y, f"Order ID: {order.order_id if hasattr(order, 'order_id') else order.id}") # Safety check
+    c.drawString(50, y, f"Order ID: {order.order_id}")
     c.drawString(350, y, f"Order Date: {order.created_at.strftime('%d %b %Y')}")
     y -= 20
     c.drawString(50, y, f"Payment Method: {order.payment_method}")
     y -= 40
 
-    # ===== BILLING ADDRESS =====
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "Billing Address:")
     y -= 18
-
     c.setFont("Helvetica", 10)
-    # Ensure address exists to prevent errors
     if order.address:
-        address_lines = [
-            order.address.full_name,
-            order.address.address_line1,
-            order.address.address_line2,
-            f"{order.address.city}, {order.address.state} - {order.address.pincode}",
-            f"Phone: {order.address.phone_number}",
-        ]
-        for line in address_lines:
+        for line in [order.address.full_name, order.address.address_line1, order.address.address_line2, 
+                     f"{order.address.city}, {order.address.state} - {order.address.pincode}", f"Phone: {order.address.phone_number}"]:
             if line:
                 c.drawString(50, y, line)
                 y -= 15
-    y -= 15
+    y -= 25
 
-    # ===== TABLE HEADER =====
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(50, y, "Item")
-    c.drawString(260, y, "Qty")
-    c.drawString(310, y, "Price")
-    c.drawString(380, y, "Total")
-    y -= 10
+    # ===== TABLE HEADER (Added Status Column) =====
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(50, y, "Item Description")
+    c.drawString(240, y, "Status") # New Column
+    c.drawString(320, y, "Qty")
+    c.drawString(380, y, "Unit Price")
+    c.drawString(480, y, "Total")
+    y -= 8
     c.line(50, y, 550, y)
-    y -= 15
+    y -= 18
 
-    # ===== ORDER ITEMS (UPDATED LOGIC) =====
-    c.setFont("Helvetica", 10)
-    
+    # ===== ORDER ITEMS LOOP =====
+    c.setFont("Helvetica", 9)
     for item in order.items.all():
-        if y < 150: 
+        if y < 100:
             c.showPage()
-            y = height - 100
-            
-            # Reprint header
-            c.setFont("Helvetica-Bold", 11)
-            c.drawString(50, y, "Item")
-            c.drawString(260, y, "Qty")
-            c.drawString(310, y, "Price")
-            c.drawString(380, y, "Total")
-            y -= 15
-            c.line(50, y, 550, y)
-            y -= 15
+            y = height - 50 # Reset Y for new page
 
-        # --- LOGIC CHANGE HERE ---
-        is_cancelled = item.status == 'Cancelled'
+        is_inactive = item.status in ['Cancelled', 'Returned']
         
-        if is_cancelled:
-            # 1. Grey out text
-            c.setFillColorRGB(0.5, 0.5, 0.5) 
-            # 2. Add marker to name
-            item_name = f"{item.variant.product.name[:25]} (CANCELLED)"
-            # 3. Set Total to 0.00 so columns sum up correctly
-            line_total_str = "Rs. 0.00"
+        if is_inactive:
+            c.setFillColorRGB(0.5, 0.5, 0.5) # Grey out inactive items
+            line_total = 0.00
         else:
-            # Normal Item
             c.setFillColorRGB(0, 0, 0)
-            item_name = item.variant.product.name[:30]
-            item_total = item.price * item.quantity
-            line_total_str = f"Rs.{item_total}"
+            line_total = item.price * item.quantity
 
-        # Draw the Row
-        c.drawString(50, y, item_name)
-        c.drawString(260, y, str(item.quantity))
-        c.drawString(310, y, f"Rs.{item.price}")
-        c.drawString(380, y, line_total_str)
+        item_name = f"{item.variant.product.name[:30]} (Size: {item.variant.size})"
         
-        # Optional: Draw a strikethrough line for cancelled items
-        if is_cancelled:
+        # Draw Row
+        c.drawString(50, y, item_name)
+        c.drawString(240, y, item.status) # Shows individual item status
+        c.drawString(320, y, str(item.quantity))
+        c.drawString(380, y, f"Rs. {item.price:,.2f}")
+        c.drawRightString(530, y, f"Rs. {line_total:,.2f}")
+
+        if is_inactive:
             c.setStrokeColorRGB(0.5, 0.5, 0.5)
-            c.line(50, y + 4, 450, y + 4) # Draw line through text
-            c.setStrokeColorRGB(0, 0, 0)   # Reset stroke color
+            c.line(50, y + 3, 530, y + 3) # Strikethrough
+            c.setStrokeColorRGB(0, 0, 0)
 
         y -= 18
-        
-        # Reset fill color for next loop iteration
-        c.setFillColorRGB(0, 0, 0) 
 
     # ===== SUMMARY SECTION =====
+    c.setFillColorRGB(0, 0, 0)
     y -= 10
     c.line(300, y, 550, y)
     y -= 20
-
-    # 1. Calculations
-    subtotal = order.subtotal
-    discount = order.discount_amount if order.discount_amount else Decimal("0.00")
-    gst = order.gst
-    delivery_charge = order.delivery_charge
-    total_payable = order.total_amount
-
+    
+    # Using order-level totals (GST included, Delivery included)
     summary_data = [
-        ("Subtotal", subtotal),
+        ("Subtotal", order.subtotal),
+        ("GST (18%)", order.gst),
+        ("Delivery", order.delivery_charge),
     ]
+    if order.discount_amount > 0:
+        summary_data.insert(1, (f"Discount ({order.coupon.code if order.coupon else 'Coupon'})", -order.discount_amount))
 
-    if discount > 0:
-        coupon_label = f"Discount ({order.coupon.code})" if order.coupon else "Discount"
-        summary_data.append((coupon_label, -discount))
-
-    summary_data.extend([
-        ("GST (18%)", gst),
-        ("Delivery", delivery_charge),
-        ("Grand Total", total_payable),
-    ])
-
-    # 4. Render Summary
-    c.setFont("Helvetica-Bold", 11)
+    c.setFont("Helvetica", 11)
     for label, value in summary_data:
-        c.drawString(310, y, f"{label}:")
-        
-        if "Discount" in label:
-            c.setFillColorRGB(0.8, 0, 0) 
-            c.drawString(450, y, f"Rs. {value}")
-            c.setFillColorRGB(0, 0, 0)  
-        else:
-            c.drawString(450, y, f"Rs. {value}")
-            
+        c.drawString(320, y, f"{label}:")
+        if value < 0: c.setFillColorRGB(0.8, 0, 0)
+        c.drawRightString(530, y, f"Rs. {abs(value):,.2f}")
+        c.setFillColorRGB(0, 0, 0)
         y -= 18
 
-    y -= 30
+    c.line(300, y, 550, y)
+    y -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(320, y, "Grand Total:")
+    c.drawRightString(530, y, f"Rs. {order.total_amount:,.2f}")
 
-    # ===== FOOTER =====
-    c.setFont("Helvetica-Oblique", 10)
-    c.drawString(50, y, "Thank you for shopping with Shoeverse! Visit us again at shoeverse.com.")
-
+    # Footer
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawCentredString(width/2, 50, "Thank you for shopping with Shoeverse!")
     c.save()
     buffer.seek(0)
     return buffer
