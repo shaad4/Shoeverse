@@ -1485,8 +1485,6 @@ def sales_report_view(request):
     status_filter = request.GET.get('status','')
     download_format = request.GET.get('download')
 
-    orders = Order.objects.all().order_by("-created_at")
-
     today = timezone.now().date()
 
     if not start_date or not end_date:
@@ -1498,23 +1496,35 @@ def sales_report_view(request):
         if isinstance(end_date, str):
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
 
+
+    orders = Order.objects.all().order_by("-created_at")
+
     if report_type == "daily":
-        orders = Order.objects.filter(created_at__date =  today)
+        orders = orders.filter(created_at__date =  today)
     elif report_type == "weekly":
-        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=7))
+        orders = orders.filter(created_at__date__gte = today - timedelta(days=7))
     elif report_type == "monthly":
-        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=30))
+        orders = orders.filter(created_at__date__gte = today - timedelta(days=30))
     elif  report_type == "yearly":
-        orders = Order.objects.filter(created_at__date__gte = today - timedelta(days=365))
+        orders = orders.filter(created_at__date__gte = today - timedelta(days=365))
     else:
-        orders = Order.objects.filter(created_at__date__range=[start_date, end_date])
+        orders = orders.filter(created_at__date__range=[start_date, end_date])
 
     
     if status_filter:
         orders = orders.filter(status=status_filter)
 
-    revenue_orders = orders.filter(status="Delivered")
-    total_revenue = revenue_orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+
+    total_revenue_query = OrderItem.objects.filter(
+        order__in=orders,
+        status="Delivered"
+    ).aggregate(
+        net_revenue=Sum(F('price') * F('quantity'))
+    )
+
+    net_subtotal = total_revenue_query['net_revenue'] or Decimal('0.00')
+    total_revenue = (net_subtotal * Decimal('1.18')).quantize(Decimal('0.01'))
+
 
     totals = orders.aggregate(
         total_count = Count("id"),
