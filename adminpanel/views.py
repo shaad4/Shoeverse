@@ -86,8 +86,9 @@ def admin_dashboard(request):
     user_count = User.objects.filter(role="user").count()
     total_orders = Order.objects.count()
 
+    
 
-    total_revenue_data = Order.objects.aggregate(Sum('total_amount'))
+    total_revenue_data = Order.objects.filter(status="Delivered").aggregate(Sum('total_amount'))
     total_revenue = total_revenue_data["total_amount__sum"] or 0
 
     recent_orders = Order.objects.select_related('user').order_by("-created_at")[:5]
@@ -96,7 +97,7 @@ def admin_dashboard(request):
     recent_customers = User.objects.filter(role="user").order_by("-date_joined")[:4]
 
     six_months_ago = timezone.now() - timedelta(days=180)
-    monthly_sales = Order.objects.filter(created_at__gte = six_months_ago).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total_amount')).order_by('month')
+    monthly_sales = Order.objects.filter(status="Delivered", created_at__gte = six_months_ago).annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('total_amount')).order_by('month')
 
 
     sales_data = []
@@ -109,11 +110,12 @@ def admin_dashboard(request):
                 'height_percent' : (entry['total'] / max_sales) * 100
             })
 
-    category_sales = Order.objects.values(
-        cat_name=F("items__variant__product__category") 
-    ).annotate(
-        total=Sum(F("items__price") * F("items__quantity"))
-    ).order_by("-total")[:3]
+    category_sales = (
+        Order.objects.filter(status="Delivered")
+        .values(cat_name=F("items__variant__product__category"))
+        .annotate(total=Sum(F("items__price") * F("items__quantity")))
+        .order_by("-total")[:3]
+    )
     
 
 
