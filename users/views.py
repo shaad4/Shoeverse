@@ -652,27 +652,105 @@ def order_list_view(request):
 
 #order list
 
+# @user_required
+# def order_detail_view(request, order_id):
+#     order = get_object_or_404(Order, order_id=order_id, user=request.user)
+#     order_items = order.items.all()
+    
+#     active_subtotal = Decimal("0.01")
+#     for item in order_items:
+#         if item.status not in ['Cancelled', 'Returned']:
+#             active_subtotal += (item.price * item.quantity)
+
+#     active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+#     active_total = (active_subtotal + active_gst + order.delivery_charge - order.discount_amount).max(Decimal('0.00'))
+
+
+#     today = timezone.now().date()
+#     return_deadline = None
+
+#     # Fetch all return requests for this order
+#     return_requests = ReturnRequest.objects.filter(order_item__order=order)
+    
+#     # Create a lookup (map) by order_item.id
+#     return_request_map = {ret.order_item_id: ret for ret in return_requests}
+
+#     has_returnable_items = False
+
+#     if order.status == "Delivered" and order.delivered_at:
+#         return_deadline = order.delivered_at.date() + timedelta(days=10)
+
+#         for item in order_items:
+#             # Attach the return request to item if exists
+#             item.return_request = return_request_map.get(item.id, None)
+
+#             if item.return_request:
+#                 item.return_status = item.return_request.status
+#                 item.return_request_id = item.return_request.id
+#                 item.is_return_eligible = False
+#             else:
+#                 item.return_status = None
+#                 item.return_request_id = None
+#                 item.is_return_eligible = item.is_return_eligible()
+
+#         has_returnable_items = any(item.is_return_eligible for item in order_items)
+
+#     context = {
+#         "order": order,
+#         "order_items": order_items,
+#         "has_returnable_items": has_returnable_items,
+#         "active_subtotal": active_subtotal,
+#         "active_gst": active_gst,
+#         "active_total": active_total,
+#     }
+
+#     return render(request, "users/order_detail.html", context)
+
+
+
 @user_required
 def order_detail_view(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     order_items = order.items.all()
+
+    # ✅ Active items = not cancelled or returned
+    active_items = order_items.exclude(status__in=['Cancelled', 'Returned'])
+
+    # ✅ If all items are cancelled/returned → show original order totals
+    if not active_items.exists():
+        refund_items = order_items.filter(status__in=['Cancelled', 'Returned'])
+
+        active_subtotal = Decimal("0.00")
+        for item in refund_items:
+            active_subtotal += item.price * item.quantity
+
+        active_subtotal = active_subtotal.quantize(Decimal("0.01"))
+        active_gst = (active_subtotal * Decimal("0.18")).quantize(Decimal("0.01"))
+        active_total = (active_subtotal + active_gst).quantize(Decimal("0.01"))
+
+        is_fully_cancelled = True
+    else:
+        # ✅ Calculate only active items
+        active_subtotal = Decimal("0.00")
+        for item in active_items:
+            active_subtotal += item.price * item.quantity
+
+        active_subtotal = active_subtotal.quantize(Decimal("0.01"))
+        active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+        active_total = (
+            active_subtotal +
+            active_gst +
+            order.delivery_charge -
+            order.discount_amount
+        ).max(Decimal('0.00'))
+
+        is_fully_cancelled = False
+
     
-    active_subtotal = Decimal("0.01")
-    for item in order_items:
-        if item.status not in ['Cancelled', 'Returned']:
-            active_subtotal += (item.price * item.quantity)
-
-    active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
-    active_total = (active_subtotal + active_gst + order.delivery_charge - order.discount_amount).max(Decimal('0.00'))
-
-
     today = timezone.now().date()
     return_deadline = None
 
-    # Fetch all return requests for this order
     return_requests = ReturnRequest.objects.filter(order_item__order=order)
-    
-    # Create a lookup (map) by order_item.id
     return_request_map = {ret.order_item_id: ret for ret in return_requests}
 
     has_returnable_items = False
@@ -681,7 +759,6 @@ def order_detail_view(request, order_id):
         return_deadline = order.delivered_at.date() + timedelta(days=10)
 
         for item in order_items:
-            # Attach the return request to item if exists
             item.return_request = return_request_map.get(item.id, None)
 
             if item.return_request:
@@ -702,6 +779,7 @@ def order_detail_view(request, order_id):
         "active_subtotal": active_subtotal,
         "active_gst": active_gst,
         "active_total": active_total,
+        "is_fully_cancelled": is_fully_cancelled,
     }
 
     return render(request, "users/order_detail.html", context)

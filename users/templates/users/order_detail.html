@@ -244,39 +244,72 @@
             <h3 class="text-lg font-bold text-white mb-6">Payment Summary</h3>
             
             <div class="space-y-3 text-sm">
-                <div class="flex justify-between text-gray-400">
-                    <span>Active Subtotal</span>
-                    <span class="text-white">₹{{ active_subtotal }}</span>
-                </div>
-                <div class="flex justify-between text-gray-400">
-                    <span>GST (18%)</span>
-                    <span class="text-white">₹{{ active_gst }}</span>
-                </div>
-                <div class="flex justify-between text-gray-400">
-                    <span>Delivery</span>
-                    <span class="text-white">{% if order.delivery_charge == 0 %}Free{% else %}₹{{ order.delivery_charge }}{% endif %}</span>
-                </div>
-
-                {% if order.discount_amount > 0 %}
-                <div class="flex justify-between text-emerald-400 font-medium">
-                    <div class="flex items-center gap-2">
-                        <span>Coupon Discount</span>
-                        {% if order.coupon %}
-                        <span class="text-[10px] uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
-                            {{ order.coupon.code }}
-                        </span>
-                        {% endif %}
+                {% if is_fully_cancelled %}
+                    <div class="flex justify-between text-gray-400">
+                        <span>Order Subtotal</span>
+                        <span class="text-white">₹{{ active_subtotal }}</span>
                     </div>
-                    <span>- ₹{{ order.discount_amount }}</span>
-                </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>GST (18%)</span>
+                        <span class="text-white">₹{{ active_gst }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Delivery</span>
+                        <span class="text-white">
+                            {% if order.delivery_charge == 0 %}Free{% else %}₹{{ order.delivery_charge }}{% endif %}
+                        </span>
+                    </div>
+
+                    {% if order.discount_amount > 0 %}
+                    <div class="flex justify-between text-emerald-400 font-medium">
+                        <span>Coupon Discount</span>
+                        <span>- ₹{{ order.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-t border-[#2a3b31] my-4"></div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-base font-bold text-white">Refund Amount</span>
+                        <span class="text-xl font-bold text-red-400">₹{{ active_total }}</span>
+                    </div>
+                {% else %}
+                    <div class="flex justify-between text-gray-400">
+                        <span>Active Subtotal</span>
+                        <span class="text-white">₹{{ active_subtotal }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>GST (18%)</span>
+                        <span class="text-white">₹{{ active_gst }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Delivery</span>
+                        <span class="text-white">
+                            {% if order.delivery_charge == 0 %}Free{% else %}₹{{ order.delivery_charge }}{% endif %}
+                        </span>
+                    </div>
+
+                    {% if order.discount_amount > 0 %}
+                    <div class="flex justify-between text-emerald-400 font-medium">
+                        <div class="flex items-center gap-2">
+                            <span>Coupon Discount</span>
+                            {% if order.coupon %}
+                            <span class="text-[10px] uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                                {{ order.coupon.code }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <span>- ₹{{ order.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-t border-[#2a3b31] my-4"></div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-base font-bold text-white">Net Total</span>
+                        <span class="text-xl font-bold text-[#96c4a8]">₹{{ active_total }}</span>
+                    </div>
                 {% endif %}
-                
-                <div class="border-t border-[#2a3b31] my-4"></div>
-                
-                <div class="flex justify-between items-center">
-                    <span class="text-base font-bold text-white">Net Total</span>
-                    <span class="text-xl font-bold text-[#96c4a8]">₹{{ active_total }}</span>
-                </div>
             </div>
 
             <div class="mt-8 space-y-3">
