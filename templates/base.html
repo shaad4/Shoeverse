@@ -8,7 +8,16 @@
 
     {% load static %}
     <link rel="icon" type="image/svg+xml" href="{% static 'images/logo.svg' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
 
+    <!-- iOS support -->
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Shoeverse">
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#18211d">
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
