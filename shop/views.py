@@ -276,25 +276,45 @@ def add_to_cart(request, variant_id=None):
         messages.error(request, "Please log in to add items to cart.")
         return redirect("login")
     
-    if request.method == "POST":
-        variant_id = variant_id or request.POST.get("variant_id")
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    
+    if request.method != "POST":
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+        return redirect('shop_products')
+    
+    variant_id = variant_id or request.POST.get("variant_id")
 
     if not variant_id:
-        messages.error(request, "Invalid product selection")
+        msg = "Invalid product selection"
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
     
     variant = get_object_or_404(ProductVariant, id = variant_id)
 
     if not variant.product.is_active  or not variant.is_active:
-        messages.error(request, "This product is not available")
+        msg = "This product is not available"
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
     if variant.stock <= 0:
-        messages.error(request, "This product is out of stock")
+        msg = "This product is out of stock"
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
     
-    quantity = int(request.POST.get('quantity',1))
-    quantity = max(1, min(quantity, min(variant.stock, 4)))
+    try:
+        quantity = int(request.POST.get('quantity', 1))
+    except ValueError:
+        quantity = 1
+
+    max_qty = min(variant.stock, 4)
+    quantity = max(1, min(quantity, max_qty))
     
     cart_item, created = CartItem.objects.get_or_create(
         user = request.user,
@@ -304,19 +324,30 @@ def add_to_cart(request, variant_id=None):
     if created:
         cart_item.quantity = quantity     # FIXED
         cart_item.save()
-        messages.success(request, "Item added to cart successfully!")
+        msg = "Item added to cart"
     else:
         if cart_item.quantity < min(variant.stock, 4):
             cart_item.quantity += 1
             cart_item.save()
-            messages.success(request, "Quantity updated in cart")
+            msg = "Quantity updated in cart"
         else:
-            messages.warning(request, "Maximum quantity reached for this product")
+            msg = "Maximum quantity reached"
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg}, status=400)
+            messages.warning(request, msg)
+            return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
-    ####  Delete from  wishlist
-    # from .models import Wishlist
-    # Wishlist.objects.filter(user=request.user, variant=variant).delete()
+   
+    Wishlist.objects.filter(user=request.user, product=variant.product).delete()
 
+    if is_ajax:
+        return JsonResponse({
+            'status': 'success', 
+            'message': msg,
+            'cart_count': CartItem.objects.filter(user=request.user).count()
+        })
+
+    messages.success(request, msg)
     return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
 @user_required
@@ -522,16 +553,27 @@ def add_to_wishlist(request,  product_id):
         messages.error(request, "Please log in to save items")
         return redirect("login")
     
-    product = get_object_or_404(Product, id=product_id)
+    if request.method == "POST":
+        product = get_object_or_404(Product, id=product_id)
 
-    wishlist_item,  created = Wishlist.objects.get_or_create(
-        user=request.user,
-          product=product
-    )
-    if created:
-        messages.success(request,  "Added to wishlist")
-    else:
-        messages.warning(request, "This product is already in your wishlist")
+        wishlist_item = Wishlist.objects.filter(user=request.user, product=product)
+
+        if wishlist_item.exists():
+            wishlist_item.delete()
+            added = False
+            message = "Removed from wishlist"
+        else:
+            Wishlist.objects.create(user=request.user, product=product)
+            added = True
+            message = "Added to wishlist"
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'added': added,
+                'message': message
+            })
+
 
     return redirect(request.META.get('HTTP_REFERER', 'shop_products'))
 
