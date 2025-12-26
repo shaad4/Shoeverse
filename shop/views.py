@@ -181,9 +181,9 @@ def  product_detail_view(request, product_id):
     )
     logger.debug("Loaded product: %s", product.name)
 
-    if not product.is_active:
-        logger.warning("Inactive product (ID=%s) accessed", product_id)
-        return redirect("shop_products")
+    # if not product.is_active:
+    #     logger.warning("Inactive product (ID=%s) accessed", product_id)
+    #     return redirect("shop_products")
     
     #fetching all the product variantes
     variants = (

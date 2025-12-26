@@ -86,7 +86,14 @@
             </div>
 
             <div class="flex items-baseline gap-4 mt-2">
-                {% if product.offer_percentage > 0 %}
+                {% if not product.is_active %}
+                    <div class="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <p class="text-xl font-bold text-red-500 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            Currently Unavailable
+                        </p>
+                    </div>
+                {% elif product.offer_percentage > 0 %}
                     <p class="text-4xl font-bold text-[#96c4a8]">₹ {{ product.final_price }}</p>
                     <p class="line-through text-gray-500 text-lg">₹ {{ product.price }}</p>
                     <span class="ml-2 px-3 py-1 bg-[#96c4a8]/10 text-[#96c4a8] font-bold rounded-full text-sm tracking-wide">
@@ -97,6 +104,7 @@
                 {% endif %}
             </div>
 
+            {% if product.is_active %}
             <form method="POST" action="{% url 'add_to_cart' 0 %}" id="addToCartForm">
                 {% csrf_token %}
 
@@ -171,7 +179,12 @@
                         {% endif %}
                     </div>
                 </div>
-            </form> 
+            </form>
+            {% else %}
+                <div class="p-6 bg-[#18211d] border border-[#2a3b31] rounded-2xl mt-8">
+                    <p class="text-gray-400 text-sm italic">This item is currently not available for purchase. It may have been unlisted or discontinued. You can still add it to your wishlist to be notified when it returns.</p>
+                </div>
+            {% endif %}
             
             <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="mt-2">
                 {% csrf_token %}
@@ -472,14 +485,16 @@
     });
 
     // Form Validation
-    form.addEventListener('submit', function(e) {
-        const selectedVariant = document.querySelector('input[name="variant_id"]:checked');
-        if (!selectedVariant) {
-            e.preventDefault(); 
-            errorMsg.classList.remove('hidden');
-            errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            const selectedVariant = document.querySelector('input[name="variant_id"]:checked');
+            if (!selectedVariant) {
+                e.preventDefault(); 
+                errorMsg.classList.remove('hidden');
+                errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
 </script>
 
 {% endblock %}
