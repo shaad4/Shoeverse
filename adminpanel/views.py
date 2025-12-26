@@ -653,9 +653,17 @@ def admin_category_edit(request , id):
     subcategory = get_object_or_404(SubCategory, id=id)
 
     if request.method == "POST":
-        subcategory.name = request.POST.get("name").strip()
-        subcategory.category = request.POST.get("category")
-        subcategory.is_active = request.POST.get("is_active") == "on"
+        new_name = request.POST.get("name").strip()
+        new_category = request.POST.get("category")
+        is_active = request.POST.get("is_active") == "on"
+
+        if SubCategory.objects.filter(category=new_category, name__iexact=new_name).exclude(id=id).exists():
+            messages.error(request, f"Subcategory '{new_name}' already exists in this category.")
+            return redirect("admin_category_edit", id=id)
+        
+        subcategory.name = new_name
+        subcategory.category = new_category
+        subcategory.is_active = is_active
         subcategory.save()
 
         messages.success(request, f"Subcategory '{subcategory.name}' updated successfully.")
