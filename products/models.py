@@ -8,6 +8,7 @@ from django.utils import timezone
 from decimal import Decimal
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
+import io
 
 
 # Create your models here.
@@ -112,27 +113,38 @@ class ProductVariant(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
-    image =  models.ImageField(upload_to="products/")
+    image = models.ImageField(upload_to="products/")
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Image for {self.product.name}"
-    
+
     def save(self, *args, **kwargs):
+        # 1. Check if there is an image and it's new or changed
+        if self.image:
+            # Open the image using the file object, not the path
+            img = Image.open(self.image)
+
+            # 2. Process the image (Thumbnail)
+            max_size = (1000, 1000)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
+            # 3. Convert to RGB if necessary (to save as JPEG)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+
+            # 4. Save the processed image to an in-memory buffer
+            buffer = io.BytesIO()
+            img.save(buffer, format="JPEG", quality=85, optimize=True)
+            buffer.seek(0)
+
+            # 5. Replace the original image with the processed one
+            # Use the original name but change extension to .jpg if needed
+            new_name = self.image.name.rsplit('.', 1)[0] + '.jpg'
+            self.image.save(new_name, ContentFile(buffer.read()), save=False)
 
         super().save(*args, **kwargs)
-
-        img = Image.open(self.image.path)
-
-        max_size = (1000, 1000)
-        img.thumbnail(max_size, Image.Resampling.LANCZOS)
-
-        if img.mode in ("RGBA", "P"):
-            img = img.convert("RGB")
-
-        img.save(self.image.path, format="JPEG", quality=85, optimize=True)
-
 
 
 class SubCategory(models.Model):
