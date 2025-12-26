@@ -425,10 +425,15 @@ def product_add_view(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
         images = request.FILES.getlist("images")
+
+        if len(images) != 3:
+            messages.error(request, f"You must upload exactly 3 images. (Current: {len(images)})")
+            return redirect("admin_product_list")
+
         if form.is_valid():
             product = form.save()
 
-            for index, image  in enumerate(images[:3]):
+            for index, image  in enumerate(images):
                 ProductImage.objects.create(
                     product=product,
                     image=image,
@@ -494,13 +499,29 @@ def product_edit_view(request, product_id):
     if request.method == "POST":
         form = ProductForm(request.POST, instance=product)
         new_images = request.FILES.getlist("images")  
-        remove_images = request.POST.getlist("remove_images") 
+        remove_image_ids = request.POST.getlist("remove_images") 
 
+        current_count = existing_images.count()
+        to_remove_count = len(remove_image_ids)
+        to_add_count = len(new_images)
 
+        final_count = current_count - to_remove_count + to_add_count
+        if final_count != 3:
+            messages.error(
+                request, 
+                f"A product must have exactly 3 images. "
+                f"Current: {current_count}, Removing: {to_remove_count}, Adding: {to_add_count}. "
+                f"Result would be {final_count}."
+            )
+    
+            return render(request, "adminpanel/products/product_edit.html", {
+                "form": form, "product": product, "existing_images": existing_images
+            })
+        
         if form.is_valid():
             form.save()
             
-            for img_id in remove_images:
+            for img_id in remove_image_ids:
                 try:
                     img = ProductImage.objects.get(id=img_id, product=product) #image takes from perticular id
                     img.image.delete(save=False) # delete from media
@@ -508,12 +529,14 @@ def product_edit_view(request, product_id):
                 except ProductImage.DoesNotExist:
                     pass
 
-            remaining = 3 - product.images.count() #take total number of images for a perticular product
-            for index, img in enumerate(new_images[:remaining]):
+            
+            for index, img_file in enumerate(new_images):
+                is_primary = not product.images.filter(is_primary=True).exists() and index == 0
+
                 ProductImage.objects.create(
                     product=product,
-                    image=img,
-                    is_primary=(product.images.count() == 0 and index == 0)
+                    image=img_file,
+                    is_primary=is_primary
                 )
 
             messages.success(request, f"Product '{product.name}' updated successfully!")
@@ -774,19 +797,23 @@ def admin_cancel_order_item(request, item_id):
     if item.status == 'Cancelled':
         messages.warning(request, "Item is already cancelled.")
         return redirect('admin_order_detail', order_id=order.order_id)
+
+    item_gst = (item.total_price * Decimal('0.18')).quantize(Decimal('0.01'))
+    refund_amount = item.total_price + item_gst
     
     item.status = "Cancelled"
     item.variant.stock += item.quantity
     item.variant.save()
     item.save()
 
-    refund_amount = item.total_price 
-
-    wallet, _ = Wallet.objects.get_or_create(user=order.user)
-    wallet.balance += refund_amount
-    wallet.save()
-
-    credit_wallet(wallet, refund_amount,f"Refund for cancelled item: {item.variant.product.name}" )
+    if order.payment_method.upper() != 'COD':
+        wallet, _ = Wallet.objects.get_or_create(user=order.user)
+        wallet.balance += refund_amount
+        wallet.save()
+        credit_wallet(wallet, refund_amount, f"Refund for cancelled item: {item.variant.product.name}")
+        messages.success(request, f"Refund of ₹{refund_amount} credited to wallet.")
+    else:
+        messages.info(request, "Item cancelled. No refund processed for COD order.")
 
     active_items = order.items.exclude(status='Cancelled')
 
@@ -794,10 +821,11 @@ def admin_cancel_order_item(request, item_id):
         # If no items left, cancel the whole order
         order.status = "Cancelled"
         order.cancel_reason = "All items cancelled by Admin"
-        # order.subtotal = Decimal(0)
-        # order.gst = Decimal(0)
-        # order.delivery_charge = Decimal(0)
-        # order.total_amount = Decimal(0)
+
+        if order.payment_method.upper() != 'COD' and order.delivery_charge > 0:
+            wallet.balance += order.delivery_charge
+            wallet.save()
+            credit_wallet(wallet, order.delivery_charge, "Refund for Delivery Charges (Order Cancelled)")
         
     else:
         new_subtotal = sum(i.total_price for i in active_items)

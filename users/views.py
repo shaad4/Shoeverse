@@ -458,10 +458,20 @@ def profile_edit_view(request):
 
 
         user.fullName = request.POST.get("fullName")
-        user.phoneNumber = request.POST.get("phoneNumber")
+        phone_number = request.POST.get("phoneNumber")
         user.gender = request.POST.get("gender")
         date_of_birth = request.POST.get("dateOfBirth")
         user.dateOfBirth = date_of_birth if date_of_birth else None
+
+        if phone_number:
+            phone_exists = User.objects.filter(phoneNumber=phone_number).exclude(id=user.id).exists()
+            
+            if phone_exists:
+                messages.error(request, f"The phone number {phone_number} is already linked to another account.")
+                return render(request, "users/profile_edit.html", {"user": user})
+            
+        user.phoneNumber = phone_number
+
 
         if request.FILES.get("profileImage"):
             user.profileImage = request.FILES.get("profileImage")

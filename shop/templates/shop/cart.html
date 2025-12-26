@@ -96,23 +96,19 @@
                     <div class="text-right whitespace-nowrap">
 
                         {% if item.variant.product.offer_percentage > 0 %}
-                            <!-- FINAL PRICE (discount applied) -->
                             <p class="font-semibold text-lg text-primary">
                                 ₹<span id="item-total-{{ item.id }}">{{ item.variant.product.final_price|floatformat:0 }}</span>
                             </p>
 
-                            <!-- ORIGINAL MRP -->
                             <p class="text-sm line-through text-white/40">
                                 ₹ {{ item.variant.product.price }}
                             </p>
 
-                            <!-- OFFER BADGE -->
                             <span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                                 {{ item.variant.product.offer_percentage }}% OFF
                             </span>
 
                         {% else %}
-                            <!-- NO OFFER -->
                             <p class="font-semibold text-lg">
                                 ₹<span id="item-total-{{ item.id }}">{{ item.variant.product.price }}</span>
                             </p>
@@ -124,7 +120,7 @@
             </article>
             {% endfor %}
 
-            {# Out-of-stock items (separate loop) #}
+            {# Out-of-stock items #}
             {% for out_item in out_of_stock_items %}
             <article id="out-item-row-{{ out_item.id }}" class="glass rounded-card border border-red-500/40 p-4 md:p-6 bg-red-500/5">
                 <div class="flex items-start gap-4">
@@ -143,8 +139,43 @@
             </article>
             {% endfor %}
 
-            {# Empty Cart Message (Hidden by default if items exist) #}
-            <div id="empty-cart-msg" class="{% if cart_items or out_of_stock_items %}hidden{% endif %}">
+            {# Unlisted / Deactivated items #}
+            {% for un_item in unlisted_items %}
+            <article class="glass rounded-card border border-white/5 p-4 md:p-6 opacity-60 grayscale">
+                <div class="flex items-start gap-4">
+                    <div class="w-24 h-24 rounded-xl bg-white/5 overflow-hidden">
+                        <img src="{{ un_item.variant.product.images.first.image.url }}" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <h2 class="font-semibold text-lg text-white/50">{{ un_item.variant.product.name }}</h2>
+                            <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/40 uppercase">Unavailable</span>
+                        </div>
+                        <p class="text-sm text-white/40 mb-4">This product is no longer available.</p>
+                        
+                        <div class="flex items-center gap-4">
+                            <form action="{% url 'add_to_wishlist' un_item.variant.product.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="text-sm text-primary hover:underline font-medium">
+                                    Move to wishlist
+                                </button>
+                            </form>
+
+                            <span class="text-white/10">|</span>
+
+                            <button onclick="openRemoveModal('{{ un_item.id }}')" 
+                                    class="text-sm text-red-400 hover:text-red-500 transition">
+                                Remove from cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+
+            {# Empty Cart Message #}
+            <div id="empty-cart-msg" class="{% if cart_items or out_of_stock_items or unlisted_items %}hidden{% endif %}">
                 <p class="text-center text-white/70 py-10">Your cart is empty.</p>
             </div>
 

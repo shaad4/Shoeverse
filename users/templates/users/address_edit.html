@@ -6,16 +6,11 @@
 {% block content %}
 <div class="flex min-h-screen bg-[#121714] text-gray-200 font-sans selection:bg-[#366347] selection:text-white">
 
-    <!-- Sidebar -->
-    
-        {% include "users/profile_sidebar.html" %}
- 
+    {% include "users/profile_sidebar.html" %}
 
-    <!-- Main Content -->
     <main class="flex-1 p-4 lg:p-10">
         <div class="max-w-3xl mx-auto space-y-8">
 
-            <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-white tracking-tight">Edit Address</h1>
@@ -27,42 +22,36 @@
                 </a>
             </div>
 
-            <!-- Form Card -->
             <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] shadow-xl shadow-black/20 overflow-hidden">
                 
-                <form method="POST" class="p-6 md:p-8 space-y-8">
+                <form id="editAddressForm" method="POST" class="p-6 md:p-8 space-y-8">
                     {% csrf_token %}
                     
-                    <!-- Hidden ID -->
                     <input type="hidden" name="address_id" value="{{ address.id }}">
 
-                    <!-- SECTION 1: Contact Details -->
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-white border-b border-[#2a3b31] pb-2">Contact Information</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Full Name -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
-                                <input type="text" name="full_name" value="{{ address.full_name }}" 
+                                <input type="text" name="full_name" value="{{ address.full_name }}" required maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
 
-                            <!-- Phone -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
-                                <input type="text" name="phone_number" value="{{ address.phone_number }}" 
+                                <input type="tel" name="phone_number" value="{{ address.phone_number }}" required 
+                                       pattern="\d{10}" title="Please enter a valid 10-digit mobile number"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
 
-                            <!-- Email -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email (Optional)</label>
                                 <input type="email" name="email" value="{{ address.email|default:'' }}" 
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
 
-                            <!-- Address Type -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Type</label>
                                 <div class="relative">
@@ -79,51 +68,45 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 2: Location Details -->
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-white border-b border-[#2a3b31] pb-2">Address Details</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Line 1 -->
                             <div class="col-span-1 md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 1</label>
-                                <input type="text" name="address_line1" value="{{ address.address_line1 }}" 
+                                <input type="text" name="address_line1" value="{{ address.address_line1 }}" required maxlength="255"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
                                        placeholder="House No, Building, Street Area">
                             </div>
 
-                            <!-- Line 2 -->
                             <div class="col-span-1 md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 2 (Optional)</label>
-                                <input type="text" name="address_line2" value="{{ address.address_line2|default:'' }}" 
+                                <input type="text" name="address_line2" value="{{ address.address_line2|default:'' }}" maxlength="255"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
                                        placeholder="Landmark, nearby details">
                             </div>
 
-                            <!-- City -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">City</label>
-                                <input type="text" name="city" value="{{ address.city }}" 
+                                <input type="text" name="city" value="{{ address.city }}" required maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
 
-                            <!-- State -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">State</label>
-                                <input type="text" name="state" value="{{ address.state }}" 
+                                <input type="text" name="state" value="{{ address.state }}" required maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
 
-                            <!-- Pincode -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pincode / ZIP</label>
-                                <input type="text" name="pincode" value="{{ address.pincode }}" 
+                                <input type="text" name="pincode" value="{{ address.pincode }}" required 
+                                       pattern="\d{6}" title="Please enter a valid 6-digit pincode"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Actions -->
                     <div class="pt-6 border-t border-[#2a3b31] flex items-center justify-end gap-4">
                         <a href="{% url 'address' %}" class="px-6 py-2.5 rounded-xl border border-[#2a3b31] text-gray-400 hover:text-white hover:bg-[#2a3b31] transition-all font-medium text-sm">
                             Cancel
@@ -140,4 +123,48 @@
         </div>
     </main>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editAddressForm');
+        const inputs = form.querySelectorAll('input[required]');
+
+        // Trim whitespace on blur
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        });
+
+        // Phone: Number only and 10 digit limit
+        const phoneInput = form.querySelector('input[name="phone_number"]');
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+
+        // Pincode: Number only and 6 digit limit
+        const pinInput = form.querySelector('input[name="pincode"]');
+        pinInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+        });
+
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (input.value.trim().length === 0) {
+                    isValid = false;
+                    input.classList.add('border-red-500');
+                } else {
+                    input.classList.remove('border-red-500');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill out all required fields correctly.');
+            }
+        });
+    });
+</script>
 {% endblock %}

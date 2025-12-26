@@ -1,15 +1,23 @@
 from django import forms 
 from .models import  Product, ProductVariant, SubCategory
-
+from django.core.validators import MinValueValidator
 
 class ProductForm(forms.ModelForm):
+    price = forms.DecimalField(
+        validators=[MinValueValidator(0)],
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600',
+            'min': '0', 
+            'step': '0.01'
+        })
+    )
+
     class Meta:
         model = Product
         fields = [
             'name',
             'description',
             'price',
-            'old_price',
             'color',
             'category',
             'subcategory',
@@ -29,12 +37,7 @@ class ProductForm(forms.ModelForm):
                 'rows': 3,
                 'placeholder': "Enter product description…"
             }),
-            'price': forms.NumberInput(attrs={
-                'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600'
-            }),
-            'old_price': forms.NumberInput(attrs={
-                'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600'
-            }),
+            # Removed 'price' from widgets since we defined it explicitly above
             'color': forms.TextInput(attrs={
                 'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600'
             }),
@@ -61,11 +64,7 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Default: show ALL subcategories in Add Product
         self.fields['subcategory'].queryset = SubCategory.objects.filter(is_active=True)
-
-        # For edit mode: filter by selected category
         if self.instance and self.instance.category:
             self.fields['subcategory'].queryset = SubCategory.objects.filter(
                 category=self.instance.category,
