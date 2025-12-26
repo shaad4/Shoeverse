@@ -4,120 +4,111 @@
 {% block content %}
 
 <div class="bg-dark min-h-screen flex items-center justify-center py-5">
-
     <div class="w-full flex justify-center items-center py-5 px-5 md:px-40">
         
         <div class="w-full max-w-[960px] flex flex-col items-center">
             
-            <!-- Title -->
             <div class="w-full flex justify-center px-4 pt-5 pb-3">
                 <h1 class="text-[28px] font-bold text-white text-center leading-[1.25em]">
                     Join the Shoeverse and step into your next style.
                 </h1>
             </div>
 
-
-            <!-- FORM START -->
             <form method="POST" id="signupForm" class="w-full max-w-[480px] flex flex-col items-stretch px-4">
                 {% csrf_token %}
 
-                <!-- Full Name -->
-                <div class="w-full mb-3">
+                <div class="w-full mb-4">
                     <input 
                         type="text" 
                         name="fullName"
                         placeholder="Full Name"
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                         required
                     >
                 </div>
 
-                <!-- Email -->
-                <div class="w-full mb-3">
+                <div class="w-full mb-4">
                     <input 
                         type="email" 
                         name="email"
                         placeholder="Email Address"
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                         required
                     >
                 </div>
 
-                <!-- Password -->
-                <div class="w-full mb-3 relative">
+                <div class="w-full mb-2 relative">
                     <input 
                         type="password" 
+                        id="password"
                         name="password"
                         placeholder="Password"
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                         required
                     >
-                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm">Show</button>
+                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm hover:text-white transition-colors">Show</button>
                 </div>
 
-                <!-- Confirm Password -->
-                <div class="w-full mb-3 relative">
+                <div class="w-full mb-4 px-1">
+                    <div class="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                        <div id="strengthBar" class="h-full w-0 transition-all duration-300"></div>
+                    </div>
+                    <p id="strengthText" class="text-[11px] mt-1 text-muted uppercase tracking-wider font-bold"></p>
+                </div>
+
+                <div class="w-full mb-4 relative">
                     <input 
                         type="password" 
+                        id="confirm_password"
                         name="confirm_password"
                         placeholder="Confirm Password"
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                         required
                     >
-                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm">Show</button>
+                    <button type="button" class="togglePass absolute right-4 top-[18px] text-muted text-sm hover:text-white transition-colors">Show</button>
                 </div>
 
-                <!-- Referral Code -->
-                <div class="w-full mb-3">
+                <div class="w-full mb-6">
                     <input 
                         type="text" 
                         name="referral"
                         placeholder="Referral Code (Optional)" 
-                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border focus:outline-none focus:ring-2 focus:ring-primary
+                        class="form-input w-full h-14 bg-dark-green text-white placeholder-muted text-base px-4 py-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all
                             {% if referral_code %} cursor-not-allowed opacity-80 {% endif %}"
                         value="{{ referral_code|default:'' }}"
                         {% if referral_code %} readonly {% endif %}
                     >
                 </div>
 
-
-                <!-- Submit Button -->
                 <div class="w-full mb-3">
                     <button 
                         id="signupBtn"
                         type="submit"
                         disabled
-                        class="w-full h-14 bg-primary text-dark font-bold text-sm rounded-card opacity-60 cursor-not-allowed transition-all">
+                        class="w-full h-14 bg-primary text-dark font-bold text-sm rounded-card opacity-50 cursor-not-allowed transition-all hover:scale-[1.01] active:scale-95">
                         Sign Up
                     </button>
                 </div>
             </form>
-            <!-- FORM END -->
-
-            <!-- Divider -->
             <div class="w-full flex justify-center items-center my-6 px-4">
-                <span class="text-small text-muted text-center">OR</span>
+                <div class="h-[1px] bg-gray-700 flex-grow"></div>
+                <span class="text-small text-muted px-4">OR</span>
+                <div class="h-[1px] bg-gray-700 flex-grow"></div>
             </div>
 
-           <!-- Google Button -->
-            <div class="w-full max-w-[480px] px-4 mb-3">
+           <div class="w-full max-w-[480px] px-4 mb-3">
                 <a href="/accounts/google/login/" 
                 class="w-full h-14 bg-dark-green text-white font-bold text-sm rounded-card 
-                        flex items-center justify-center gap-3 hover:opacity-90 transition-all">
-
-                    <img src="{% static 'images/google-icon.svg' %}" 
-                        alt="Google icon" class="w-[26px] h-[26px]">
-
+                        flex items-center justify-center gap-3 border border-gray-700 hover:bg-gray-800 transition-all">
+                    <img src="{% static 'images/google-icon.svg' %}" alt="Google icon" class="w-[22px] h-[22px]">
                     <span>Continue with Google</span>
                 </a>
             </div>
 
-
-            <!-- Login Link -->
             <div class="w-full flex justify-center mt-4 px-4 pb-3">
                 <p class="text-small text-muted text-center">
                     Already have an account?
-                    <a href="/login/" class="text-muted hover:text-primary">
+                    <a href="/login/" class="text-primary font-bold hover:underline ml-1">
                         Log in
                     </a>
                 </p>
@@ -125,29 +116,62 @@
 
         </div>
     </div>
-
 </div>
 
-<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- ✅ VALIDATION SCRIPT -->
 <script>
 $(document).ready(function () {
 
-    function clearErrors() {
-        $(".error-text").remove();
-        $("input").removeClass("border-red-500");
+    function clearErrors(field) {
+        $(`input[name='${field}']`).removeClass("border-red-500");
+        $(`input[name='${field}']`).parent().find(".error-text").remove();
     }
 
     function showError(field, msg) {
         let input = $(`input[name='${field}']`);
-        input.addClass("border-red-500");
-        input.after(`<p class="error-text text-red-500 text-sm mt-1">${msg}</p>`);
+        if (!input.parent().find(".error-text").length) {
+            input.addClass("border-red-500");
+            input.after(`<p class="error-text text-red-500 text-[12px] mt-1 ml-1 font-medium">${msg}</p>`);
+        }
+    }
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        const bar = $("#strengthBar");
+        const text = $("#strengthText");
+
+        switch (strength) {
+            case 0:
+                bar.css("width", "0%").removeClass().addClass("h-full bg-gray-700");
+                text.text("");
+                break;
+            case 1:
+                bar.css("width", "25%").removeClass().addClass("h-full bg-red-500");
+                text.text("Weak (Needs 8+ chars, Uppercase, Num, Special)").removeClass().addClass("text-[11px] mt-1 text-red-500 uppercase font-bold");
+                break;
+            case 2:
+                bar.css("width", "50%").removeClass().addClass("h-full bg-orange-500");
+                text.text("Fair").removeClass().addClass("text-[11px] mt-1 text-orange-500 uppercase font-bold");
+                break;
+            case 3:
+                bar.css("width", "75%").removeClass().addClass("h-full bg-yellow-500");
+                text.text("Good").removeClass().addClass("text-[11px] mt-1 text-yellow-500 uppercase font-bold");
+                break;
+            case 4:
+                bar.css("width", "100%").removeClass().addClass("h-full bg-green-500");
+                text.text("Strong").removeClass().addClass("text-[11px] mt-1 text-green-500 uppercase font-bold");
+                break;
+        }
+        return strength === 4;
     }
 
     function validateForm() {
-        clearErrors();
         let valid = true;
 
         let name = $("input[name='fullName']").val().trim();
@@ -155,58 +179,52 @@ $(document).ready(function () {
         let pass = $("input[name='password']").val().trim();
         let cpass = $("input[name='confirm_password']").val().trim();
 
-        if (name.length < 3) {
-            showError("fullName", "Full name must be at least 3 characters.");
+        // Name
+        if (name.length > 0 && name.length < 3) {
+            showError("fullName", "Name is too short");
             valid = false;
-        }
+        } else { clearErrors("fullName"); }
 
+        // Email
         let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showError("email", "Enter a valid email address.");
+        if (email.length > 0 && !emailRegex.test(email)) {
+            showError("email", "Invalid email address");
+            valid = false;
+        } else { clearErrors("email"); }
+
+        // Password Strength
+        let isStrong = checkPasswordStrength(pass);
+        if (pass.length > 0 && !isStrong) {
             valid = false;
         }
 
-        if (pass.length < 6) {
-            showError("password", "Password must be at least 6 characters.");
+        // Match
+        if (cpass.length > 0 && pass !== cpass) {
+            showError("confirm_password", "Passwords do not match");
             valid = false;
-        }
+        } else { clearErrors("confirm_password"); }
 
-        if (pass !== cpass) {
-            showError("confirm_password", "Passwords do not match.");
-            valid = false;
+        // Final Button State
+        if (name.length >= 3 && emailRegex.test(email) && isStrong && pass === cpass) {
+            $("#signupBtn").prop("disabled", false).removeClass("opacity-50 cursor-not-allowed").addClass("opacity-100 cursor-pointer");
+            return true;
+        } else {
+            $("#signupBtn").prop("disabled", true).addClass("opacity-50 cursor-not-allowed").removeClass("opacity-100 cursor-pointer");
+            return false;
         }
-
-        return valid;
     }
 
-    // ✅ Real-time validation
-    $("input").on("input", function () {
-        if (validateForm()) {
-            $("#signupBtn").prop("disabled", false)
-                           .removeClass("opacity-60 cursor-not-allowed");
-        } else {
-            $("#signupBtn").prop("disabled", true)
-                           .addClass("opacity-60 cursor-not-allowed");
-        }
-    });
+    // Input listeners
+    $("input").on("input focusout", validateForm);
 
-    // ✅ Password Show/Hide
+    // ✅ FIXED Password Show/Hide logic for both fields
     $(".togglePass").on("click", function () {
-        let input = $(this).prev("input");
-        if (input.attr("type") === "password") {
-            input.attr("type", "text");
-            $(this).text("Hide");
-        } else {
-            input.attr("type", "password");
-            $(this).text("Show");
-        }
-    });
-
-    // ✅ Final form check on submit
-    $("#signupForm").on("submit", function (e) {
-        if (!validateForm()) {
-            e.preventDefault();
-        }
+        // Find the input within the same parent div
+        let input = $(this).closest('div').find('input');
+        let isPass = input.attr("type") === "password";
+        
+        input.attr("type", isPass ? "text" : "password");
+        $(this).text(isPass ? "Hide" : "Show");
     });
 
 });
