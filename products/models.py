@@ -22,7 +22,6 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10,  decimal_places=2)
-    old_price = models.DecimalField(max_digits=10, decimal_places=2,  null=True, blank=True)
     color  = models.CharField(max_length=50)
     category  = models.CharField(max_length=10, choices=CATEGORY_CHOICE)
     is_active = models.BooleanField(default=True)

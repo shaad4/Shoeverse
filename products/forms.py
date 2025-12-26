@@ -9,7 +9,6 @@ class ProductForm(forms.ModelForm):
             'name',
             'description',
             'price',
-            'old_price',
             'color',
             'category',
             'subcategory',
@@ -30,9 +29,6 @@ class ProductForm(forms.ModelForm):
                 'placeholder': "Enter product description…"
             }),
             'price': forms.NumberInput(attrs={
-                'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600'
-            }),
-            'old_price': forms.NumberInput(attrs={
                 'class': 'w-full p-2 rounded-md bg-[#121212] text-white border border-border focus:outline-none focus:ring-2 focus:ring-green-600'
             }),
             'color': forms.TextInput(attrs={
