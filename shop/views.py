@@ -357,37 +357,37 @@ def cart_view(request):
         return redirect("login")
     
 
-    cart_items = CartItem.objects.filter(user=request.user).select_related("variant", "variant__product")
+    all_cart_items = CartItem.objects.filter(user=request.user).select_related("variant", "variant__product")
 
-    valid_items = cart_items.filter(
+    # 1. Active Items (Both Product and Variant are active)
+    active_items = all_cart_items.filter(
         variant__is_active=True,
         variant__product__is_active=True,
     )
 
-    out_of_stock_items = valid_items.filter(variant__stock__lte=0)
-    in_stock_items = valid_items.filter(variant__stock__gt=0)
+    # 2. Unlisted Items (Either Product or Variant is inactive)
+    unlisted_items = all_cart_items.filter(
+        Q(variant__is_active=False) | Q(variant__product__is_active=False)
+    )
 
-    if not valid_items.exists():
-        context = {
-            "cart_items": [],
-            "subtotal": Decimal('0'),
-            "gst": Decimal('0'),
-            "delivery_charge": Decimal('0'),
-            "grand_total": Decimal('0'),
-            "total_items": 0,
-            
-        }
-        return render(request, "shop/cart.html", context)
-    
+    out_of_stock_items = active_items.filter(variant__stock__lte=0)
+    in_stock_items = active_items.filter(variant__stock__gt=0)
+
     subtotal = Decimal("0")
     total_items = 0
 
-    # if in_stock_items.exists():
-    #     subtotal = sum(item.total_price for item in in_stock_items)
-    #     total_items = sum(item.quantity for item in in_stock_items)
-    # else:
-    #     subtotal = Decimal('0')
-    #     total_items = 0
+    # if not valid_items.exists():
+    #     context = {
+    #         "cart_items": [],
+    #         "subtotal": Decimal('0'),
+    #         "gst": Decimal('0'),
+    #         "delivery_charge": Decimal('0'),
+    #         "grand_total": Decimal('0'),
+    #         "total_items": 0,
+            
+    #     }
+    #     return render(request, "shop/cart.html", context)
+    
 
     for item in in_stock_items:
         product = item.variant.product
@@ -395,29 +395,30 @@ def cart_view(request):
         subtotal += item_final_price * item.quantity
         total_items += item.quantity
 
+        item.sorted_variants = (
+            product.variants
+            .annotate(size_int=Cast("size", IntegerField()))
+            .order_by("size_int")
+        )
+
     subtotal = subtotal.quantize(Decimal("0.01"))
         
     gst = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
 
     delivery_charge = Decimal('0') if subtotal >= Decimal('1000') else Decimal('100')
 
-    grand_total  = subtotal + gst + delivery_charge
+    grand_total  = subtotal + gst + delivery_charge if total_items > 0 else Decimal('0')
 
-    for item in in_stock_items:
-        item.sorted_variants = (
-            item.variant.product.variants
-            .annotate(size_int=Cast("size", IntegerField()))
-            .order_by("size_int")
-        )
 
     context = {
-        "cart_items" : in_stock_items,
-        "subtotal" : subtotal,
-        "gst" :  gst,
-        "delivery_charge" : delivery_charge,
-        "grand_total" : grand_total,
-        "total_items" : total_items,
+        "cart_items": in_stock_items,
         "out_of_stock_items": out_of_stock_items,
+        "unlisted_items": unlisted_items,  # Added to context
+        "subtotal": subtotal,
+        "gst": gst,
+        "delivery_charge": delivery_charge,
+        "grand_total": grand_total,
+        "total_items": total_items,
 
     }
 
