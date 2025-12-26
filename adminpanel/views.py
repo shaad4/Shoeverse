@@ -797,19 +797,23 @@ def admin_cancel_order_item(request, item_id):
     if item.status == 'Cancelled':
         messages.warning(request, "Item is already cancelled.")
         return redirect('admin_order_detail', order_id=order.order_id)
+
+    item_gst = (item.total_price * Decimal('0.18')).quantize(Decimal('0.01'))
+    refund_amount = item.total_price + item_gst
     
     item.status = "Cancelled"
     item.variant.stock += item.quantity
     item.variant.save()
     item.save()
 
-    refund_amount = item.total_price 
-
-    wallet, _ = Wallet.objects.get_or_create(user=order.user)
-    wallet.balance += refund_amount
-    wallet.save()
-
-    credit_wallet(wallet, refund_amount,f"Refund for cancelled item: {item.variant.product.name}" )
+    if order.payment_method.upper() != 'COD':
+        wallet, _ = Wallet.objects.get_or_create(user=order.user)
+        wallet.balance += refund_amount
+        wallet.save()
+        credit_wallet(wallet, refund_amount, f"Refund for cancelled item: {item.variant.product.name}")
+        messages.success(request, f"Refund of ₹{refund_amount} credited to wallet.")
+    else:
+        messages.info(request, "Item cancelled. No refund processed for COD order.")
 
     active_items = order.items.exclude(status='Cancelled')
 
@@ -817,10 +821,11 @@ def admin_cancel_order_item(request, item_id):
         # If no items left, cancel the whole order
         order.status = "Cancelled"
         order.cancel_reason = "All items cancelled by Admin"
-        # order.subtotal = Decimal(0)
-        # order.gst = Decimal(0)
-        # order.delivery_charge = Decimal(0)
-        # order.total_amount = Decimal(0)
+
+        if order.payment_method.upper() != 'COD' and order.delivery_charge > 0:
+            wallet.balance += order.delivery_charge
+            wallet.save()
+            credit_wallet(wallet, order.delivery_charge, "Refund for Delivery Charges (Order Cancelled)")
         
     else:
         new_subtotal = sum(i.total_price for i in active_items)
