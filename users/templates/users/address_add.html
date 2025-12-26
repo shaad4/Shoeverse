@@ -19,7 +19,7 @@
 
             <div class="bg-[#18211d] rounded-2xl border border-[#2a3b31] shadow-xl shadow-black/20 overflow-hidden">
                 
-                <form method="POST" class="p-6 md:p-8 space-y-8" action="{% if next_page %}?next={{ next_page }}{% endif %}">
+                <form id="addressForm" method="POST" class="p-6 md:p-8 space-y-8" action="{% if next_page %}?next={{ next_page }}{% endif %}">
                     {% csrf_token %}
 
                     <div class="space-y-6">
@@ -28,19 +28,22 @@
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
                                 <input type="text" name="full_name" value="{{ values.full_name|default:'' }}" required
+                                       maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
                                        placeholder="Receiver's Name">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
                                 <input type="tel" name="phone_number" value="{{ values.phone_number|default:'' }}" required
+                                       pattern="\d{10}" title="Please enter a valid 10-digit mobile number"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
                                        placeholder="10-digit mobile number">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email Address (Optional)</label>
                                 <input type="email" name="email" value="{{ values.email|default:'' }}" 
-                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
+                                       placeholder="email@example.com">
                             </div>
                         </div>
                     </div>
@@ -68,29 +71,35 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 1</label>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 1 (House No, Building, Street)</label>
                                 <input type="text" name="address_line1" value="{{ values.address_line1|default:'' }}" required
+                                       maxlength="255"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 2 (Optional)</label>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Address Line 2 (Landmark, Area - Optional)</label>
                                 <input type="text" name="address_line2" value="{{ values.address_line2|default:'' }}" 
+                                       maxlength="255"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">City</label>
                                 <input type="text" name="city" value="{{ values.city|default:'' }}" required
+                                       maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">State</label>
                                 <input type="text" name="state" value="{{ values.state|default:'' }}" required
+                                       maxlength="100"
                                        class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pincode / ZIP</label>
                                 <input type="text" name="pincode" value="{{ values.pincode|default:'' }}" required
-                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all">
+                                       pattern="\d{6}" title="Please enter a valid 6-digit pincode"
+                                       class="w-full bg-[#121714] border border-[#2a3b31] rounded-xl px-4 py-3 text-white focus:border-[#96c4a8] focus:ring-1 focus:ring-[#96c4a8] transition-all"
+                                       placeholder="6-digit PIN">
                             </div>
                         </div>
                     </div>
@@ -106,4 +115,51 @@
         </div>
     </main>
 </div>
+
+<script>
+    // Front-end JavaScript validations
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addressForm');
+        const inputs = form.querySelectorAll('input[required]');
+
+        // Trim whitespaces on blur for all required fields
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        });
+
+        // Specific validation for Phone (numbers only)
+        const phoneInput = form.querySelector('input[name="phone_number"]');
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+
+        // Specific validation for Pincode (numbers only)
+        const pinInput = form.querySelector('input[name="pincode"]');
+        pinInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+        });
+
+        // Final submission check
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Check if required fields are just spaces
+            inputs.forEach(input => {
+                if (input.value.trim().length === 0) {
+                    isValid = false;
+                    input.classList.add('border-red-500');
+                } else {
+                    input.classList.remove('border-red-500');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill out all required fields correctly.');
+            }
+        });
+    });
+</script>
 {% endblock %}
