@@ -4,19 +4,16 @@
 
 <div class="w-full min-h-screen flex flex-col items-center pt-28 pb-10 bg-dark">
 
-    <!-- Card Container -->
     <div class="w-full max-w-[480px] px-5 py-10 bg-dark flex flex-col items-center">
 
-        <!-- Title -->
         <h1 class="text-[28px] font-bold text-white text-center mb-6">
             Enter the OTP
         </h1>
 
-        <!-- Django Messages -->
         {% if messages %}
             <div class="mb-4 w-full">
                 {% for message in messages %}
-                    <div class="p-3 rounded-card text-white 
+                    <div class="p-3 rounded-card text-white text-sm font-medium
                         {% if message.tags == 'error' %} bg-red-500 
                         {% elif message.tags == 'success' %} bg-green-600 
                         {% else %} bg-dark-green 
@@ -27,61 +24,93 @@
             </div>
         {% endif %}
 
-        <!-- Email Info -->
-        <p class="text-muted mb-4 text-center">
-            OTP sent to {{ email }}.
+        <p class="text-muted mb-6 text-center">
+            Verification code sent to <span class="text-white font-semibold">{{ email }}</span>.
         </p>
 
-        <!-- OTP Form -->
         <form method="POST" class="w-full">
             {% csrf_token %}
             <input 
                 type="text"
                 name="otp"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 placeholder="Enter your OTP"
-                class="w-full h-14 bg-dark-green text-white placeholder-muted px-4 rounded-card input-focus mb-4"
+                class="w-full h-14 bg-dark-green text-white placeholder-muted px-4 rounded-card border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary mb-4 text-center text-xl tracking-[0.5em] font-bold"
                 required
             >
 
-            <!-- Submit Button -->
-            <button class="w-full h-10 bg-primary text-dark font-bold rounded-card hover:opacity-90 click-effect">
+            <button type="submit" class="w-full h-12 bg-primary text-dark font-bold rounded-card hover:opacity-90 transition-all active:scale-95">
                 Confirm
             </button>
         </form>
 
-        <!-- Resend Timer -->
-        <p id="resend-text" class="text-sm text-muted text-center mt-4">
-            Resend OTP in <span id="timer">120</span> seconds
-        </p>
+        <div class="mt-8 flex flex-col items-center">
+            <p id="resend-text" class="text-sm text-muted text-center hidden">
+                Resend OTP in <span id="timer" class="text-primary font-bold">02:00</span>
+            </p>
 
-        <a id="resend-btn"
-           href="{% url 'resend_otp' %}"
-           class="text-primary font-medium hidden mt-4">
-            Resend OTP
-        </a>
+            <a id="resend-btn"
+               href="{% url 'resend_otp' %}"
+               class="text-primary font-bold hover:underline hidden transition-all">
+                Resend OTP
+            </a>
+        </div>
 
     </div>
 
 </div>
 
-
-<!-- ✅ Timer Script -->
 <script>
-    let timeLeft = 120;
-    const timerSpan = document.getElementById("timer");
-    const resendText = document.getElementById("resend-text");
-    const resendBtn = document.getElementById("resend-btn");
+    document.addEventListener("DOMContentLoaded", function() {
+        const timerDuration = 120; // 2 Minutes
+        const timerSpan = document.getElementById("timer");
+        const resendText = document.getElementById("resend-text");
+        const resendBtn = document.getElementById("resend-btn");
 
-    const countdown = setInterval(() => {
-        timeLeft--;
-        timerSpan.textContent = timeLeft;
-
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            resendText.classList.add("hidden");
-            resendBtn.classList.remove("hidden");
+        // Helper to format seconds into MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
-    }, 1000);
+
+        function startTimer() {
+            // Get existing target time from storage
+            let expiryTime = localStorage.getItem("otpExpiryTime");
+            let now = Math.floor(Date.now() / 1000);
+
+            // If no timer exists or it has already expired, set a new one
+            if (!expiryTime || now > expiryTime) {
+                expiryTime = now + timerDuration;
+                localStorage.setItem("otpExpiryTime", expiryTime);
+            }
+
+            const countdown = setInterval(() => {
+                let currentTime = Math.floor(Date.now() / 1000);
+                let timeLeft = expiryTime - currentTime;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    resendText.classList.add("hidden");
+                    resendBtn.classList.remove("hidden");
+                    localStorage.removeItem("otpExpiryTime");
+                } else {
+                    resendText.classList.remove("hidden");
+                    resendBtn.classList.add("hidden");
+                    timerSpan.textContent = formatTime(timeLeft);
+                }
+            }, 1000);
+        }
+
+        // Initialize timer
+        startTimer();
+
+        // Clear timer if user successfully clicks resend
+        resendBtn.addEventListener("click", function() {
+            localStorage.removeItem("otpExpiryTime");
+        });
+    });
 </script>
 
 {% endblock content %}
