@@ -8,143 +8,189 @@ from io import BytesIO
 from django.http import HttpResponse
 from decimal import Decimal
 from shop.models import CartItem
+from reportlab.lib.colors import HexColor
 
 
 def generate_invoice(order):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-    y = height - 50
+    
+    # Modern Color Palette
+    PRIMARY = HexColor("#0F172A")    
+    ACCENT = HexColor("#4F46E5")     
+    TEXT_MAIN = HexColor("#1E293B")  
+    TEXT_MUTE = HexColor("#64748B")  
+    BG_SOFT = HexColor("#F8FAFC")    
+    BORDER = HexColor("#E2E8F0")     
 
-    # ===== HEADER & LOGO =====
+    # Strict Alignment Constants
+    COL_DESC = 50
+    COL_STATUS = 310
+    COL_QTY = 380
+    COL_PRICE = 440
+    COL_TOTAL = 550  
+
+    # 1. TOP ACCENT BAR
+    c.setFillColor(ACCENT)
+    c.rect(0, height - 4, width, 4, fill=1, stroke=0)
+
+    # 2. HEADER
+    y = height - 50
+    # Update this path to your actual logo location
     logo_path = os.path.join(settings.BASE_DIR, "static", "images", "logo.png")
     if os.path.exists(logo_path):
-        c.drawImage(logo_path, 50, y - 60, width=70, height=70, preserveAspectRatio=True, mask='auto')
-
-    c.setFont("Helvetica-Bold", 24)
-    c.drawString(140, y - 20, "Shoeverse")
-    c.setFont("Helvetica", 11)
-    c.setFillColorRGB(0.3, 0.3, 0.3)
-    c.drawString(140, y - 40, "Premium Footwear, Delivered With Care")
-    c.setFillColorRGB(0, 0, 0)
-    y -= 100
-
-    # ===== INVOICE & ORDER STATUS =====
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "INVOICE")
+        c.drawImage(logo_path, COL_DESC, y - 15, width=45, height=45, mask='auto')
     
-    status_text = f"Order Status: {order.status.upper()}"
-    c.setFont("Helvetica-Bold", 11)
-    c.drawRightString(550, y, status_text)
-    y -= 30
-
-    # ===== ORDER DETAILS & ADDRESS =====
-    c.setFont("Helvetica", 11)
-    c.drawString(50, y, f"Order ID: {order.order_id}")
-    c.drawString(350, y, f"Order Date: {order.created_at.strftime('%d %b %Y')}")
-    y -= 20
-    c.drawString(50, y, f"Payment Method: {order.payment_method}")
-    y -= 40
-
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "Billing Address:")
-    y -= 18
-    c.setFont("Helvetica", 10)
-    if order.address:
-        for line in [order.address.full_name, order.address.address_line1, order.address.address_line2, 
-                     f"{order.address.city}, {order.address.state} - {order.address.pincode}", f"Phone: {order.address.phone_number}"]:
-            if line:
-                c.drawString(50, y, line)
-                y -= 15
-    y -= 25
-
-    # ===== TABLE HEADER =====
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(50, y, "Item Description")
-    c.drawString(240, y, "Status")
-    c.drawString(320, y, "Qty")
-    c.drawString(380, y, "Unit Price")
-    c.drawString(480, y, "Total")
-    y -= 8
-    c.line(50, y, 550, y)
-    y -= 18
-
-    # ===== NEW CALCULATION LOGIC FOR ACTIVE SUMMARY =====
-    active_subtotal = Decimal('0.00')
-
-    # ===== ORDER ITEMS LOOP =====
+    c.setFont("Helvetica-Bold", 22)
+    c.setFillColor(PRIMARY)
+    c.drawString(105, y, "SHOEVERSE")
+    
     c.setFont("Helvetica", 9)
+    c.setFillColor(TEXT_MUTE)
+    c.drawString(105, y - 14, "PREMIUM FOOTWEAR CONCEPTS")
+
+    # Invoice Meta
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(PRIMARY)
+    c.drawRightString(COL_TOTAL, y, f"INVOICE #{order.order_id}")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(TEXT_MUTE)
+    c.drawRightString(COL_TOTAL, y - 14, f"Issued: {order.created_at.strftime('%d %b %Y')}")
+
+    # 3. ADDRESS SECTION
+    y -= 80
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColor(TEXT_MUTE)
+    c.drawString(COL_DESC, y, "BILL TO")
+    
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColor(TEXT_MAIN)
+    y_addr = y - 18
+    if order.address:
+        c.drawString(COL_DESC, y_addr, order.address.full_name.upper())
+        c.setFont("Helvetica", 9)
+        c.setFillColor(TEXT_MUTE)
+        addr_lines = [
+            order.address.address_line1,
+            f"{order.address.city}, {order.address.state} {order.address.pincode}",
+            f"Phone: {order.address.phone_number}"
+        ]
+        for line in addr_lines:
+            y_addr -= 13
+            c.drawString(COL_DESC, y_addr, line)
+
+    # Payment Status Box
+    c.setFillColor(BG_SOFT)
+    c.roundRect(400, y - 45, 150, 45, 5, fill=1, stroke=0)
+    c.setFillColor(TEXT_MUTE)
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(410, y - 15, "PAYMENT METHOD")
+    c.setFillColor(TEXT_MAIN)
+    c.setFont("Helvetica", 9)
+    c.drawString(410, y - 30, str(order.payment_method).upper())
+
+    # 4. TABLE HEADER
+    y -= 100
+    c.setStrokeColor(PRIMARY)
+    c.setLineWidth(1)
+    c.line(COL_DESC, y, COL_TOTAL, y)
+    
+    y -= 15
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColor(PRIMARY)
+    c.drawString(COL_DESC, y, "DESCRIPTION")
+    c.drawString(COL_STATUS, y, "STATUS")
+    c.drawString(COL_QTY, y, "QTY")
+    c.drawString(COL_PRICE, y, "UNIT PRICE")
+    c.drawRightString(COL_TOTAL, y, "TOTAL (INR)") # Label updated
+    
+    y -= 8
+    c.setStrokeColor(BORDER)
+    c.setLineWidth(0.5)
+    c.line(COL_DESC, y, COL_TOTAL, y)
+
+    # 5. ITEMS
+    y -= 20
+    active_subtotal = Decimal("0.00")
+    
     for item in order.items.all():
-        if y < 100:
+        if y < 150:
             c.showPage()
             y = height - 50
 
-        is_inactive = item.status in ['Cancelled', 'Returned']
+        inactive = item.status in ["Cancelled", "Returned"]
+        line_total = (item.price * item.quantity) if not inactive else Decimal("0.00")
+        if not inactive: active_subtotal += line_total
+
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(TEXT_MAIN if not inactive else TEXT_MUTE)
+        c.drawString(COL_DESC, y, item.variant.product.name[:38])
         
-        if is_inactive:
-            c.setFillColorRGB(0.5, 0.5, 0.5)
-            line_total = Decimal('0.00')
-        else:
-            c.setFillColorRGB(0, 0, 0)
-            line_total = item.price * item.quantity
-            # Add to our dynamic subtotal for the summary section
-            active_subtotal += line_total
-
-        item_name = f"{item.variant.product.name[:30]} (Size: {item.variant.size})"
+        c.setFont("Helvetica", 8)
+        c.setFillColor(TEXT_MUTE)
+        c.drawString(COL_DESC, y - 11, f"SIZE: {item.variant.size}")
         
-        c.drawString(50, y, item_name)
-        c.drawString(240, y, item.status) 
-        c.drawString(320, y, str(item.quantity))
-        c.drawString(380, y, f"Rs. {item.price:,.2f}")
-        c.drawRightString(530, y, f"Rs. {line_total:,.2f}")
+        c.setFont("Helvetica", 9)
+        c.setFillColor(TEXT_MAIN if not inactive else TEXT_MUTE)
+        c.drawString(COL_STATUS, y, item.status)
+        c.drawString(COL_QTY, y, str(item.quantity))
+        c.drawString(COL_PRICE, y, f"{item.price:,.2f}")
+        c.drawRightString(COL_TOTAL, y, f"{line_total:,.2f}")
+        
+        if inactive:
+            c.setStrokeColor(TEXT_MUTE)
+            c.line(COL_DESC, y + 3, COL_TOTAL, y + 3)
 
-        if is_inactive:
-            c.setStrokeColorRGB(0.5, 0.5, 0.5)
-            c.line(50, y + 3, 530, y + 3)
-            c.setStrokeColorRGB(0, 0, 0)
+        y -= 35
 
-        y -= 18
+    # 6. CALCULATIONS
+    if order.subtotal > 0:
+        gst_ratio = order.gst / order.subtotal
+        disc_ratio = order.discount_amount / order.subtotal
+    else:
+        gst_ratio = disc_ratio = Decimal("0.00")
 
-    # ===== DYNAMIC SUMMARY CALCULATION =====
-    # Calculate tax based only on the active subtotal
-    active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+    active_gst = (active_subtotal * gst_ratio).quantize(Decimal("0.01"))
+    active_discount = (active_subtotal * disc_ratio).quantize(Decimal("0.01"))
+    active_total = (active_subtotal + active_gst + order.delivery_charge - active_discount).max(0)
+
+    # Summary Block
+    y_sum = y - 20
+    c.setStrokeColor(BORDER)
+    c.line(350, y_sum + 10, COL_TOTAL, y_sum + 10)
     
-    # We maintain the delivery charge and subtract the original coupon discount
-    # but ensure the final total doesn't drop below zero.
-    active_total = (active_subtotal + active_gst + order.delivery_charge - order.discount_amount).max(Decimal('0.00'))
-
-    # ===== SUMMARY SECTION =====
-    c.setFillColorRGB(0, 0, 0)
-    y -= 10
-    c.line(300, y, 550, y)
-    y -= 20
-    
-    summary_data = [
-        ("Active Subtotal", active_subtotal),
-        ("GST (18%)", active_gst),
-        ("Delivery", order.delivery_charge),
+    summary_items = [
+        ("Subtotal", active_subtotal),
+        ("GST Tax", active_gst),
+        ("Shipping Charge", order.delivery_charge)
     ]
+    if active_discount > 0:
+        summary_items.insert(1, ("Discount Applied", -active_discount))
+
+    c.setFont("Helvetica", 10)
+    for label, val in summary_items:
+        c.setFillColor(TEXT_MUTE)
+        c.drawString(350, y_sum, label)
+        c.setFillColor(TEXT_MAIN)
+        c.drawRightString(COL_TOTAL, y_sum, f"{val:,.2f}") # Values here
+        y_sum -= 20
+
+    # Grand Total Box (FIXED LINE HERE)
+    c.setFillColor(BG_SOFT)
+    c.rect(345, y_sum - 10, 215, 30, fill=1, stroke=0)
     
-    if order.discount_amount > 0:
-        summary_data.insert(1, (f"Discount ({order.coupon.code if order.coupon else 'Coupon'})", -order.discount_amount))
+    c.setFillColor(PRIMARY)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(355, y_sum, "GRAND TOTAL")
+    c.drawRightString(COL_TOTAL, y_sum, f"{active_total:,.2f} INR")
 
-    c.setFont("Helvetica", 11)
-    for label, value in summary_data:
-        c.drawString(320, y, f"{label}:")
-        if value < 0: c.setFillColorRGB(0.8, 0, 0)
-        c.drawRightString(530, y, f"Rs. {abs(value):,.2f}")
-        c.setFillColorRGB(0, 0, 0)
-        y -= 18
+    # 7. FOOTER
+    c.setFont("Helvetica-Oblique", 8)
+    c.setFillColor(TEXT_MUTE)
+    c.drawCentredString(width/2, 40, "Thank you for choosing Shoeverse. This is a computer-generated invoice.")
+    c.drawCentredString(width/2, 30, "Shoeverse India · support@shoeverse.com")
 
-    c.line(300, y, 550, y)
-    y -= 20
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(320, y, "Grand Total:")
-    c.drawRightString(530, y, f"Rs. {active_total:,.2f}")
-
-    # Footer
-    c.setFont("Helvetica-Oblique", 9)
-    c.drawCentredString(width/2, 50, "Thank you for shopping with Shoeverse!")
     c.save()
     buffer.seek(0)
     return buffer
