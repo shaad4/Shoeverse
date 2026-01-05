@@ -745,14 +745,17 @@ def order_detail_view(request, order_id):
         for item in active_items:
             active_subtotal += item.price * item.quantity
 
-        active_subtotal = active_subtotal.quantize(Decimal("0.01"))
-        active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
-        active_total = (
-            active_subtotal +
-            active_gst +
-            order.delivery_charge -
-            order.discount_amount
-        ).max(Decimal('0.00'))
+        # active_subtotal = active_subtotal.quantize(Decimal("0.01"))
+        # active_gst = (active_subtotal * Decimal('0.18')).quantize(Decimal('0.01'))
+        # active_total = (
+        #     active_subtotal +
+        #     active_gst +
+        #     order.delivery_charge -
+        #     order.discount_amount
+        # ).max(Decimal('0.00'))
+        active_subtotal = order.subtotal
+        active_gst = order.gst
+        active_total = order.total_amount
 
         is_fully_cancelled = False
 

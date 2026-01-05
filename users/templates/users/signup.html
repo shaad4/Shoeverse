@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-
 <div class="bg-dark min-h-screen flex items-center justify-center py-5">
     <div class="w-full flex justify-center items-center py-5 px-5 md:px-40">
         
@@ -50,10 +49,10 @@
                 </div>
 
                 <div class="w-full mb-4 px-1">
-                    <div class="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
                         <div id="strengthBar" class="h-full w-0 transition-all duration-300"></div>
                     </div>
-                    <p id="strengthText" class="text-[11px] mt-1 text-muted uppercase tracking-wider font-bold"></p>
+                    <p id="strengthText" class="text-[10px] mt-2 text-muted uppercase tracking-widest font-bold min-h-[15px]"></p>
                 </div>
 
                 <div class="w-full mb-4 relative">
@@ -90,6 +89,7 @@
                     </button>
                 </div>
             </form>
+
             <div class="w-full flex justify-center items-center my-6 px-4">
                 <div class="h-[1px] bg-gray-700 flex-grow"></div>
                 <span class="text-small text-muted px-4">OR</span>
@@ -124,8 +124,9 @@
 $(document).ready(function () {
 
     function clearErrors(field) {
-        $(`input[name='${field}']`).removeClass("border-red-500");
-        $(`input[name='${field}']`).parent().find(".error-text").remove();
+        let input = $(`input[name='${field}']`);
+        input.removeClass("border-red-500");
+        input.parent().find(".error-text").remove();
     }
 
     function showError(field, msg) {
@@ -137,97 +138,94 @@ $(document).ready(function () {
     }
 
     function checkPasswordStrength(password) {
-        let strength = 0;
-        if (password.length >= 8) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
-
         const bar = $("#strengthBar");
         const text = $("#strengthText");
-
-        switch (strength) {
-            case 0:
-                bar.css("width", "0%").removeClass().addClass("h-full bg-gray-700");
-                text.text("");
-                break;
-            case 1:
-                bar.css("width", "25%").removeClass().addClass("h-full bg-red-500");
-                text.text("Weak (Needs 8+ chars, Uppercase, Num, Special)").removeClass().addClass("text-[11px] mt-1 text-red-500 uppercase font-bold");
-                break;
-            case 2:
-                bar.css("width", "50%").removeClass().addClass("h-full bg-orange-500");
-                text.text("Fair").removeClass().addClass("text-[11px] mt-1 text-orange-500 uppercase font-bold");
-                break;
-            case 3:
-                bar.css("width", "75%").removeClass().addClass("h-full bg-yellow-500");
-                text.text("Good").removeClass().addClass("text-[11px] mt-1 text-yellow-500 uppercase font-bold");
-                break;
-            case 4:
-                bar.css("width", "100%").removeClass().addClass("h-full bg-green-500");
-                text.text("Strong").removeClass().addClass("text-[11px] mt-1 text-green-500 uppercase font-bold");
-                break;
+        
+        if (!password) {
+            bar.css("width", "0%").removeClass().addClass("h-full bg-gray-700");
+            text.text("");
+            return false;
         }
-        return strength === 4;
+
+        let missing = [];
+        if (password.length < 8) missing.push("8+ chars");
+        if (!/[A-Z]/.test(password)) missing.push("Uppercase");
+        if (!/[0-9]/.test(password)) missing.push("Number");
+        if (!/[^A-Za-z0-9]/.test(password)) missing.push("Special");
+
+        let score = 4 - missing.length;
+        
+        // Update Bar Width and Colors
+        const widths = ["10%", "25%", "50%", "75%", "100%"];
+        const colors = ["bg-red-600", "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+        const textColors = ["text-red-600", "text-red-500", "text-orange-500", "text-yellow-500", "text-green-500"];
+
+        bar.css("width", widths[score])
+           .removeClass("bg-gray-700 bg-red-600 bg-red-500 bg-orange-500 bg-yellow-500 bg-green-500")
+           .addClass(colors[score]);
+
+        if (score === 4) {
+            text.text("Strong Password").removeClass().addClass(`text-[10px] mt-2 uppercase tracking-widest font-bold ${textColors[score]}`);
+        } else {
+            text.text("Required: " + missing.join(", ")).removeClass().addClass(`text-[10px] mt-2 uppercase tracking-widest font-bold ${textColors[score]}`);
+        }
+
+        return score === 4;
     }
 
     function validateForm() {
-        let valid = true;
-
         let name = $("input[name='fullName']").val().trim();
         let email = $("input[name='email']").val().trim();
         let pass = $("input[name='password']").val().trim();
         let cpass = $("input[name='confirm_password']").val().trim();
+        let valid = true;
 
-        // Name
-        if (name.length > 0 && name.length < 3) {
-            showError("fullName", "Name is too short");
-            valid = false;
-        } else { clearErrors("fullName"); }
+        // Name Validation
+        let nameRegex = /^[a-zA-Z\s]*$/;
+        if (name.length > 0) {
+            if (name.length < 3 || !nameRegex.test(name)) {
+                showError("fullName", "Enter a valid name (min 3 letters)");
+                valid = false;
+            } else { clearErrors("fullName"); }
+        } else { valid = false; }
 
-        // Email
+        // Email Validation
         let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (email.length > 0 && !emailRegex.test(email)) {
-            showError("email", "Invalid email address");
-            valid = false;
-        } else { clearErrors("email"); }
+        if (email.length > 0) {
+            if (!emailRegex.test(email)) {
+                showError("email", "Enter a valid email");
+                valid = false;
+            } else { clearErrors("email"); }
+        } else { valid = false; }
 
-        // Password Strength
+        // Password Logic
         let isStrong = checkPasswordStrength(pass);
-        if (pass.length > 0 && !isStrong) {
-            valid = false;
-        }
+        if (!isStrong) valid = false;
 
-        // Match
-        if (cpass.length > 0 && pass !== cpass) {
-            showError("confirm_password", "Passwords do not match");
-            valid = false;
-        } else { clearErrors("confirm_password"); }
+        // Match Logic
+        if (cpass.length > 0) {
+            if (pass !== cpass) {
+                showError("confirm_password", "Passwords do not match");
+                valid = false;
+            } else { clearErrors("confirm_password"); }
+        } else { valid = false; }
 
-        // Final Button State
-        if (name.length >= 3 && emailRegex.test(email) && isStrong && pass === cpass) {
+        // Final Button state
+        if (valid && name.length >= 3 && isStrong && pass === cpass) {
             $("#signupBtn").prop("disabled", false).removeClass("opacity-50 cursor-not-allowed").addClass("opacity-100 cursor-pointer");
-            return true;
         } else {
             $("#signupBtn").prop("disabled", true).addClass("opacity-50 cursor-not-allowed").removeClass("opacity-100 cursor-pointer");
-            return false;
         }
     }
 
-    // Input listeners
     $("input").on("input focusout", validateForm);
 
-    // ✅ FIXED Password Show/Hide logic for both fields
     $(".togglePass").on("click", function () {
-        // Find the input within the same parent div
         let input = $(this).closest('div').find('input');
         let isPass = input.attr("type") === "password";
-        
         input.attr("type", isPass ? "text" : "password");
         $(this).text(isPass ? "Hide" : "Show");
     });
-
 });
 </script>
-
 {% endblock content %}
