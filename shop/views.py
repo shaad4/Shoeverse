@@ -586,8 +586,9 @@ def wishlist_view(request):
     wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
 
     wishlist_total = sum(item.product.final_price for item in  wishlist_items)
-
-    return render(request, "shop/wishlist.html", {"wishlist_items":wishlist_items, "wishlist_total":wishlist_total})
+    has_active_items = wishlist_items.filter(product__is_active=True).exists()
+    
+    return render(request, "shop/wishlist.html", {"wishlist_items":wishlist_items, "wishlist_total":wishlist_total, "has_active_items" : has_active_items})
 
 @user_required
 def remove_wishlist_item(request, item_id):
@@ -613,6 +614,30 @@ def move_to_cart(request, item_id):
 
     return redirect("cart")
     
+# @user_required
+# def move_all_to_cart(request):
+#     if not request.user.is_authenticated:
+#         return redirect("login")
+    
+#     wishlist_items = Wishlist.objects.filter(user=request.user)
+
+#     if not wishlist_items.exists():
+#         messages.warning(request, "Your wishlist is empty.")
+#         return redirect("wishlist")
+    
+#     for item in wishlist_items:
+#         product = item.product
+#         variant = product.variants.filter(is_active=True, stock__gt=0).first()
+
+#         if variant:
+#             CartItem.objects.get_or_create(user=request.user, variant=variant)
+
+#         item.delete()
+
+#     messages.success(request, "All items moved to cart successfully")
+#     return redirect("cart")
+
+
 @user_required
 def move_all_to_cart(request):
     if not request.user.is_authenticated:
@@ -624,17 +649,48 @@ def move_all_to_cart(request):
         messages.warning(request, "Your wishlist is empty.")
         return redirect("wishlist")
     
+    moved_count = 0
+    
     for item in wishlist_items:
         product = item.product
-        variant = product.variants.filter(is_active=True, stock__gt=0).first()
+        
+        # 1. Check if the parent product is active
+        if product.is_active:
+            # 2. Find the first available variant
+            variant = product.variants.filter(is_active=True, stock__gt=0).first()
 
-        if variant:
-            CartItem.objects.get_or_create(user=request.user, variant=variant)
+            if variant:
+                # 3. Add to Cart
+                cart_item, created = CartItem.objects.get_or_create(
+                    user=request.user, 
+                    variant=variant
+                )
+                
+                # Optional: If item already exists, you might want to increase quantity
+                # if not created:
+                #     cart_item.quantity += 1
+                #     cart_item.save()
 
-        item.delete()
+                # 4. Only delete from wishlist if successfully moved
+                item.delete()
+                moved_count += 1
 
-    messages.success(request, "All items moved to cart successfully")
+    # Feedback logic
+    if moved_count == 0:
+        messages.warning(request, "No available items found to move to cart.")
+    elif moved_count < wishlist_items.count() + moved_count: 
+        # Note: logic above is slightly tricky because we deleted items. 
+        # Easier: check if any items remain in wishlist.
+        remaining = Wishlist.objects.filter(user=request.user).count()
+        if remaining > 0:
+            messages.success(request, f"{moved_count} items moved to cart. {remaining} unavailable items remain in wishlist.")
+        else:
+             messages.success(request, "All items moved to cart successfully.")
+    else:
+        messages.success(request, "All items moved to cart successfully.")
+
     return redirect("cart")
+
 
 
 @user_required
